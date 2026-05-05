@@ -1,0 +1,64 @@
+# GOBRO - West Bengal Tourism Robots.txt
+# Allow all search engines to crawl
+
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+Disallow: /#/admin
+Disallow: /#/admin-login
+Disallow: /#/reset-password
+Disallow: /#/verify-email
+
+# Disallow debug pages
+Disallow: /#/debug
+Disallow: /#/check
+Disallow: /#/slugs
+
+# Allow all other pages
+Allow: /#/explore
+Allow: /#/food
+Allow: /#/planner
+Allow: /#/wishlist
+Allow: /#/map
+Allow: /#/phrasebook
+Allow: /#/itinerary
+Allow: /#/festivals
+Allow: /#/budget
+Allow: /#/weather
+Allow: /#/tools
+
+# Sitemap location
+Sitemap: https://gobro.travel/sitemap.xml
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1
+
+# Specific bot rules
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.5
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

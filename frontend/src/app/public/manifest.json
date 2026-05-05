@@ -1,0 +1,86 @@
+{
+  "name": "GOBRO - West Bengal Tourism",
+  "short_name": "GOBRO",
+  "description": "Discover the authentic beauty of West Bengal. Experience culture, landscapes, and unforgettable memories with Bengal's most trusted travel companion.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#7d1f2e",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["travel", "tourism", "lifestyle"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg width='192' height='192' viewBox='0 0 192 192' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='192' height='192' rx='42' fill='%237d1f2e'/%3E%3Ccircle cx='128' cy='64' r='40' stroke='%23FFA500' stroke-width='3' opacity='0.5' fill='none'/%3E%3Ccircle cx='128' cy='64' r='48' stroke='%23FFA500' stroke-width='2' opacity='0.4' fill='none'/%3E%3Ccircle cx='64' cy='128' r='40' stroke='%23FFA500' stroke-width='3' opacity='0.5' fill='none'/%3E%3Ccircle cx='64' cy='128' r='48' stroke='%23FFA500' stroke-width='2' opacity='0.4' fill='none'/%3E%3Cpath d='M 128 44 C 112 44 100 56 100 72 C 100 88 112 100 128 100 C 144 100 156 88 156 72 C 156 56 144 44 128 44 Z M 128 56 C 136 56 144 64 144 72 C 144 80 136 88 128 88 C 120 88 112 80 112 72 C 112 64 120 56 128 56 Z' fill='white'/%3E%3Cpath d='M 88 80 C 80 88 72 96 64 104 C 56 112 48 120 44 128 C 40 136 40 144 44 148 C 48 156 56 160 68 160 C 80 160 88 156 96 148 L 104 140 C 104 140 100 136 96 132 C 92 128 88 124 88 120 C 88 116 92 112 96 108 L 112 92 C 116 88 120 84 120 80 C 120 76 116 72 112 72 C 108 68 104 68 100 72 L 88 80 Z M 64 120 C 72 120 80 128 80 136 C 80 144 72 152 64 152 C 56 152 48 144 48 136 C 48 128 56 120 64 120 Z' fill='white'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg width='512' height='512' viewBox='0 0 512 512' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='512' height='512' rx='112' fill='%237d1f2e'/%3E%3Ccircle cx='340' cy='170' r='106' stroke='%23FFA500' stroke-width='8' opacity='0.5' fill='none'/%3E%3Ccircle cx='340' cy='170' r='128' stroke='%23FFA500' stroke-width='6' opacity='0.4' fill='none'/%3E%3Ccircle cx='172' cy='342' r='106' stroke='%23FFA500' stroke-width='8' opacity='0.5' fill='none'/%3E%3Ccircle cx='172' cy='342' r='128' stroke='%23FFA500' stroke-width='6' opacity='0.4' fill='none'/%3E%3Cpath d='M 340 116 C 297 116 264 149 264 192 C 264 235 297 268 340 268 C 383 268 416 235 416 192 C 416 149 383 116 340 116 Z M 340 149 C 362 149 383 170 383 192 C 383 214 362 235 340 235 C 318 235 297 214 297 192 C 297 170 318 149 340 149 Z' fill='white'/%3E%3Cpath d='M 235 213 C 213 235 192 256 172 277 C 152 299 131 320 116 342 C 107 362 107 384 116 394 C 128 416 149 427 181 427 C 213 427 235 416 256 394 L 277 373 C 277 373 267 362 256 352 C 245 341 235 331 235 320 C 235 309 245 299 256 288 L 299 245 C 309 235 320 224 320 213 C 320 203 309 192 299 192 C 288 181 277 181 267 192 L 235 213 Z M 172 320 C 192 320 213 341 213 362 C 213 384 192 405 172 405 C 152 405 131 384 131 362 C 131 341 152 320 172 320 Z' fill='white'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg width='540' height='720' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%237d1f2e' width='540' height='720'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='48' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3EGOBRO Screenshot%3C/text%3E%3C/svg%3E",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Explore Destinations",
+      "short_name": "Explore",
+      "description": "Browse all West Bengal destinations",
+      "url": "/#/explore",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg width='96' height='96' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%237d1f2e' width='96' height='96' rx='20'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='48' text-anchor='middle' dominant-baseline='middle'%3E🗺%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Trip Planner",
+      "short_name": "Planner",
+      "description": "Plan your West Bengal trip",
+      "url": "/#/planner",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg width='96' height='96' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%237d1f2e' width='96' height='96' rx='20'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='48' text-anchor='middle' dominant-baseline='middle'%3E📅%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "My Wishlist",
+      "short_name": "Wishlist",
+      "description": "View saved destinations",
+      "url": "/#/wishlist",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg width='96' height='96' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%237d1f2e' width='96' height='96' rx='20'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='48' text-anchor='middle' dominant-baseline='middle'%3E❤️%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Food Guide",
+      "short_name": "Food",
+      "description": "Discover Bengali cuisine",
+      "url": "/#/food",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg width='96' height='96' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%237d1f2e' width='96' height='96' rx='20'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='48' text-anchor='middle' dominant-baseline='middle'%3E🍛%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
