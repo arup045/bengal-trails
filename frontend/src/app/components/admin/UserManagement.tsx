@@ -2,7 +2,7 @@ import { API_BASE } from '../../utils/api';
 import { useState, useEffect } from 'react';
 import { Users, Shield, Ban, Search, Mail, Calendar, Crown, UserX, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface User {
   id: string;

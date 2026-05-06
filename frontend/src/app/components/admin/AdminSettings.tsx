@@ -2,7 +2,7 @@ import { API_BASE } from '../../utils/api';
 import { useState } from 'react';
 import { Settings, Star, Image as ImageIcon, Bell, Save, Upload } from 'lucide-react';
 import { motion } from 'motion/react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 export function AdminSettings() {
   const [featuredDestinations, setFeaturedDestinations] = useState<string[]>([

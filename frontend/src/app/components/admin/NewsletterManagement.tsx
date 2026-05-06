@@ -3,7 +3,7 @@ import { API_BASE } from '../../utils/api';
 import { useState, useEffect } from 'react';
 import { Mail, Send, Users, FileText, Calendar, Download } from 'lucide-react';
 import { motion } from 'motion/react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface Subscriber {
   id: string;

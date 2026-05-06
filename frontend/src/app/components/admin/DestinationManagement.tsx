@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { MapPin, Plus, Edit, Trash2, Search, X, Save, Upload, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { placesData } from '../../data/places-full';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface Destination {
   id: string;
