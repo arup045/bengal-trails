@@ -1,8 +1,6 @@
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { useNavigate } from 'react-router-dom';
 
 export function PromoSection() {
-  const navigate = useNavigate();
 
   return (
     <section className="py-20 px-6 bg-gray-50">
@@ -29,7 +27,7 @@ export function PromoSection() {
             From the misty peaks of Darjeeling to the mangrove forests of Sundarbans, West Bengal offers diverse experiences waiting to be explored. Immerse yourself in rich heritage, vibrant festivals, and warm hospitality.
           </p>
           <button
-            onClick={() => navigate('/explore')}
+            onClick={() => window.location.hash = '#/explore'}
             className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-3 rounded-full hover:shadow-lg hover:shadow-purple-500/50 transition-all"
           >
             Start Exploring

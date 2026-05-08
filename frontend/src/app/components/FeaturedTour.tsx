@@ -2,7 +2,6 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { motion } from 'motion/react';
 import { Check, Download, Clock, Users, Coffee, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const inclusions = [
   { icon: Users, label: 'Expert Guide' },
@@ -12,7 +11,6 @@ const inclusions = [
 ];
 
 export function FeaturedTour() {
-  const navigate = useNavigate();
   return (
     <section className="py-16 md:py-24 bg-[#FFF9F2]">
       <div className="max-w-[1440px] mx-auto px-6 md:px-8 lg:px-12">
@@ -82,7 +80,7 @@ export function FeaturedTour() {
                     if (typeof window !== 'undefined' && (window as any).gtag) {
                       (window as any).gtag('event', 'tour_book_click', { tour_id: 'darjeeling-ultimate' });
                     }
-                    navigate('/destination/darjeeling');
+                    window.location.hash = '#/explore/darjeeling';
                   }}
                 >
                   Book Now

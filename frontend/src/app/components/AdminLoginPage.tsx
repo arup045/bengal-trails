@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export function AdminLoginPage() {
@@ -7,7 +6,6 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +25,7 @@ export function AdminLoginPage() {
       // Check if user is admin
       if (result.user?.role === 'admin') {
         // Redirect to admin panel
-        navigate('/admin');
+        window.location.hash = '#/admin';
       } else {
         setError('Access denied. Admin privileges required.');
         setLoading(false);
