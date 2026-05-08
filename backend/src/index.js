@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
+const bengalRoutes      = require('./routes/bengalContent');
 const authRoutes        = require('./routes/auth');
 const reviewRoutes      = require('./routes/reviews');
 const generalRoutes     = require('./routes/general');
@@ -31,19 +32,24 @@ initSentry(app);
 app.use(helmet());
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',').map((o) => o.trim());
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim());
+const allowAll = allowedOrigins.includes('*');
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl) or matching origins
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-      cb(null, true);
-    } else {
-      cb(new Error(`CORS: origin ${origin} not allowed`));
-    }
+    // Reflect the actual origin when wildcard is set (required when credentials: true)
+    if (!origin) return cb(null, true);
+    if (allowAll) return cb(null, origin);
+    if (allowedOrigins.includes(origin)) return cb(null, origin);
+    // Allow any *.netlify.app and *.vercel.app preview deploys by default
+    if (/\.netlify\.app$/.test(new URL(origin).hostname)) return cb(null, origin);
+    if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, origin);
+    return cb(null, false);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
@@ -108,6 +114,7 @@ app.use('/api/auth',            oauthRoutes);
 app.use('/api/digests',         digestsRoutes);
 app.use('/api/wishlist',         wishlistRoutes);
 app.use('/api/recently-viewed',  recentlyViewedRoutes);
+app.use('/api/bengal',           bengalRoutes);  // festivals, food, transport, hotels, subplaces
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {

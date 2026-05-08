@@ -32,7 +32,7 @@ function initSentry(app) {
 
 function sentryErrorHandler() {
   return (err, req, res, next) => {
-    if (Sentry && err.statusCode >= 500 || !err.statusCode) {
+    if (Sentry && (err.statusCode >= 500 || !err.statusCode)) {
       Sentry.captureException(err, {
         user: req.user ? { id: req.user.id, email: req.user.email } : undefined,
         tags: { route: req.path, method: req.method },
