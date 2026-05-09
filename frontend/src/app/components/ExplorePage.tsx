@@ -68,6 +68,26 @@ export function ExplorePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Read search params from URL hash on mount and on hash change
+  // Lets the Hero search bar pass ?location=Darjeeling&activity=Hiking through to here
+  useEffect(() => {
+    const applyHashParams = () => {
+      const hash = window.location.hash || '';
+      const queryStart = hash.indexOf('?');
+      if (queryStart === -1) return;
+      const params = new URLSearchParams(hash.slice(queryStart + 1));
+      const location = params.get('location');
+      const activity = params.get('activity');
+      const tourType = params.get('tourType');
+      if (location) setSearchQuery(location);
+      if (activity && activity !== 'all') setSelectedActivity(activity.toLowerCase());
+      if (tourType && tourType !== 'all') setSelectedCategory(tourType);
+    };
+    applyHashParams();
+    window.addEventListener('hashchange', applyHashParams);
+    return () => window.removeEventListener('hashchange', applyHashParams);
+  }, []);
+
   // Load last known location on mount
   useEffect(() => {
     const lastLocation = getLastKnownLocation();
