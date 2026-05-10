@@ -7,7 +7,9 @@ import { placesData } from '../data/places-full';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { buildSrcSet, DEFAULT_SIZES } from '../utils/responsiveImage';
 import { WeatherWidget } from './WeatherWidget';
-import { TransportationGuide } from './TransportationGuide';
+import { TransportGuideSection } from './TransportGuideSection';
+import { HotelsSection } from './HotelsSection';
+import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { PhotoGalleryLightbox } from './PhotoGalleryLightbox';
 import { ReviewsSystem } from './ReviewsSystem';
 import { BookingSystem } from './BookingSystem';
@@ -111,16 +113,6 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     { src: `https://images.unsplash.com/photo-1590906424086-3dbc808fd54b?w=800`, alt: `${place.title} festivals` },
     { src: `https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800`, alt: `${place.title} architecture` }
   ];
-
-  // Mock hotels data based on place's nearbyHotels
-  const hotels = place.nearbyHotels.map((name, idx) => ({
-    name,
-    rating: 4.5 + Math.random() * 0.5,
-    price: Math.floor(2000 + Math.random() * 5000),
-    image: 'https://images.unsplash.com/photo-1752563029948-de870b0add3b?w=800',
-    distance: (Math.random() * 5).toFixed(1),
-    amenities: ['Free WiFi', 'Parking', 'Restaurant', 'Room Service']
-  }));
 
   // Mock restaurants data
   const restaurants = place.nearbyRestaurants.map((name, idx) => ({
@@ -394,11 +386,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                <TransportationGuide 
-                  destination={place.title}
-                  district={place.district}
-                  region={place.region}
-                />
+                <TransportGuideSection destinationSlug={place.slug} />
               </motion.div>
             )}
 
@@ -409,7 +397,8 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                <h2 className="text-3xl mb-4">Nearby Attractions</h2>
+                <NearbyPlacesSection destinationSlug={place.slug} />
+                <h2 className="text-3xl mb-4 mt-8">More in this region</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {nearbyPlaces.map((nearbyPlace) => (
                     <a
@@ -448,46 +437,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                <h2 className="text-3xl mb-4">Nearby Hotels</h2>
-                <div className="space-y-4">
-                  {hotels.map((hotel) => (
-                    <div key={hotel.name} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-                      <div className="flex gap-6">
-                        <ImageWithFallback
-                          src={hotel.image}
-                          alt={hotel.name}
-                          className="w-48 h-32 rounded-xl object-cover"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <h3 className="text-2xl">{hotel.name}</h3>
-                            <div className="flex items-center gap-1">
-                              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                              <span className="text-lg">{hotel.rating.toFixed(1)}</span>
-                            </div>
-                          </div>
-                          <p className="text-gray-600 mb-3">{hotel.distance} km away</p>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {hotel.amenities.map((amenity) => (
-                              <span key={amenity} className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">
-                                {amenity}
-                              </span>
-                            ))}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <span className="text-sm text-gray-500">Starting from</span>
-                              <div className="text-2xl text-purple-600">₹{hotel.price.toLocaleString()}</div>
-                            </div>
-                            <button className="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors">
-                              Book Now
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <HotelsSection destinationSlug={place.slug} />
               </motion.div>
             )}
 
