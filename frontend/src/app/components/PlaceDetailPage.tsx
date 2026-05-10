@@ -31,13 +31,50 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     if (!slug) return;
     fetch(`${API_BASE}/destinations/${slug}`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => d?.destination && setApiPlace({
-        ...d.destination,
-        title: d.destination.name,
-        image: d.destination.image_url,
-        gallery: d.destination.gallery_images || [],
-      }))
-      .catch(() => {});
+      .then(d => {
+        if (!d?.destination) return;
+        const dest = d.destination;
+        // Complete mapping: API shape → frontend shape
+        // Frontend expects: title, heroImage.url, heroImage.alt, excerpt, tags,
+        // priceFrom, district, rating, reviewsCount, coordinates, bestTime,
+        // description, region, slug, nearbyRestaurants
+        setApiPlace({
+          ...dest,
+          // Names
+          title: dest.name,
+          slug: dest.slug,
+          // Images
+          image: dest.image_url,
+          heroImage: {
+            url: dest.image_url || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200',
+            alt: dest.name || 'Destination photo',
+          },
+          gallery: Array.isArray(dest.gallery_images) ? dest.gallery_images : [],
+          // Text
+          excerpt: dest.short_description || dest.description?.slice(0, 160) || '',
+          description: dest.description || '',
+          // Geographic
+          region: dest.region || 'Bengal',
+          district: dest.district || dest.region || 'West Bengal',
+          coordinates: (dest.latitude && dest.longitude)
+            ? { lat: parseFloat(dest.latitude), lng: parseFloat(dest.longitude) }
+            : { lat: 22.5726, lng: 88.3639 },
+          // Tags / categories — fall back across multiple possible shapes
+          tags: Array.isArray(dest.highlights) && dest.highlights.length ? dest.highlights
+                : Array.isArray(dest.activities) ? dest.activities
+                : (dest.category ? [dest.category] : []),
+          // Pricing
+          priceFrom: dest.price_range || (dest.price_from ? `₹${dest.price_from.toLocaleString('en-IN')}` : 'Free'),
+          // Ratings
+          rating: parseFloat(dest.rating) || 0,
+          reviewsCount: dest.review_count || 0,
+          // Time
+          bestTime: dest.best_time_to_visit || 'Oct–Mar',
+          // Restaurant placeholder (page expects an array to map; backend doesn't expose this yet)
+          nearbyRestaurants: Array.isArray(dest.nearbyRestaurants) ? dest.nearbyRestaurants : [],
+        });
+      })
+      .catch(() => { /* fall back to staticPlace */ });
   }, [slug]);
   const staticPlace = placesData.find(p => p.slug === slug);
   const place = apiPlace || staticPlace;

@@ -137,7 +137,30 @@ export function ExplorePage() {
   // Filter and sort logic
   const filteredPlaces = useMemo(() => {
     // Use API data if available, else fall back to static
-    let filtered = apiPlaces && apiPlaces.length > 0 ? apiPlaces.map((p: any) => ({ ...p, title: p.name, image: p.image_url, slug: p.slug })) : placesData;
+    let filtered: any[] = apiPlaces && apiPlaces.length > 0
+      ? apiPlaces.map((p: any) => ({
+          ...p,
+          // Map every field PlaceDetailPage / ExplorePage / FavoritePlaces / wishlist may access
+          title: p.name,
+          slug: p.slug,
+          image: p.image_url,
+          heroImage: { url: p.image_url || '', alt: p.name || '' },
+          excerpt: p.short_description || (p.description ? p.description.slice(0, 160) : ''),
+          description: p.description || '',
+          region: p.region || 'Bengal',
+          district: p.district || p.region || 'West Bengal',
+          tags: Array.isArray(p.highlights) && p.highlights.length ? p.highlights
+                : Array.isArray(p.activities) ? p.activities
+                : (p.category ? [p.category] : []),
+          priceFrom: p.price_range || (p.price_from ? `₹${Number(p.price_from).toLocaleString('en-IN')}` : 'Free'),
+          rating: parseFloat(p.rating) || 0,
+          reviewsCount: p.review_count || 0,
+          bestTime: p.best_time_to_visit || 'Oct–Mar',
+          coordinates: (p.latitude && p.longitude)
+            ? { lat: parseFloat(p.latitude), lng: parseFloat(p.longitude) }
+            : { lat: 22.5726, lng: 88.3639 },
+        }))
+      : placesData;
 
     if (debouncedSearchQuery) {
       filtered = filtered.filter(place =>
