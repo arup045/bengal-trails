@@ -413,7 +413,7 @@ export const SocialFeatures: React.FC = () => {
                     {/* Post Header */}
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                        {post.userName.charAt(0).toUpperCase()}
+                        {(post.userName || 'U').charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-gray-900">{post.userName}</p>
@@ -480,7 +480,7 @@ export const SocialFeatures: React.FC = () => {
                 {suggestedUsers.map((suggestedUser) => (
                   <div key={suggestedUser.id} className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {suggestedUser.name.charAt(0).toUpperCase()}
+                      {(suggestedUser.name || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900">{suggestedUser.name}</p>
@@ -561,7 +561,7 @@ export const SocialFeatures: React.FC = () => {
                 {comments.map((comment) => (
                   <div key={comment.id} className="flex gap-3">
                     <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                      {comment.userName.charAt(0).toUpperCase()}
+                      {(comment.userName || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
                       <div className="bg-gray-100 rounded-lg p-3">

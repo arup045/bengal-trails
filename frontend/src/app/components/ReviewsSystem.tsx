@@ -395,7 +395,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                    {review.userName.charAt(0).toUpperCase()}
+                    {(review.userName || 'U').charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">

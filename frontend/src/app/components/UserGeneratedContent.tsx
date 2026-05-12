@@ -233,7 +233,7 @@ export const UserGeneratedContent: React.FC = () => {
                   {/* User Info */}
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {item.userName.charAt(0).toUpperCase()}
+                      {(item.userName || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">{item.userName}</p>

@@ -44,14 +44,14 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
           title: dest.name,
           slug: dest.slug,
           // Images
-          image: dest.image_url,
+          image: (dest.imageUrl || dest.image_url),
           heroImage: {
-            url: dest.image_url || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200',
+            url: (dest.imageUrl || dest.image_url) || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200',
             alt: dest.name || 'Destination photo',
           },
-          gallery: Array.isArray(dest.gallery_images) ? dest.gallery_images : [],
+          gallery: Array.isArray((dest.galleryImages || dest.gallery_images)) ? (dest.galleryImages || dest.gallery_images) : [],
           // Text
-          excerpt: dest.short_description || dest.description?.slice(0, 160) || '',
+          excerpt: (dest.shortDescription || dest.short_description) || dest.description?.slice(0, 160) || '',
           description: dest.description || '',
           // Geographic
           region: dest.region || 'Bengal',
@@ -64,12 +64,12 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 : Array.isArray(dest.activities) ? dest.activities
                 : (dest.category ? [dest.category] : []),
           // Pricing
-          priceFrom: dest.price_range || (dest.price_from ? `₹${dest.price_from.toLocaleString('en-IN')}` : 'Free'),
+          priceFrom: (dest.priceRange || dest.price_range) || ((dest.priceFrom || dest.price_from) ? `₹${(dest.priceFrom || dest.price_from).toLocaleString('en-IN')}` : 'Free'),
           // Ratings
           rating: parseFloat(dest.rating) || 0,
-          reviewsCount: dest.review_count || 0,
+          reviewsCount: (dest.reviewCount || dest.review_count) || 0,
           // Time
-          bestTime: dest.best_time_to_visit || 'Oct–Mar',
+          bestTime: (dest.bestTimeToVisit || dest.best_time_to_visit) || 'Oct–Mar',
           // Restaurant placeholder (page expects an array to map; backend doesn't expose this yet)
           nearbyRestaurants: Array.isArray(dest.nearbyRestaurants) ? dest.nearbyRestaurants : [],
         });

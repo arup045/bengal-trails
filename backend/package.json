@@ -8,7 +8,8 @@
     "dev": "nodemon src/index.js",
     "migrate": "node src/db/migrate.js",
     "seed": "node src/db/seed.js",
-    "seed:content": "node src/db/seed-content.js"
+    "seed:content": "node src/db/seed-content.js",
+    "photos": "node scripts/update-photos.js"
   },
   "dependencies": {
     "@sentry/node": "^10.51.0",

@@ -72,7 +72,21 @@ export const CommunityForum: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setThreads(data.threads || mockThreads);
+        // Map API shape (flat userName/userId/avatarUrl) → frontend nested author shape
+        const apiThreads = (data.threads || []).map((t: any) => ({
+          ...t,
+          author: {
+            id: t.userId || t.id,
+            name: t.userName || t.author?.name || 'Anonymous',
+            avatar: t.avatarUrl || t.author?.avatar || `https://i.pravatar.cc/100?u=${t.userId || t.id}`,
+          },
+          replies: t.repliesCount ?? t.replies ?? 0,
+          views: t.viewsCount ?? t.views ?? 0,
+          likes: t.likesCount ?? t.likes ?? 0,
+          isPinned: t.isPinned ?? false,
+          lastActivity: t.updatedAt || t.createdAt,
+        }));
+        setThreads(apiThreads.length > 0 ? apiThreads : mockThreads);
       }
     } catch (error) {
       console.error('Error loading threads:', error);
@@ -95,7 +109,18 @@ export const CommunityForum: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setReplies(data.replies || []);
+        // Map API reply shape → frontend shape
+        const apiReplies = (data.replies || []).map((r: any) => ({
+          ...r,
+          author: {
+            id: r.userId || r.id,
+            name: r.userName || r.author?.name || 'Anonymous',
+            avatar: r.avatarUrl || r.author?.avatar || `https://i.pravatar.cc/100?u=${r.userId || r.id}`,
+          },
+          likes: r.likesCount ?? r.likes ?? 0,
+          createdAt: r.createdAt || new Date().toISOString(),
+        }));
+        setReplies(apiReplies);
       }
     } catch (error) {
       console.error('Error loading replies:', error);
@@ -364,7 +389,7 @@ export const CommunityForum: React.FC = () => {
             >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                  {thread.author.name.charAt(0).toUpperCase()}
+                  {(thread.author?.name || 'A').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -379,7 +404,7 @@ export const CommunityForum: React.FC = () => {
                     </span>
                     <div className="flex items-center gap-1">
                       <User className="w-4 h-4" />
-                      {thread.author.name}
+                      {thread.author?.name || 'Anonymous'}
                     </div>
                     <div className="flex items-center gap-1">
                       <MessageSquare className="w-4 h-4" />
@@ -417,10 +442,10 @@ export const CommunityForum: React.FC = () => {
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">{selectedThread.title}</h2>
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                    {selectedThread.author.name.charAt(0).toUpperCase()}
+                    {(selectedThread.author?.name || 'A').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold">{selectedThread.author.name}</p>
+                    <p className="font-semibold">{selectedThread.author?.name || 'Anonymous'}</p>
                     <p className="text-sm text-gray-500">
                       {new Date(selectedThread.createdAt).toLocaleDateString()}
                     </p>
@@ -434,11 +459,11 @@ export const CommunityForum: React.FC = () => {
                   {replies.map((reply) => (
                     <div key={reply.id} className="flex gap-3">
                       <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                        {reply.author.name.charAt(0).toUpperCase()}
+                        {(reply.author?.name || 'A').charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 bg-gray-50 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="font-semibold">{reply.author.name}</p>
+                          <p className="font-semibold">{reply.author?.name || 'Anonymous'}</p>
                           <p className="text-sm text-gray-500">
                             {new Date(reply.createdAt).toLocaleDateString()}
                           </p>

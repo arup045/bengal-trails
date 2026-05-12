@@ -428,7 +428,7 @@ export const GamificationSystem: React.FC = () => {
                           {entry.rank > 3 && <span className="text-gray-600">#{entry.rank}</span>}
                         </div>
                         <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                          {entry.userName.charAt(0).toUpperCase()}
+                          {(entry.userName || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1">
                           <p className="font-bold text-gray-900">{entry.userName}</p>

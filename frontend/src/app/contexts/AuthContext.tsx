@@ -100,9 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error || 'Sign in failed' };
-      localStorage.setItem('access_token', data.session.access_token);
-      localStorage.setItem('refresh_token', data.session.refresh_token);
-      setAccessToken(data.session.access_token);
+      localStorage.setItem('access_token', data.session.accessToken || data.session.access_token);
+      localStorage.setItem('refresh_token', data.session.refreshToken || data.session.refresh_token);
+      setAccessToken(data.session.accessToken || data.session.access_token);
       setUser(data.user);
       return { success: true, user: data.user };
     } catch {
