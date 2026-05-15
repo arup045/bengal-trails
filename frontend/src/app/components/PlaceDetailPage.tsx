@@ -123,7 +123,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const shareOnWhatsApp = () => {
     const url = window.location.href;
-    const text = `Check out ${place.title} on GOBRO: ${url}`;
+    const text = `Check out ${place.title} on Bengal Trails: ${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 

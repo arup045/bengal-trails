@@ -1,42 +1,148 @@
+// backend/src/routes/aiAssistant.js
+//
+// AI Travel Assistant with Gemini Function Calling.
+//
+// Strategy:
+//   1. Send user message to Gemini with our tool declarations
+//   2. If Gemini wants to call a tool (functionCall in response), execute it
+//      against our real database via aiTools.executeTool()
+//   3. Send the tool result back to Gemini, get the final text response
+//   4. Loop up to 3 times if Gemini chains multiple tool calls
+//   5. If Gemini fails entirely → fall back to Groq → fall back to keyword matching
+//
+// This gives Gemini access to live data from 232 destinations, 100 festivals,
+// and 17 Bengali foods — eliminating hallucinations and ensuring all
+// destination slugs the AI mentions actually exist.
+
 const router = require('express').Router();
 const { optionalAuth } = require('../middleware/auth');
-const { limiters } = require('../middleware/rateLimit');
+const { toolDeclarations, executeTool } = require('../services/aiTools');
 
-// ── Multi-provider AI: Tries Gemini → Groq → Fallback ────────────────────────
+const MAX_TOOL_HOPS = 3;       // Max chained function calls before forcing a text response
+const GEMINI_MODEL  = 'gemini-1.5-flash';
 
-async function callGemini(message, conversationHistory, language) {
+// ─── Gemini with function-calling support ──────────────────────────────────────
+
+async function callGeminiWithTools(message, conversationHistory, language) {
   if (!process.env.GEMINI_API_KEY) return null;
-  try {
-    const systemPrompt = buildSystemPrompt(language);
-    const messages = [
-      { role: 'user', parts: [{ text: systemPrompt }] },
-      { role: 'model', parts: [{ text: 'I understand. I am ready to help travelers explore West Bengal.' }] },
-      ...conversationHistory.slice(-4).map((m) => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }],
-      })),
-      { role: 'user', parts: [{ text: message }] },
-    ];
+
+  const systemPrompt = buildSystemPrompt(language);
+
+  // Build initial contents array
+  const contents = [
+    { role: 'user',  parts: [{ text: systemPrompt }] },
+    { role: 'model', parts: [{ text: "Understood. I'm Bengal Trails, ready to help travellers explore West Bengal using live data from your database." }] },
+    ...conversationHistory.slice(-4).map((m) => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }],
+    })),
+    { role: 'user', parts: [{ text: message }] },
+  ];
+
+  // Track destinations the AI surfaces via tool results (for the response payload)
+  const surfacedDestinations = [];
+
+  // Agentic loop: call Gemini, execute tools, repeat until Gemini gives plain text
+  for (let hop = 0; hop < MAX_TOOL_HOPS; hop++) {
+    const reqBody = {
+      contents,
+      tools: [{ functionDeclarations: toolDeclarations }],
+      // On the last hop, force a text response so we don't loop forever
+      toolConfig: hop === MAX_TOOL_HOPS - 1
+        ? { functionCallingConfig: { mode: 'NONE' } }
+        : { functionCallingConfig: { mode: 'AUTO' } },
+      generationConfig: { temperature: 0.6, maxOutputTokens: 800 },
+    };
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: messages,
-          generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
-        }),
+        body: JSON.stringify(reqBody),
       }
     );
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`Gemini ${res.status}: ${errText.slice(0, 300)}`);
+      return null;
+    }
+
     const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return text || null;
-  } catch (err) {
-    console.error('Gemini error:', err.message);
-    return null;
+    const candidate = data?.candidates?.[0];
+    if (!candidate) return null;
+    const parts = candidate.content?.parts || [];
+
+    // Look for function calls in this response
+    const functionCalls = parts.filter((p) => p.functionCall);
+    const textParts = parts.filter((p) => p.text).map((p) => p.text);
+
+    if (functionCalls.length === 0) {
+      // No more tool calls — Gemini has formulated a text response
+      const text = textParts.join('\n').trim();
+      return { text, destinations: surfacedDestinations };
+    }
+
+    // Append Gemini's tool call as a 'model' turn (required for the conversation context)
+    contents.push({ role: 'model', parts });
+
+    // Execute each function call and collect responses
+    const functionResponses = [];
+    for (const fc of functionCalls) {
+      const { name, args } = fc.functionCall;
+      const { result, error } = await executeTool(name, args);
+      // If the tool returned destination-like data, harvest it for the API payload
+      if (result) {
+        harvestDestinations(name, result, surfacedDestinations);
+      }
+      functionResponses.push({
+        functionResponse: {
+          name,
+          response: error ? { error } : { content: result },
+        },
+      });
+    }
+
+    // Append the function responses as a 'function' role turn
+    contents.push({ role: 'function', parts: functionResponses });
+    // Loop continues — Gemini will see the tool results and decide what to do next
+  }
+
+  // Should not reach here, but safe fallback
+  return { text: "Let me think — could you ask that another way?", destinations: surfacedDestinations };
+}
+
+/**
+ * Extract destinations from tool results into the frontend-facing payload.
+ * Frontend expects `[{name, slug, image?, price?}]`.
+ */
+function harvestDestinations(toolName, result, out) {
+  if (toolName === 'search_destinations' && Array.isArray(result.results)) {
+    for (const r of result.results.slice(0, 5)) {
+      if (out.find((x) => x.slug === r.slug)) continue;
+      out.push({ name: r.name, slug: r.slug, image: r.image, price: r.price_from });
+    }
+  } else if (toolName === 'get_destination_details' && result.slug) {
+    if (!out.find((x) => x.slug === result.slug)) {
+      out.push({ name: result.name, slug: result.slug, image: result.image, price: result.price_from });
+    }
+  } else if (toolName === 'suggest_itinerary' && Array.isArray(result.plan)) {
+    for (const r of result.plan) {
+      if (out.find((x) => x.slug === r.slug)) continue;
+      out.push({ name: r.name, slug: r.slug, image: r.image });
+    }
+  } else if (toolName === 'semantic_search' && Array.isArray(result.results)) {
+    // Only harvest 'destination' type results for the destinations payload
+    for (const r of result.results) {
+      if (r.type !== 'destination' || !r.id) continue;
+      if (out.find((x) => x.slug === r.id)) continue;
+      out.push({ name: r.name, slug: r.id, image: r.image });
+    }
   }
 }
+
+// ─── Groq fallback (no function calling — text only) ───────────────────────────
 
 async function callGroq(message, conversationHistory, language) {
   if (!process.env.GROQ_API_KEY) return null;
@@ -60,138 +166,140 @@ async function callGroq(message, conversationHistory, language) {
       }),
     });
     const data = await res.json();
-    return data?.choices?.[0]?.message?.content || null;
+    const text = data?.choices?.[0]?.message?.content;
+    return text || null;
   } catch (err) {
     console.error('Groq error:', err.message);
     return null;
   }
 }
 
+// ─── System prompt ─────────────────────────────────────────────────────────────
+
 function buildSystemPrompt(language) {
-  const langInstruction = language === 'bn'
-    ? 'Respond in Bengali (Bangla).'
-    : language === 'hi'
-    ? 'Respond in Hindi.'
-    : 'Respond in English.';
+  const langInstruction = {
+    en: 'Respond in English.',
+    bn: 'Respond in Bengali (বাংলা).',
+    hi: 'Respond in Hindi (हिंदी).',
+  }[language] || 'Respond in English.';
 
-  return `You are Gobro, a friendly travel expert specializing in West Bengal, India.
-You help users discover amazing destinations across West Bengal — from the misty hills of Darjeeling and Kalimpong, to the mangroves of Sundarbans, the cultural heart of Shantiniketan, the colonial charm of Kolkata, and the beaches of Mandarmani and Digha.
+  return `You are Bengal Trails, an expert AI travel assistant for West Bengal, India.
 
-Key knowledge areas:
-- Destinations: 221+ places including Darjeeling, Sundarbans, Shantiniketan, Kolkata, Bishnupur, Murshidabad, Mandarmani, Digha, Kalimpong, Mirik, Tarapith, Gangasagar, etc.
-- Festivals: Durga Puja (Sept-Oct), Poila Boishakh (Apr 14-15), Poush Mela (Dec), Charak Puja, Rath Yatra, Saraswati Puja, Christmas in Park Street
-- Food: kosha mangsho, hilsa, kathi rolls, mishti doi, rasgulla, sandesh, jhal muri, puchka, biryani
-- Best seasons: Oct-Mar for plains, Apr-Jun for hills, Jul-Sep for monsoon experience
-- Languages spoken: Bengali, English, Hindi, Nepali (in hills)
+You have access to a live database via TOOLS. Always use the tools to ground your answers in real data — never invent destinations, festivals, or food items.
+
+Available tools:
+- search_destinations: Find destinations by region/category/query (structured filter)
+- get_destination_details: Get full info for one place by slug
+- list_festivals: Find festivals by month/category/location (structured filter)
+- list_food: Get Bengali food items (structured filter)
+- suggest_itinerary: Plan a multi-day trip
+- semantic_search: Search by MEANING across all 232 destinations + 100 festivals + 17 foods.
+  Use for conceptual/thematic queries that structured filters can't express well —
+  "Buddhist meditation places", "literary sites", "spots for solo female travellers",
+  "places connected to Tagore", "Instagram-worthy sunsets", etc.
+
+Tool usage guidelines:
+- For "places in X" or "X destinations" → call search_destinations
+- For "tell me about [place]" → call get_destination_details
+- For "festivals in [month]" or "festivals at [place]" → call list_festivals
+- For "what to eat" or "Bengali food" → call list_food
+- For "plan a N-day trip" → call suggest_itinerary
+- For conceptual/thematic searches → call semantic_search
+- Combine multiple tools when needed (e.g. semantic_search + get_destination_details for deeper info)
+
+About West Bengal:
+- 232 destinations across North Bengal (hills, tea gardens), Central Bengal (Kolkata, heritage), and South Bengal (beaches, Sundarbans)
+- 100 festivals across all 12 months
+- 17 signature Bengali dishes
+- Best time: October–March (cool, dry); avoid May–June (very hot)
+- Languages: Bengali, English, Hindi
 
 ${langInstruction}
-Keep responses friendly, concise (2-4 sentences), helpful, and authentic to Bengal culture.
-Always end with practical advice or a follow-up suggestion.`;
+Keep responses friendly, concise (2-4 sentences), and authentic. End with a practical follow-up suggestion when natural.`;
 }
 
-// Smart keyword fallback (used if all AI providers fail)
+// ─── Keyword fallback (used if both Gemini & Groq fail) ────────────────────────
+
 function keywordFallback(message, language) {
   const m = message.toLowerCase();
   const greetings = {
-    en: "Hello! I'm Gobro, your West Bengal travel guide. Ask me about destinations, food, festivals, or anything Bengal-related!",
+    en: "Hello! I'm Bengal Trails, your West Bengal travel guide. Ask me about destinations, food, festivals, or anything Bengal-related!",
     bn: 'নমস্কার! আমি গোব্রো, আপনার পশ্চিমবঙ্গ ভ্রমণ গাইড। গন্তব্য, খাবার, উৎসব সম্পর্কে জিজ্ঞাসা করুন!',
     hi: 'नमस्ते! मैं गोब्रो हूं, आपका पश्चिम बंगाल यात्रा गाइड। गंतव्य, भोजन, त्योहारों के बारे में पूछें!',
   };
-
-  if (/^(hi|hello|hey|hola|namaste|namaskar)/i.test(message.trim())) {
+  if (/^(hi|hello|hey|hola|namaste|namaskar)\b/i.test(message.trim())) {
     return { response: greetings[language] || greetings.en, suggestions: ['Best places in Darjeeling', 'Bengali food specialties', 'Festivals this month'] };
   }
-
-  // Romantic
-  if (m.match(/\b(romantic|honeymoon|couple|getaway)\b/)) {
+  if (m.match(/\b(hill|hills|mountain|mountains|darjeeling|kalimpong|mirik|sandakphu)\b/)) {
     return {
-      response: 'For a romantic Bengal escape, Darjeeling has misty mountain views and toy train rides perfect for couples. Shantiniketan offers serene cultural mornings, while Mandarmani gives you private beach sunsets. All three are within 6 hours of Kolkata!',
-      suggestions: ['Darjeeling honeymoon hotels', 'Shantiniketan couple stays', 'Mandarmani beach resorts'],
-      destinations: [{ name: 'Darjeeling', slug: 'darjeeling' }, { name: 'Shantiniketan', slug: 'shantiniketan' }, { name: 'Mandarmani', slug: 'mandarmani' }],
-    };
-  }
-
-  // Adventure
-  if (m.match(/\b(adventure|trekking|hiking|wildlife|safari|tiger)\b/)) {
-    return {
-      response: 'For adventure in Bengal: Sundarbans gives you Royal Bengal Tiger boat safaris through mangrove forests. Sandakphu offers the highest trek in Bengal with Everest views. Buxa Tiger Reserve and Neora Valley are perfect for wildlife photography.',
-      suggestions: ['Sundarbans tiger safari', 'Sandakphu trek details', 'Neora Valley wildlife'],
-      destinations: [{ name: 'Sundarbans', slug: 'sundarbans-national-park' }, { name: 'Sandakphu', slug: 'sandakphu' }, { name: 'Neora Valley', slug: 'neora-valley-national-park' }],
-    };
-  }
-
-  // Food
-  if (m.match(/\b(food|eat|cuisine|dish|restaurant|sweet)\b/)) {
-    return {
-      response: 'Bengali cuisine is legendary! Try kosha mangsho (slow-cooked mutton), shorshe ilish (hilsa in mustard), kathi rolls, mishti doi, rasgulla, and sandesh. Kolkata is the food capital — head to Park Street, Bagbazar, and Decker\'s Lane for authentic flavors.',
-      suggestions: ['Best Kolkata restaurants', 'Bengali sweet shops', 'Street food spots'],
-    };
-  }
-
-  // Festival
-  if (m.match(/\b(festival|puja|durga|poila|celebration)\b/)) {
-    return {
-      response: 'Bengal\'s biggest festival is Durga Puja (Sept-Oct) — the entire state transforms with elaborate pandals and lights. Poila Boishakh (Apr 14-15) is Bengali New Year. Poush Mela in Shantiniketan (Dec) showcases folk culture. Each region has unique celebrations!',
-      suggestions: ['Durga Puja 2026 dates', 'Poush Mela in Shantiniketan', 'Christmas in Park Street'],
-    };
-  }
-
-  // Budget
-  if (m.match(/\b(budget|cheap|cost|price|money)\b/)) {
-    return {
-      response: 'Bengal is very budget-friendly! A typical 3-day trip costs ₹3,000-8,000 per person including hotels (₹800-2,500/night), food (₹300-700/day), and transport. Hill stations like Darjeeling are slightly pricier than the plains.',
-      suggestions: ['Budget hotels in Darjeeling', 'Cheap eats in Kolkata', 'Affordable Sundarbans tour'],
-    };
-  }
-
-  // Hills
-  if (m.match(/\b(hill|mountain|darjeeling|kalimpong|mirik|sandakphu)\b/)) {
-    return {
-      response: 'The Bengal hills are magical — Darjeeling for tea gardens and toy trains, Kalimpong for Buddhist monasteries and orchids, Mirik for the lake, and Sandakphu for trekkers seeking Everest views. Best visited Apr-Jun and Sept-Nov.',
-      suggestions: ['Darjeeling toy train tickets', 'Kalimpong monasteries', 'Sandakphu trek route'],
+      response: 'The Bengal hills are magical — Darjeeling for tea gardens and toy trains, Kalimpong for monasteries and orchids, Mirik for the lake, Sandakphu for trekkers. Best visited April-June and September-November.',
+      suggestions: ['Darjeeling toy train tickets', 'Kalimpong monasteries', 'Sandakphu trek'],
       destinations: [{ name: 'Darjeeling', slug: 'darjeeling' }, { name: 'Kalimpong', slug: 'kalimpong' }, { name: 'Mirik', slug: 'mirik' }],
     };
   }
-
-  // Beaches
-  if (m.match(/\b(beach|sea|ocean|digha|mandarmani)\b/)) {
+  if (m.match(/\b(beach|beaches|sea|digha|mandarmani|bakkhali|tajpur)\b/)) {
     return {
-      response: 'Bengal\'s beaches are perfect getaways — Mandarmani lets you drive on the beach, Digha is the most popular family destination, Tajpur is quieter and intimate, while Bakkhali offers untouched coastlines. All are 4-7 hours from Kolkata.',
-      suggestions: ['Mandarmani beach resorts', 'Digha tour packages', 'Tajpur quiet beaches'],
-      destinations: [{ name: 'Mandarmani', slug: 'mandarmani' }, { name: 'Digha', slug: 'digha' }, { name: 'Tajpur', slug: 'tajpur' }],
+      response: "Bengal's beaches are great getaways — Mandarmani for driveable sand, Digha for families, Bakkhali for untouched coastlines. All 4-7 hours from Kolkata.",
+      suggestions: ['Mandarmani resorts', 'Digha packages', 'Bakkhali quiet beaches'],
+      destinations: [{ name: 'Mandarmani', slug: 'mandarmani' }, { name: 'Digha', slug: 'digha' }, { name: 'Bakkhali', slug: 'bakkhali-beach' }],
     };
   }
-
-  // Default
+  if (m.match(/\b(food|foods|eat|cuisine|dish|dishes|sweet|sweets|mishti)\b/)) {
+    return {
+      response: 'Bengali cuisine: kosha mangsho (mutton), shorshe ilish (hilsa), kathi rolls, mishti doi, rasgulla, sandesh. Kolkata is the food capital — Park Street, Bagbazar, Decker\'s Lane.',
+      suggestions: ['Best Kolkata restaurants', 'Bengali sweet shops', 'Street food spots'],
+    };
+  }
+  if (m.match(/\b(festival|festivals|puja|durga|poila)\b/)) {
+    return {
+      response: "Bengal's biggest festival is Durga Puja (Sept-Oct). Poila Boishakh (April 14-15) is Bengali New Year. Poush Mela in Shantiniketan (December) is a folk culture showcase.",
+      suggestions: ['Durga Puja 2026', 'Poush Mela', 'Festival calendar'],
+    };
+  }
   return {
-    response: 'I can help you explore West Bengal! Ask me about destinations (hills, beaches, wildlife), Bengali food, festivals, budgets, or specific places. What interests you most?',
+    response: 'I can help you explore West Bengal! Ask me about destinations, Bengali food, festivals, budgets, or specific places.',
     suggestions: ['Hill stations to visit', 'Bengali food guide', 'Festival calendar', 'Plan a 3-day trip'],
   };
 }
 
-// ── POST /ai-assistant/chat ──────────────────────────────────────────────────
-router.post('/chat', limiters.ai, optionalAuth, async (req, res) => {
+// ─── Suggestion generator (post-response) ──────────────────────────────────────
+
+function generateSuggestions(message, _aiText) {
+  const m = message.toLowerCase();
+  if (m.includes('darjeeling')) return ['Best hotels in Darjeeling', 'Tea garden tours', 'Toy train booking'];
+  if (m.includes('food'))       return ['Best Bengali sweets', 'Street food in Kolkata', 'Veg restaurants'];
+  if (m.includes('festival'))   return ['Durga Puja 2026', 'Poush Mela dates', 'Festival calendar'];
+  if (m.includes('budget'))     return ['Cheap stays', 'Affordable food', 'Budget itinerary'];
+  return ['Tell me more', 'Show similar places', 'Plan a trip'];
+}
+
+// ─── POST /api/ai-assistant/chat ───────────────────────────────────────────────
+
+router.post('/chat', optionalAuth, async (req, res) => {
   try {
     const { message, language = 'en', conversationHistory = [] } = req.body;
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'message is required' });
     }
 
-    let aiText = null;
+    let aiResult = null;
     let provider = 'fallback';
 
-    // Try Gemini first (more reliable, free tier is generous)
-    aiText = await callGemini(message, conversationHistory, language);
-    if (aiText) provider = 'gemini';
+    // Try Gemini with function calling (preferred — gives grounded answers)
+    aiResult = await callGeminiWithTools(message, conversationHistory, language);
+    if (aiResult?.text) provider = 'gemini';
 
-    // Fall back to Groq if Gemini fails
-    if (!aiText) {
-      aiText = await callGroq(message, conversationHistory, language);
-      if (aiText) provider = 'groq';
+    // Fall back to Groq if Gemini fails entirely
+    if (!aiResult?.text) {
+      const groqText = await callGroq(message, conversationHistory, language);
+      if (groqText) {
+        aiResult = { text: groqText, destinations: [] };
+        provider = 'groq';
+      }
     }
 
-    // If both AI fail, use smart keyword fallback
-    if (!aiText) {
+    // Last resort: keyword fallback
+    if (!aiResult?.text) {
       const fallback = keywordFallback(message, language);
       return res.json({
         response: fallback.response,
@@ -201,59 +309,21 @@ router.post('/chat', limiters.ai, optionalAuth, async (req, res) => {
       });
     }
 
-    // Generate suggestions based on AI response context
-    const suggestions = generateSuggestions(message);
-    const destinations = extractDestinations(aiText);
-
     return res.json({
-      response: aiText,
-      suggestions,
-      destinations,
+      response: aiResult.text,
+      suggestions: generateSuggestions(message, aiResult.text),
+      destinations: aiResult.destinations || [],
       provider,
     });
   } catch (err) {
     console.error('AI chat error:', err);
-    // Even on error, return a helpful fallback response
     return res.json({
-      response: 'I am having trouble right now, but I can still help! Ask me about Bengal destinations, food, or festivals.',
+      response: "I'm having trouble right now, but I can still help! Ask me about Bengal destinations, food, or festivals.",
       suggestions: ['Best places to visit', 'Bengali food', 'Festivals'],
       destinations: [],
       provider: 'error-fallback',
     });
   }
 });
-
-function generateSuggestions(message) {
-  const m = message.toLowerCase();
-  if (m.includes('darjeeling')) return ['Best hotels in Darjeeling', 'Tea garden tours', 'Toy train booking'];
-  if (m.includes('food')) return ['Best Bengali sweets', 'Street food in Kolkata', 'Veg restaurants'];
-  if (m.includes('festival')) return ['Durga Puja 2026', 'Poush Mela dates', 'Festival calendar'];
-  if (m.includes('budget')) return ['Cheap stays', 'Affordable food', 'Budget itinerary'];
-  return ['Tell me more', 'Show similar places', 'Plan a trip'];
-}
-
-function extractDestinations(text) {
-  const known = [
-    { name: 'Darjeeling', slug: 'darjeeling', keywords: ['darjeeling', 'queen of hills'] },
-    { name: 'Kolkata', slug: 'kolkata', keywords: ['kolkata', 'calcutta'] },
-    { name: 'Sundarbans', slug: 'sundarbans-national-park', keywords: ['sundarbans', 'mangrove'] },
-    { name: 'Shantiniketan', slug: 'shantiniketan', keywords: ['shantiniketan', 'tagore'] },
-    { name: 'Kalimpong', slug: 'kalimpong', keywords: ['kalimpong'] },
-    { name: 'Mirik', slug: 'mirik', keywords: ['mirik'] },
-    { name: 'Mandarmani', slug: 'mandarmani', keywords: ['mandarmani'] },
-    { name: 'Digha', slug: 'digha', keywords: ['digha'] },
-    { name: 'Bishnupur', slug: 'bishnupur', keywords: ['bishnupur', 'terracotta'] },
-    { name: 'Murshidabad', slug: 'murshidabad', keywords: ['murshidabad'] },
-  ];
-  const lower = text.toLowerCase();
-  const matches = [];
-  for (const dest of known) {
-    if (dest.keywords.some((k) => lower.includes(k))) {
-      matches.push({ name: dest.name, slug: dest.slug });
-      if (matches.length >= 3) break;
-    }
-  }
-  return matches;
-}
 
 module.exports = router;

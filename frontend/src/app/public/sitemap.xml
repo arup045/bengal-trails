@@ -7,7 +7,7 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://gobro.travel/</loc>
+    <loc>https://bengaltrails.netlify.app/</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -15,77 +15,77 @@
 
   <!-- Main Pages -->
   <url>
-    <loc>https://gobro.travel/#/explore</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/food</loc>
+    <loc>https://bengaltrails.netlify.app/#/food</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/planner</loc>
+    <loc>https://bengaltrails.netlify.app/#/planner</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/map</loc>
+    <loc>https://bengaltrails.netlify.app/#/map</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/phrasebook</loc>
+    <loc>https://bengaltrails.netlify.app/#/phrasebook</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/itinerary</loc>
+    <loc>https://bengaltrails.netlify.app/#/itinerary</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/festivals</loc>
+    <loc>https://bengaltrails.netlify.app/#/festivals</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/budget</loc>
+    <loc>https://bengaltrails.netlify.app/#/budget</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/weather</loc>
+    <loc>https://bengaltrails.netlify.app/#/weather</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/instagram-spots</loc>
+    <loc>https://bengaltrails.netlify.app/#/instagram-spots</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/tools</loc>
+    <loc>https://bengaltrails.netlify.app/#/tools</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -94,14 +94,14 @@
   <!-- Featured Destinations (Top 20) -->
   <!-- Darjeeling -->
   <url>
-    <loc>https://gobro.travel/#/explore/darjeeling-tea-gardens</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/darjeeling-tea-gardens</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/explore/tiger-hill-darjeeling</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/tiger-hill-darjeeling</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -109,7 +109,7 @@
 
   <!-- Sundarbans -->
   <url>
-    <loc>https://gobro.travel/#/explore/sundarbans-national-park</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/sundarbans-national-park</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -117,28 +117,28 @@
 
   <!-- Kolkata -->
   <url>
-    <loc>https://gobro.travel/#/explore/victoria-memorial</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/victoria-memorial</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/explore/howrah-bridge</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/howrah-bridge</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/explore/dakshineswar-kali-temple</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/dakshineswar-kali-temple</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/explore/kalighat-temple</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/kalighat-temple</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -146,14 +146,14 @@
 
   <!-- Digha & Mandarmani -->
   <url>
-    <loc>https://gobro.travel/#/explore/digha-beach</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/digha-beach</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/explore/mandarmani-beach</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/mandarmani-beach</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -161,7 +161,7 @@
 
   <!-- Murshidabad -->
   <url>
-    <loc>https://gobro.travel/#/explore/hazarduari-palace</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/hazarduari-palace</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -169,14 +169,14 @@
 
   <!-- Siliguri & North Bengal -->
   <url>
-    <loc>https://gobro.travel/#/explore/kalimpong</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/kalimpong</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/explore/mirik</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/mirik</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -184,14 +184,14 @@
 
   <!-- Dooars -->
   <url>
-    <loc>https://gobro.travel/#/explore/jaldapara-national-park</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/jaldapara-national-park</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://gobro.travel/#/explore/gorumara-national-park</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/gorumara-national-park</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -199,7 +199,7 @@
 
   <!-- Shantiniketan -->
   <url>
-    <loc>https://gobro.travel/#/explore/shantiniketan</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/shantiniketan</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -207,7 +207,7 @@
 
   <!-- Bishnupur -->
   <url>
-    <loc>https://gobro.travel/#/explore/bishnupur-terracotta-temples</loc>
+    <loc>https://bengaltrails.netlify.app/#/explore/bishnupur-terracotta-temples</loc>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

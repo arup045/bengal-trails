@@ -59,7 +59,7 @@ function buildGoogleCalendarUrl(festival: Festival): string {
     action: 'TEMPLATE',
     text: festival.bengaliName ? `${festival.name} (${festival.bengaliName})` : festival.name,
     dates: `${formatGCalDate(start)}/${formatGCalDate(endPlus)}`,
-    details: `${festival.description}\n\nWhere to celebrate: ${(festival.bestPlaces || festival.locations.map(slugToTitle)).slice(0, 5).join(', ')}\n\nVibe: ${festival.vibe || ''}\n\nMust try: ${(festival.musttry || []).join(', ')}\n\nLearn more on Gobro — West Bengal travel guide.`,
+    details: `${festival.description}\n\nWhere to celebrate: ${(festival.bestPlaces || festival.locations.map(slugToTitle)).slice(0, 5).join(', ')}\n\nVibe: ${festival.vibe || ''}\n\nMust try: ${(festival.musttry || []).join(', ')}\n\nLearn more on Bengal Trails — West Bengal travel guide.`,
     location: festival.locations.map(slugToTitle).slice(0, 3).join(', '),
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;

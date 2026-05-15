@@ -114,11 +114,11 @@ export function AdminDashboard() {
     <div className="min-h-screen bg-black text-white">
       {/* Sidebar */}
       <div className="fixed left-0 top-0 w-52 h-full bg-gradient-to-b from-[#8B0000] to-[#4B0000] p-6 flex flex-col z-50">
-        {/* GOBRO Logo */}
+        {/* Bengal Trails Logo */}
         <div className="mb-8">
           <div className="bg-white rounded-lg p-4 mb-4">
             <h1 className="text-[#8B0000] font-['Poppins'] font-extrabold text-4xl text-center">
-              GOBRO
+              Bengal Trails
             </h1>
           </div>
         </div>
@@ -262,10 +262,10 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            {/* GOBRO Branding Center */}
+            {/* Bengal Trails Branding Center */}
             <div className="flex items-center justify-center my-8">
               <div className="text-center">
-                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">GOBRO</h1>
+                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">Bengal Trails</h1>
                 <p className="text-gray-400 text-sm uppercase tracking-widest">West Bengal Tourism</p>
               </div>
             </div>
@@ -337,10 +337,10 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            {/* GOBRO Branding */}
+            {/* Bengal Trails Branding */}
             <div className="flex items-center justify-center my-8">
               <div className="text-center">
-                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">GOBRO</h1>
+                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">Bengal Trails</h1>
               </div>
             </div>
           </div>
@@ -420,10 +420,10 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            {/* GOBRO Branding */}
+            {/* Bengal Trails Branding */}
             <div className="flex items-center justify-center my-8">
               <div className="text-center">
-                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">GOBRO</h1>
+                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">Bengal Trails</h1>
               </div>
             </div>
           </div>
@@ -558,10 +558,10 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            {/* GOBRO Branding */}
+            {/* Bengal Trails Branding */}
             <div className="flex items-center justify-center my-8">
               <div className="text-center">
-                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">GOBRO</h1>
+                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">Bengal Trails</h1>
               </div>
             </div>
           </div>
@@ -691,10 +691,10 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            {/* GOBRO Branding */}
+            {/* Bengal Trails Branding */}
             <div className="flex items-center justify-center my-8">
               <div className="text-center">
-                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">GOBRO</h1>
+                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">Bengal Trails</h1>
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-# GOBRO - West Bengal Tourism Robots.txt
+# Bengal Trails - West Bengal Tourism Robots.txt
 # Allow all search engines to crawl
 
 User-agent: *
@@ -29,7 +29,7 @@ Allow: /#/weather
 Allow: /#/tools
 
 # Sitemap location
-Sitemap: https://gobro.travel/sitemap.xml
+Sitemap: https://bengaltrails.netlify.app/sitemap.xml
 
 # Crawl delay (be nice to servers)
 Crawl-delay: 1

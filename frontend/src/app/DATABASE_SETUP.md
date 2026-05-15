@@ -1,7 +1,7 @@
-# 🗄️ GOBRO PostgreSQL Database Setup
+# 🗄️ Bengal Trails PostgreSQL Database Setup
 
 ## Overview
-This document contains all PostgreSQL schemas for the GOBRO West Bengal Tourism website.
+This document contains all PostgreSQL schemas for the Bengal Trails West Bengal Tourism website.
 Execute these SQL statements in your **Supabase SQL Editor** to create proper relational tables.
 
 ---
@@ -43,7 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
 -- Insert default admin user (YOU - change email/name as needed)
 INSERT INTO users (email, name, role, status)
-VALUES ('admin@gobro.com', 'Admin User', 'admin', 'active')
+VALUES ('admin@bengaltrails.com', 'Admin User', 'admin', 'active')
 ON CONFLICT (email) DO NOTHING;
 ```
 
@@ -193,9 +193,9 @@ CREATE TABLE IF NOT EXISTS site_settings (
 -- Insert default settings
 INSERT INTO site_settings (key, value, description)
 VALUES 
-  ('site_name', '"GOBRO"', 'Website name'),
+  ('site_name', '"Bengal Trails"', 'Website name'),
   ('site_tagline', '"Discover the Magic of West Bengal"', 'Website tagline'),
-  ('contact_email', '"info@gobro.com"', 'Contact email'),
+  ('contact_email', '"info@bengaltrails.com"', 'Contact email'),
   ('contact_phone', '"+91-1234567890"', 'Contact phone number'),
   ('social_links', '{"facebook": "https://facebook.com/gobro", "instagram": "https://instagram.com/gobro", "twitter": "https://twitter.com/gobro"}', 'Social media links'),
   ('featured_destination_count', '6', 'Number of featured destinations on homepage'),

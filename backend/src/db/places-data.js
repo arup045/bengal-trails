@@ -6845,5 +6845,396 @@ module.exports = [
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800"
     ]
-  }
+  },
+  {
+      "title": "Kolkata",
+      "slug": "kolkata",
+      "region": "Central Bengal",
+      "district": "Kolkata",
+      "coordinates": {
+          "lat": 22.5726,
+          "lng": 88.3639
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1558431382-27e303142255?w=1200",
+          "alt": "Kolkata Howrah Bridge at sunset"
+      },
+      "excerpt": "The cultural capital of India \u2014 colonial architecture, vibrant arts, legendary street food, and the heartbeat of Bengal.",
+      "description": "Kolkata, the City of Joy, is Bengal's vibrant heart \u2014 a fascinating blend of colonial grandeur, intellectual heritage, and modern energy. Home to Durga Puja's biggest celebrations, legendary literary and film traditions, the iconic Howrah Bridge, Victoria Memorial, College Street's book row, and unforgettable street food trails through Park Street, Bara Bazar, and Zakaria Street. The city's trams, hand-pulled rickshaws, and Coffee House conversations make it culturally one of India's most distinctive metros.",
+      "tags": [
+          "CulturalCapital",
+          "Heritage",
+          "StreetFood",
+          "DurgaPuja",
+          "ColonialArchitecture"
+      ],
+      "bestTime": "Oct-Feb",
+      "nearbyHotels": [
+          "The Oberoi Grand",
+          "Taj Bengal",
+          "ITC Sonar"
+      ],
+      "nearbyRestaurants": [
+          "6 Ballygunge Place",
+          "Peter Cat",
+          "Bhojohori Manna"
+      ],
+      "priceFrom": "\u20b93,000",
+      "rating": 4.7,
+      "reviewsCount": 2890,
+      "category": "city"
+  },
+  {
+      "title": "Jhargram",
+      "slug": "jhargram",
+      "region": "South Bengal",
+      "district": "Jhargram",
+      "coordinates": {
+          "lat": 22.45,
+          "lng": 86.9978
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=1200",
+          "alt": "Jhargram tribal village and forest"
+      },
+      "excerpt": "Tribal heart of Bengal \u2014 Santhal villages, dense Sal forests, royal palace, and authentic Chau dance experiences.",
+      "description": "Jhargram is the gateway to Bengal's tribal heartland \u2014 a district known for its Sal forests, Santhal and Munda villages, and the magnificent 19th-century Jhargram Rajbari palace. The area is famous for Chau mask dances (especially in nearby Charida village), traditional Sohrai wall paintings, and forest-based ecotourism at Belpahari and Kankrajhor. Spring (March-April) is best for tribal festivals like Baha and Tusu Parab.",
+      "tags": [
+          "TribalCulture",
+          "ForestTourism",
+          "ChauDance",
+          "RoyalHeritage",
+          "EcoTourism"
+      ],
+      "bestTime": "Oct-Mar",
+      "nearbyHotels": [
+          "Jhargram Rajbari Tourist Lodge",
+          "Bonpalashi Resort",
+          "Kankrajhor Eco Resort"
+      ],
+      "nearbyRestaurants": [
+          "Mama Bhagne Restaurant",
+          "Aranyak Dhaba"
+      ],
+      "priceFrom": "\u20b91,500",
+      "rating": 4.4,
+      "reviewsCount": 287,
+      "category": "tribal"
+  },
+  {
+      "title": "Asansol",
+      "slug": "asansol",
+      "region": "Central Bengal",
+      "district": "Paschim Bardhaman",
+      "coordinates": {
+          "lat": 23.6739,
+          "lng": 86.9524
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1574169208507-84376144848b?w=1200",
+          "alt": "Asansol industrial cityscape"
+      },
+      "excerpt": "Bengal's second-largest city \u2014 industrial energy, Kazi Nazrul Islam's home district, and the gateway to Maithon Dam.",
+      "description": "Asansol is West Bengal's second-largest urban centre, an industrial hub with rich coal-mining and steel heritage. It's also culturally significant as the home district of rebel poet Kazi Nazrul Islam \u2014 visit Churulia village 30 km away to see his birthplace and the Nazrul Academy. Nearby attractions include Maithon Dam, Panchet Hill, and Chhinnamasta Temple. Asansol comes alive during Chhath Puja and Eid celebrations with strong community traditions.",
+      "tags": [
+          "IndustrialHub",
+          "NazrulHeritage",
+          "Dams",
+          "UrbanCenter"
+      ],
+      "bestTime": "Oct-Mar",
+      "nearbyHotels": [
+          "The Park Asansol",
+          "Hotel Sanjog International",
+          "Welcomhotel Bangalore"
+      ],
+      "nearbyRestaurants": [
+          "Bhojohori Manna Asansol",
+          "Hangla's"
+      ],
+      "priceFrom": "\u20b91,800",
+      "rating": 4.0,
+      "reviewsCount": 178,
+      "category": "city"
+  },
+  {
+      "title": "Durgapur",
+      "slug": "durgapur",
+      "region": "Central Bengal",
+      "district": "Paschim Bardhaman",
+      "coordinates": {
+          "lat": 23.5204,
+          "lng": 87.3119
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?w=1200",
+          "alt": "Durgapur Barrage and Damodar river"
+      },
+      "excerpt": "Planned steel city \u2014 modern infrastructure, Damodar River parks, and proximity to Bishnupur's terracotta heritage.",
+      "description": "Durgapur is one of India's earliest planned industrial cities, built around the Durgapur Steel Plant. Beyond steel, it offers green public parks (Kumar Mangalam Park, Children's Park), the scenic Durgapur Barrage, and easy access to Bishnupur's terracotta temples (60 km). The city is a cultural hub during Vishwakarma Puja and hosts a strong Durga Puja celebration. A clean, modern Bengal experience.",
+      "tags": [
+          "IndustrialCity",
+          "PlannedCity",
+          "RiverViews",
+          "ModernBengal"
+      ],
+      "bestTime": "Oct-Mar",
+      "nearbyHotels": [
+          "The Galaxy Hotel",
+          "Hotel Aaryaa International",
+          "Peerless Inn"
+      ],
+      "nearbyRestaurants": [
+          "Mainland China Durgapur",
+          "Spice Junction"
+      ],
+      "priceFrom": "\u20b92,000",
+      "rating": 4.1,
+      "reviewsCount": 156,
+      "category": "city"
+  },
+  {
+      "title": "Bardhaman (Burdwan)",
+      "slug": "bardhaman",
+      "region": "Central Bengal",
+      "district": "Purba Bardhaman",
+      "coordinates": {
+          "lat": 23.2324,
+          "lng": 87.8615
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1597997050069-d8eb4f432af0?w=1200",
+          "alt": "Bardhaman royal palace gate"
+      },
+      "excerpt": "Royal Bengal heritage \u2014 the Bardhaman Maharaja's legacy, Curzon Gate, and the famed Sitabhog-Mihidana sweets.",
+      "description": "Bardhaman is a historic royal capital \u2014 once the seat of the Bardhaman Maharajas. The iconic Curzon Gate, Krishnasayar Park lake, 108 Shiva Temples, and the Maharaja's college campus showcase its layered heritage. The city is internationally famous for its GI-tagged sweets Sitabhog and Mihidana \u2014 invented for King George V's 1904 visit. Strong centre for traditional Bengali literature and university culture.",
+      "tags": [
+          "RoyalHeritage",
+          "GISweets",
+          "HistoricCity",
+          "LiteraryCulture"
+      ],
+      "bestTime": "Oct-Mar",
+      "nearbyHotels": [
+          "Hotel Bardhaman",
+          "Madhumati Park"
+      ],
+      "nearbyRestaurants": [
+          "Aamantran",
+          "Maa Sitala Sweets"
+      ],
+      "priceFrom": "\u20b91,200",
+      "rating": 4.2,
+      "reviewsCount": 134,
+      "category": "heritage"
+  },
+  {
+      "title": "Mahesh (Serampore)",
+      "slug": "mahesh",
+      "region": "Central Bengal",
+      "district": "Hooghly",
+      "coordinates": {
+          "lat": 22.7536,
+          "lng": 88.3422
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1605369572399-05d7d96f8a76?w=1200",
+          "alt": "Mahesh Jagannath Temple Rath Yatra"
+      },
+      "excerpt": "Home to India's second-oldest Rath Yatra \u2014 625 years of unbroken chariot festival tradition.",
+      "description": "Mahesh, just outside Serampore on the Hooghly's western bank, hosts India's second-oldest Rath Yatra after Puri \u2014 a tradition started in 1397. The Mahesh Jagannath Temple draws hundreds of thousands during the chariot festival every June-July, when devotees pull the massive wooden rath through narrow streets. Beyond Rath Yatra, the riverside town offers quiet ghats, old Bengali architecture, and is an easy day trip from Kolkata.",
+      "tags": [
+          "RathYatra",
+          "JagannathTemple",
+          "PilgrimageSite",
+          "HooghlyRiver"
+      ],
+      "bestTime": "June-July (Rath Yatra), Oct-Feb",
+      "nearbyHotels": [
+          "Stay Inn Serampore",
+          "Hotel Park View"
+      ],
+      "nearbyRestaurants": [
+          "Sat Bhai Khana",
+          "Riverside Mishti"
+      ],
+      "priceFrom": "\u20b91,000",
+      "rating": 4.5,
+      "reviewsCount": 234,
+      "category": "pilgrimage"
+  },
+  {
+      "title": "Tarakeshwar",
+      "slug": "tarakeshwar-temple",
+      "region": "Central Bengal",
+      "district": "Hooghly",
+      "coordinates": {
+          "lat": 22.8884,
+          "lng": 88.0234
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1606820854416-439b3305ff39?w=1200",
+          "alt": "Tarakeshwar Shiva temple"
+      },
+      "excerpt": "One of Bengal's most revered Shiva temples \u2014 the legendary 'Tarakeshwar Bol Bom' pilgrimage destination.",
+      "description": "Tarakeshwar in Hooghly district hosts one of Bengal's most powerful Shiva temples, attracting millions on Mondays in Shravana (July-August) for the famed Bol Bom pilgrimage. Barefoot pilgrims trek from Baidyabati Ganga ghat (40 km away) carrying holy water to pour on the lingam. The temple was built in 1729 in classical Bengal terracotta-influenced style. Maha Shivaratri here is one of the most intense in eastern India.",
+      "tags": [
+          "ShivaTemple",
+          "Pilgrimage",
+          "BolBom",
+          "Shivaratri"
+      ],
+      "bestTime": "Year-round; peak July-Aug (Bol Bom) and Feb-Mar (Shivaratri)",
+      "nearbyHotels": [
+          "Hotel Tarakeshwar",
+          "Bhattacharjee Lodge"
+      ],
+      "nearbyRestaurants": [
+          "Annapurna Bhojonalay",
+          "Bishnu Mishtanna Bhandar"
+      ],
+      "priceFrom": "\u20b9500",
+      "rating": 4.7,
+      "reviewsCount": 1456,
+      "category": "pilgrimage"
+  },
+  {
+      "title": "Bansberia",
+      "slug": "bansberia",
+      "region": "Central Bengal",
+      "district": "Hooghly",
+      "coordinates": {
+          "lat": 22.97,
+          "lng": 88.4
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1572197070054-6fc73fce82d4?w=1200",
+          "alt": "Bansberia Kartik Puja pandal"
+      },
+      "excerpt": "Famous for Bengal's grandest Kartik Puja \u2014 massive themed pandals rival Kolkata's Durga Puja in scale.",
+      "description": "Bansberia in Hooghly district hosts one of Bengal's most spectacular Kartik Pujas every November \u2014 the entire town transforms with massive themed pandals, intricate lighting, and cultural performances spanning days. Outside festival season, visit the 17th-century Hangseshwari Temple with its unique 13-spire architecture and the Ananta Basudeva Temple. A wonderful day trip from Kolkata or Bandel.",
+      "tags": [
+          "KartikPuja",
+          "Temples",
+          "Festivals",
+          "Hooghly"
+      ],
+      "bestTime": "November (Kartik Puja), Oct-Mar otherwise",
+      "nearbyHotels": [
+          "Hotel Park View Bandel",
+          "Stay Inn Serampore"
+      ],
+      "nearbyRestaurants": [
+          "Bansberia Mishti Centre"
+      ],
+      "priceFrom": "\u20b9800",
+      "rating": 4.3,
+      "reviewsCount": 187,
+      "category": "festival-town"
+  },
+  {
+      "title": "Katwa",
+      "slug": "katwa",
+      "region": "Central Bengal",
+      "district": "Purba Bardhaman",
+      "coordinates": {
+          "lat": 23.645,
+          "lng": 88.131
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1572197070054-6fc73fce82d4?w=1200",
+          "alt": "Katwa cultural pandal"
+      },
+      "excerpt": "Cultural cradle of Bengal \u2014 Sri Chaitanya's initiation site, grand Kartik Puja, and Gauranga Bari heritage.",
+      "description": "Katwa in Bardhaman district holds enormous spiritual significance as the place where Sri Chaitanya Mahaprabhu took sannyas (renounced worldly life) in 1510 \u2014 making it a major Vaishnava pilgrimage site. The Gauranga Bari temple commemorates this. Katwa also hosts a famously grand Kartik Puja celebration, rivalling Bansberia's. The town is on the Bhagirathi riverbank with quiet ghats and traditional Bengali architecture.",
+      "tags": [
+          "VaishnavaSite",
+          "ChaitanyaTrail",
+          "KartikPuja",
+          "BhagirathiRiver"
+      ],
+      "bestTime": "November (Kartik Puja), Mar (Gaura Purnima)",
+      "nearbyHotels": [
+          "Katwa Tourist Lodge",
+          "Hotel Krishnaa"
+      ],
+      "nearbyRestaurants": [
+          "Mahaprabhu Bhojonaloy"
+      ],
+      "priceFrom": "\u20b9600",
+      "rating": 4.2,
+      "reviewsCount": 89,
+      "category": "pilgrimage"
+  },
+  {
+      "title": "Shantipur",
+      "slug": "shantipur",
+      "region": "Central Bengal",
+      "district": "Nadia",
+      "coordinates": {
+          "lat": 23.2509,
+          "lng": 88.431
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1605369572399-05d7d96f8a76?w=1200",
+          "alt": "Shantipur Rash Mela boats"
+      },
+      "excerpt": "Vaishnava heartland \u2014 home to Shantipur Rash Mela, one of Bengal's oldest fairs, and famous traditional handloom sarees.",
+      "description": "Shantipur in Nadia district is a major Vaishnava centre \u2014 Advaita Acharya (Chaitanya's close associate) lived here, and the town's Rash Mela in November is one of Bengal's most enduring traditions, drawing huge crowds for Krishna's leela performances. Shantipur is equally famous for its handloom Shantipuri saree weaving \u2014 visit the artisans' lanes to see traditional looms in action. The town's quiet ghats, sweet shops, and old temples make it a cultural day-trip.",
+      "tags": [
+          "VaishnavaCenter",
+          "RashMela",
+          "Handloom",
+          "ShantipuriSarees"
+      ],
+      "bestTime": "November (Rash Mela), Oct-Feb",
+      "nearbyHotels": [
+          "Shantipur Tourist Inn",
+          "Hotel Nadia"
+      ],
+      "nearbyRestaurants": [
+          "Nimaier Bhog",
+          "Shantipur Mishti"
+      ],
+      "priceFrom": "\u20b9700",
+      "rating": 4.4,
+      "reviewsCount": 156,
+      "category": "heritage"
+  },
+  {
+      "title": "Kolaghat",
+      "slug": "kolaghat",
+      "region": "South Bengal",
+      "district": "Purba Medinipur",
+      "coordinates": {
+          "lat": 22.4424,
+          "lng": 87.8633
+      },
+      "heroImage": {
+          "url": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1200",
+          "alt": "Kolaghat fish market hilsa"
+      },
+      "excerpt": "Bengal's most famous hilsa-fish destination \u2014 Rupnarayan riverbank, fresh ilish markets, and roadside dhabas.",
+      "description": "Kolaghat on the Rupnarayan river is a culinary pilgrimage for Bengali food-lovers \u2014 especially during the monsoon hilsa (ilish) season. Roadside dhabas along National Highway 16 serve some of Bengal's freshest ilish dishes: shorshe ilish, ilish bhapa, doi ilish. The town is a stopover on the Kolkata-Digha route. The Kolaghat Thermal Power Station's cooling towers are an iconic landmark. Sunset over the Rupnarayan from the bridge is unforgettable.",
+      "tags": [
+          "HilsaSeason",
+          "RiversideFood",
+          "Dhaba",
+          "BengaliCuisine"
+      ],
+      "bestTime": "June-Sep (Hilsa season)",
+      "nearbyHotels": [
+          "Hotel Soren",
+          "Hotel Kolaghat"
+      ],
+      "nearbyRestaurants": [
+          "Sher-e-Punjab Dhaba",
+          "Apanjon Dhaba",
+          "Bhojohori Manna"
+      ],
+      "priceFrom": "\u20b9900",
+      "rating": 4.5,
+      "reviewsCount": 412,
+      "category": "food-destination"
+  },
 ];

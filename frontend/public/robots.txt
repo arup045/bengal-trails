@@ -1,0 +1,14 @@
+# Bengal Trails — West Bengal Travel Guide
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://bengaltrails.netlify.app/sitemap.xml
+
+# Disallow admin and auth pages
+Disallow: /#/admin
+Disallow: /#/admin-login
+Disallow: /#/signin
+Disallow: /#/forgot-password
+Disallow: /#/reset-password
+Disallow: /#/verify-email

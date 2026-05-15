@@ -1,4 +1,4 @@
-# 🎉 GOBRO Admin Panel - Complete Setup Guide
+# 🎉 Bengal Trails Admin Panel - Complete Setup Guide
 
 ## ✅ **EVERYTHING IS NOW READY!**
 
@@ -11,7 +11,7 @@ Your admin panel is **100% complete** with both frontend and backend fully imple
 ### **Method: Supabase Dashboard** (Recommended)
 
 1. Go to your **Supabase Dashboard**: https://supabase.com/dashboard
-2. Select your GOBRO project
+2. Select your Bengal Trails project
 3. Click **Table Editor** in the left sidebar
 4. Find the table: **`kv_store_fd41cd37`**
 5. Look for your user row:
@@ -28,7 +28,7 @@ Your admin panel is **100% complete** with both frontend and backend fully imple
    "role": "admin"
    ```
 9. **Click Save**
-10. Sign out and sign back in to GOBRO
+10. Sign out and sign back in to Bengal Trails
 
 **That's it! You're now an admin!** 🎊
 
@@ -36,7 +36,7 @@ Your admin panel is **100% complete** with both frontend and backend fully imple
 
 ## 🎨 **Step 2: Access Your Admin Panel**
 
-1. Sign in to GOBRO
+1. Sign in to Bengal Trails
 2. Click your name in the top-right header
 3. Click **"Admin Dashboard"** (with purple badge)
 4. You'll see the beautiful admin panel!
@@ -205,7 +205,7 @@ Your admin panel features:
 
 ## 🎊 **You're All Set!**
 
-Your GOBRO admin panel is **production-ready** with:
+Your Bengal Trails admin panel is **production-ready** with:
 - ✅ Beautiful, professional UI
 - ✅ All 6 feature tabs functional
 - ✅ Complete backend API
@@ -217,7 +217,7 @@ Your GOBRO admin panel is **production-ready** with:
 - ✅ Newsletter system
 - ✅ Settings panel
 
-**Enjoy managing your GOBRO tourism website!** 🚀✨
+**Enjoy managing your Bengal Trails tourism website!** 🚀✨
 
 ---
 

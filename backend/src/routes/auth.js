@@ -186,73 +186,15 @@ router.post('/reset-password', validate(schemas.resetPassword), async (req, res)
   }
 });
 
-// ── POST /auth/oauth-profile ───────────────────────────────────────────────────
-// Called after Google OAuth to create/fetch user profile
-router.post('/oauth-profile', async (req, res) => {
-  try {
-    const { email, name, avatar_url, provider, provider_id } = req.body;
-    if (!email) return res.status(400).json({ error: 'email required' });
-
-    let { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
-
-    if (!rows.length) {
-      const inserted = await pool.query(
-        `INSERT INTO users (email, name, avatar_url, provider, provider_id, role, status)
-         VALUES ($1, $2, $3, $4, $5, 'user', 'active') RETURNING *`,
-        [email.toLowerCase(), name || email.split('@')[0], avatar_url, provider || 'google', provider_id]
-      );
-      rows = inserted.rows;
-      // Initialize gamification stats row
-      await pool.query(
-        'INSERT INTO user_points (user_id) VALUES ($1) ON CONFLICT DO NOTHING',
-        [rows[0].id]
-      );
-    }
-
-    const user = rows[0];
-    await pool.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
-
-    const token = makeToken(user.id);
-    return res.json({
-      success: true,
-      user: safeUser(user),
-      session: { access_token: token, refresh_token: token },
-    });
-  } catch (err) {
-    console.error('oauth-profile error:', err);
-    return res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// ── POST /auth/signin-google ───────────────────────────────────────────────────
-// Returns OAuth redirect URL (frontend handles the redirect)
-router.post('/signin-google', (req, res) => {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  if (!clientId) return res.status(501).json({ error: 'Google OAuth not configured' });
-
-  const callbackUrl = encodeURIComponent(process.env.GOOGLE_CALLBACK_URL || `${req.protocol}://${req.get('host')}/api/auth/google/callback`);
-  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${callbackUrl}&response_type=code&scope=openid%20email%20profile`;
-
-  return res.json({ success: true, url });
-});
 
 
-// ── POST /auth/signin-facebook ─────────────────────────────────────────────────
-router.post('/signin-facebook', (req, res) => {
-  const clientId = process.env.FACEBOOK_APP_ID;
-  if (!clientId) return res.status(501).json({ error: 'Facebook OAuth not configured. Set FACEBOOK_APP_ID in .env' });
-
-  const callbackUrl = encodeURIComponent(process.env.FACEBOOK_CALLBACK_URL || `${req.protocol}://${req.get('host')}/api/auth/facebook/callback`);
-  const url = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${clientId}&redirect_uri=${callbackUrl}&scope=email,public_profile`;
-
-  return res.json({ success: true, url });
-});
 
 // ── POST /auth/refresh ────────────────────────────────────────────────────────
 // Issue a new access token using the refresh token
 router.post('/refresh', async (req, res) => {
   try {
-    const { refresh_token } = req.body;
+    // Accept refresh token from body OR from the httpOnly cookie (set by OAuth)
+    const refresh_token = req.body?.refresh_token || req.cookies?.bt_refresh;
     if (!refresh_token) return res.status(400).json({ error: 'refresh_token required' });
 
     // Verify the refresh token (same secret, but we check a refresh_tokens table ideally)

@@ -62,7 +62,7 @@ Smart budget optimization
 Weather-based trip suggestions
 Crowd avoidance recommendations
 11. AR/VR Experiences 🥽
-AR filters for Instagram (GOBRO branded)
+AR filters for Instagram (Bengal Trails branded)
 VR preview tours (WebVR)
 AR navigation at destinations
 Historical site reconstructions

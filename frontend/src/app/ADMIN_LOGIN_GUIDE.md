@@ -1,8 +1,8 @@
-# 🔐 GOBRO Admin Login Guide
+# 🔐 Bengal Trails Admin Login Guide
 
 ## Quick Overview
 
-You now have a **simple and secure admin login system** for GOBRO!
+You now have a **simple and secure admin login system** for Bengal Trails!
 
 ---
 
@@ -18,7 +18,7 @@ You now have a **simple and secure admin login system** for GOBRO!
 ```sql
 -- In the SQL, change this line:
 INSERT INTO users (email, name, role, status)
-VALUES ('admin@gobro.com', 'Admin User', 'admin', 'active')
+VALUES ('admin@bengaltrails.com', 'Admin User', 'admin', 'active')
 -- To your actual email:
 VALUES ('your-email@example.com', 'Your Name', 'admin', 'active')
 ```
@@ -30,7 +30,7 @@ VALUES ('your-email@example.com', 'Your Name', 'admin', 'active')
 - Use the email and password you set
 
 **Option B: If you're using KV store (no PostgreSQL yet)**
-- Go to your GOBRO website
+- Go to your Bengal Trails website
 - Sign up for a new account at `#/signin`
 - After signing up, manually set your role to 'admin' in Supabase KV store:
   1. Open Supabase Dashboard
@@ -53,7 +53,7 @@ VALUES ('your-email@example.com', 'Your Name', 'admin', 'active')
 
 ### ✅ Simple Admin Login Page
 - Beautiful purple gradient design
-- Matches GOBRO branding
+- Matches Bengal Trails branding
 - Clear error messages
 - Loading states
 - Responsive mobile design
@@ -127,8 +127,8 @@ WHERE email = 'user@example.com';
 ## 🎨 Design Highlights
 
 ### Admin Login Page
-- **Purple gradient background** matching GOBRO theme
-- **GOBRO branding** with ExtraBold Poppins font
+- **Purple gradient background** matching Bengal Trails theme
+- **Bengal Trails branding** with ExtraBold Poppins font
 - **Lock icon** for security visual
 - **Smooth animations** for loading states
 - **Helpful hints** for first-time setup
@@ -230,7 +230,7 @@ WHERE email = 'user@example.com';
 
 **You're all set!** 🎉
 
-Your GOBRO admin system is now:
+Your Bengal Trails admin system is now:
 - ✅ Simple to use
 - ✅ Secure
 - ✅ Beautiful

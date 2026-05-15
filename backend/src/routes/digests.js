@@ -94,7 +94,7 @@ router.post('/send-weekly', async (req, res) => {
       if (!recs.length) continue;
       const body = buildDigestEmail(user.name || 'traveler', recs, frontendUrl);
       try {
-        await sendNewsletterEmail([user.email], '🌿 Your weekly Gobro picks', body);
+        await sendNewsletterEmail([user.email], '🌿 Your weekly Bengal Trails picks', body);
         sent++;
       } catch (err) {
         console.error(`Digest failed for ${user.email}:`, err.message);

@@ -3,7 +3,6 @@ import { API_BASE } from '../../utils/api';
 import { useState, useEffect } from 'react';
 import { Mail, Send, Users, FileText, Calendar, Download } from 'lucide-react';
 import { motion } from 'motion/react';
-import { toast } from 'sonner';
 
 interface Subscriber {
   id: string;
@@ -121,20 +120,20 @@ export function NewsletterManagement() {
     { 
       id: 'welcome', 
       name: 'Welcome Email',
-      subject: 'Welcome to GOBRO - Explore West Bengal!',
-      body: `Dear [Name],\n\nWelcome to GOBRO! We're thrilled to have you join our community of Bengal explorers.\n\nDiscover 197 amazing destinations across West Bengal, from the majestic Himalayas in Darjeeling to the serene beaches of Digha.\n\nStart your journey today: [Website Link]\n\nBest regards,\nThe GOBRO Team`
+      subject: 'Welcome to Bengal Trails - Explore West Bengal!',
+      body: `Dear [Name],\n\nWelcome to Bengal Trails! We're thrilled to have you join our community of Bengal explorers.\n\nDiscover 197 amazing destinations across West Bengal, from the majestic Himalayas in Darjeeling to the serene beaches of Digha.\n\nStart your journey today: [Website Link]\n\nBest regards,\nThe Bengal Trails Team`
     },
     {
       id: 'monthly',
       name: 'Monthly Highlights',
       subject: 'This Month in West Bengal - Top Destinations & Events',
-      body: `Dear Traveler,\n\nHere are this month's top picks for exploring West Bengal:\n\n🏔️ Hill Stations: Perfect weather in Darjeeling and Kalimpong\n🏖️ Beach Getaways: Mandarmani is calling!\n🎭 Cultural Events: Durga Puja preparations underway\n\nExplore more: [Website Link]\n\nHappy Travels!\nGOBRO Team`
+      body: `Dear Traveler,\n\nHere are this month's top picks for exploring West Bengal:\n\n🏔️ Hill Stations: Perfect weather in Darjeeling and Kalimpong\n🏖️ Beach Getaways: Mandarmani is calling!\n🎭 Cultural Events: Durga Puja preparations underway\n\nExplore more: [Website Link]\n\nHappy Travels!\nBengal Trails Team`
     },
     {
       id: 'promo',
       name: 'Special Offer',
       subject: '🎉 Exclusive Deal: 20% Off on Weekend Packages!',
-      body: `Dear Adventurer,\n\nSpecial offer just for you!\n\nGet 20% OFF on all weekend packages to:\n- Darjeeling Tea Estates\n- Sundarbans Safari\n- Shantiniketan Cultural Tours\n\nBook before [Date]: [Website Link]\n\nDon't miss out!\nGOBRO Team`
+      body: `Dear Adventurer,\n\nSpecial offer just for you!\n\nGet 20% OFF on all weekend packages to:\n- Darjeeling Tea Estates\n- Sundarbans Safari\n- Shantiniketan Cultural Tours\n\nBook before [Date]: [Website Link]\n\nDon't miss out!\nBengal Trails Team`
     }
   ];
 

@@ -441,7 +441,7 @@ app.get('/make-server-fd41cd37/admin/settings', async (c) => {
 4. Edit the `value` JSON field
 5. Change `"role": "user"` to `"role": "admin"`
 6. **Save**
-7. Refresh GOBRO and sign out/in
+7. Refresh Bengal Trails and sign out/in
 
 ### Method 2: One-Time Setup Endpoint
 

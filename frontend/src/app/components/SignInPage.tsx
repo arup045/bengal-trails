@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, Check, Mountain, Sparkles, Users, MapPin, Heart, Camera, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -109,6 +110,31 @@ export function SignInPage() {
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+
+  // Surface OAuth errors when redirected back from a failed/cancelled flow
+  // (e.g. /#/signin?error=oauth_cancelled)
+  useEffect(() => {
+    const hash = window.location.hash || '';
+    const queryStart = hash.indexOf('?');
+    if (queryStart === -1) return;
+    const params = new URLSearchParams(hash.slice(queryStart + 1));
+    const errorCode = params.get('error');
+    if (!errorCode) return;
+    const messages: Record<string, string> = {
+      oauth_cancelled: 'Sign-in cancelled. You can try again any time.',
+      google_oauth_not_configured: 'Google sign-in is not available right now. Please use email/password.',
+      facebook_oauth_not_configured: 'Facebook sign-in is not available right now. Please use email/password.',
+      email_not_provided: 'Your social account didn\'t share an email. Please grant email access or use email/password sign-up.',
+      token_exchange_failed: 'Sign-in failed. Please try again.',
+      oauth_callback_failed: 'Sign-in completed but we couldn\'t verify your session. Try again.',
+      oauth_failed: 'Something went wrong with social sign-in. Please try again.',
+    };
+    const message = messages[errorCode] || `Sign-in error: ${errorCode}`;
+    setApiError(message);
+    try { toast.error(message); } catch { /* toast not available */ }
+    // Clean the URL so refresh doesn't re-show the error
+    window.history.replaceState(null, '', '#/signin');
+  }, []);
 
   // Form states
   const [loginForm, setLoginForm] = useState({

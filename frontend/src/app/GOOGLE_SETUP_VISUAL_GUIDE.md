@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     GOBRO Website                                │
+│                     Bengal Trails Website                                │
 │                                                                   │
 │  User clicks "Sign in with Google" button                        │
 │           │                                                       │
@@ -27,7 +27,7 @@
 │                    Google Login Page                             │
 │                                                                   │
 │  User enters email/password                                      │
-│  User authorizes GOBRO                                           │
+│  User authorizes Bengal Trails                                           │
 └─────────────────┬───────────────────────────────────────────────┘
                   │
                   │ Redirect back with code
@@ -40,10 +40,10 @@
 │  Creates access_token and refresh_token                          │
 └─────────────────┬───────────────────────────────────────────────┘
                   │
-                  │ Redirect to GOBRO with session
+                  │ Redirect to Bengal Trails with session
                   ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                     GOBRO Website                                │
+│                     Bengal Trails Website                                │
 │                                                                   │
 │  AuthContext detects session                                     │
 │  Fetches/creates user profile                                    │
@@ -102,7 +102,7 @@
 │  Supabase Dashboard                                  │
 │  https://supabase.com/dashboard                      │
 │                                                       │
-│  Project: GOBRO                                      │
+│  Project: Bengal Trails                                      │
 │                                                       │
 │  ┌─────────────────────────────────────────────┐    │
 │  │  Authentication → Providers                  │    │
@@ -132,7 +132,7 @@
 ### Find Your Supabase Project ID:
 ```
 1. Go to: https://supabase.com/dashboard
-2. Select your GOBRO project
+2. Select your Bengal Trails project
 3. Look at the URL: 
    https://supabase.com/project/[YOUR-PROJECT-ID]
                                ^^^^^^^^^^^^^^^^^^^^
@@ -207,7 +207,7 @@
 ┌──────────────────────────────────────────────────┐
 │  Name                                             │
 │  ┌─────────────────────────────────────────────┐ │
-│  │ GOBRO Tourism                                │ │
+│  │ Bengal Trails Tourism                                │ │
 │  └─────────────────────────────────────────────┘ │
 │                                                   │
 │  Authorized JavaScript origins                   │
@@ -231,7 +231,7 @@
 **Step 1:** Go to Authentication
 ```
 ┌──────────────────────────────────────────┐
-│  GOBRO Project                            │
+│  Bengal Trails Project                            │
 │                                            │
 │  > Database                                │
 │  > Authentication              ← Click     │
@@ -313,9 +313,9 @@ Before testing, make sure:
 1. Click "Sign in with Google" button
 2. See Google's login screen (not an error)
 3. Sign in with your Google account
-4. See Google's consent screen asking to allow GOBRO
+4. See Google's consent screen asking to allow Bengal Trails
 5. Click "Allow"
-6. Redirected back to GOBRO homepage
+6. Redirected back to Bengal Trails homepage
 7. Your name appears in the header dropdown
 8. ✅ **SUCCESS!**
 
@@ -348,7 +348,7 @@ Check network tab for failed requests
 
 ## 📞 Your Code is Perfect!
 
-Remember: Your GOBRO website code is **100% ready**. The button, backend, session handling - everything works!
+Remember: Your Bengal Trails website code is **100% ready**. The button, backend, session handling - everything works!
 
 You just need to:
 1. Get credentials from Google (2 mins)

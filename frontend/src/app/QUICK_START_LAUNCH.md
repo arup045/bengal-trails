@@ -1,8 +1,8 @@
-# 🚀 GOBRO Quick Start Launch Guide
+# 🚀 Bengal Trails Quick Start Launch Guide
 
 ## ⚡ Fast Track to Production (30 Minutes)
 
-Your GOBRO website is **100% code-complete**! Follow these 5 quick steps to go live:
+Your Bengal Trails website is **100% code-complete**! Follow these 5 quick steps to go live:
 
 ---
 
@@ -10,7 +10,7 @@ Your GOBRO website is **100% code-complete**! Follow these 5 quick steps to go l
 
 1. Go to https://analytics.google.com
 2. Click "Start measuring"
-3. Enter property name: **GOBRO**
+3. Enter property name: **Bengal Trails**
 4. Select India timezone
 5. Copy your Measurement ID (looks like `G-XXXXXXXXXX`)
 6. Open `/components/Analytics.tsx`
@@ -125,7 +125,7 @@ Before announcing launch, verify:
 - [ ] PWA installs
 
 ### Content
-- [ ] GOBRO branding visible
+- [ ] Bengal Trails branding visible
 - [ ] All images loading
 - [ ] Prices showing in ₹ (INR)
 - [ ] Contact info correct
@@ -173,7 +173,7 @@ Before announcing launch, verify:
 
 ### Instagram/Facebook:
 ```
-🎉 Introducing GOBRO - Your Bengal Adventure Starts Here!
+🎉 Introducing Bengal Trails - Your Bengal Adventure Starts Here!
 
 ✨ 197+ Authentic Destinations
 🗺️ Interactive Trip Planner
@@ -185,13 +185,13 @@ Discover the hidden gems of West Bengal!
 
 🔗 [Your URL]
 
-#WestBengalTourism #GOBRO #TravelIndia #IncredibleIndia
+#WestBengalTourism #Bengal Trails #TravelIndia #IncredibleIndia
 #Darjeeling #Sundarbans #KolkataTravel #BengalCulture
 ```
 
 ### Twitter:
 ```
-🚀 GOBRO is LIVE!
+🚀 Bengal Trails is LIVE!
 
 Your complete West Bengal travel companion:
 • 197+ destinations

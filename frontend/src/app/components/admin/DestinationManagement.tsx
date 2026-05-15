@@ -1,10 +1,10 @@
 import { toast } from 'sonner';
 import { API_BASE } from '../../utils/api';
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Edit, Trash2, Search, X, Save, Upload, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Plus, Edit, Trash2, Search, X, Save } from 'lucide-react';
+import { ImageUploader } from '../ImageUploader';
 import { motion, AnimatePresence } from 'motion/react';
 import { placesData } from '../../data/places-full';
-import { toast } from 'sonner';
 
 interface Destination {
   id: string;
@@ -440,34 +440,17 @@ export function DestinationManagement() {
                   </div>
                 </div>
 
-                {/* Image */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Hero Image URL
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={formData.heroImage?.url}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        heroImage: { ...formData.heroImage!, url: e.target.value }
-                      })}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="https://images.unsplash.com/..."
-                    />
-                    <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                      <Upload className="w-5 h-5" />
-                    </button>
-                  </div>
-                  {formData.heroImage?.url && (
-                    <img
-                      src={formData.heroImage.url}
-                      alt="Preview"
-                      className="mt-2 w-full h-48 object-cover rounded-lg"
-                    />
-                  )}
-                </div>
+                {/* Image — real upload (Cloudinary if configured, base64 dev fallback otherwise) */}
+                <ImageUploader
+                  label="Hero Image"
+                  value={formData.heroImage?.url || ''}
+                  onChange={(url) => setFormData({
+                    ...formData,
+                    heroImage: { ...formData.heroImage!, url }
+                  })}
+                  folder="gobro/destinations"
+                  helperText="Click to upload from your computer, or paste a URL below."
+                />
 
                 {/* Actions */}
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-200">

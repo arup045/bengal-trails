@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getCookieConsent } from './CookieConsentBanner';
 
 /**
- * Google Analytics 4 Integration for GOBRO
+ * Google Analytics 4 Integration for Bengal Trails
  * 
  * Setup Instructions:
  * 1. Go to https://analytics.google.com
@@ -73,7 +73,7 @@ export function trackEvent(eventName: string, eventParams?: Record<string, any>)
   }
 }
 
-// Common event trackers for GOBRO
+// Common event trackers for Bengal Trails
 
 export const Analytics = {
   // Newsletter signup

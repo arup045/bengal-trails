@@ -1,6 +1,6 @@
 # ✨ NEW PURBA MEDINIPUR DESTINATIONS ADDED!
 
-## 🎉 **10 New Places Successfully Added to GOBRO!**
+## 🎉 **10 New Places Successfully Added to Bengal Trails!**
 
 **Total Destinations: 105 → 115** ✅
 
@@ -382,7 +382,7 @@ Now visitors can explore **specific beaches** instead of just generic "Digha":
 
 ---
 
-## 🎉 **GOBRO Now Features:**
+## 🎉 **Bengal Trails Now Features:**
 
 - ✅ **115 comprehensive destinations** (was 105)
 - ✅ **8 regions** across West Bengal
@@ -405,7 +405,7 @@ Now visitors can explore **specific beaches** instead of just generic "Digha":
 
 ## ✨ **Ready to Use!**
 
-All 10 new Purba Medinipur destinations are now **fully functional and accessible** throughout the GOBRO website!
+All 10 new Purba Medinipur destinations are now **fully functional and accessible** throughout the Bengal Trails website!
 
 **Test them now:**
 - Visit `#/explore` 

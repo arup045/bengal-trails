@@ -120,49 +120,134 @@ router.post('/notifications/read-all', authenticate, limiters.write, async (req,
 // SEARCH SUGGESTIONS
 // ════════════════════════════════════════
 
-// GET /search/suggestions?q=...
+// GET /search/suggestions?q=...&limit=8
+// Returns a unified suggestion list across destinations, festivals, and food.
+// Uses PostgreSQL full-text search for destinations (with weighted relevance:
+// name > region/category > description), and ILIKE for festivals & food data.
 router.get('/search/suggestions', async (req, res) => {
   try {
     const q = (req.query.q || '').toLowerCase().trim();
-    if (!q) return res.json({ suggestions: [] });
+    const limit = Math.min(parseInt(req.query.limit, 10) || 8, 15);
+    if (!q || q.length < 2) return res.json({ suggestions: [] });
 
-    // Use full-text search if 3+ chars, fallback to LIKE for short queries
-    let rows;
+    // ─── 1. Destinations (FTS with fallback to ILIKE) ───
+    let destRows = [];
     if (q.length >= 3) {
-      const tsQuery = q.split(/\s+/).filter(Boolean).map(w => `${w}:*`).join(' & ');
-      const result = await pool.query(
-        `SELECT id, name, slug, category, region,
-                ts_rank(tsv_search, to_tsquery('english', $1)) AS rank
-         FROM destinations
-         WHERE status = 'published' AND tsv_search @@ to_tsquery('english', $1)
-         ORDER BY rank DESC, rating DESC NULLS LAST
-         LIMIT 8`,
-        [tsQuery]
-      ).catch(() => null);
-      rows = result?.rows;
+      const tsQuery = q.split(/\s+/).filter(Boolean).map((w) => `${w}:*`).join(' & ');
+      try {
+        const r = await pool.query(
+          `SELECT id, name, slug, category, region, image_url,
+                  short_description,
+                  ts_rank(tsv_search, to_tsquery('english', $1)) AS rank
+           FROM destinations
+           WHERE status = 'published' AND tsv_search @@ to_tsquery('english', $1)
+           ORDER BY rank DESC, rating DESC NULLS LAST
+           LIMIT $2`,
+          [tsQuery, Math.ceil(limit / 2) + 2]
+        );
+        destRows = r.rows;
+      } catch { /* fall through to ILIKE */ }
     }
-    if (!rows || rows.length === 0) {
-      const result = await pool.query(
-        `SELECT id, name, slug, category, region
+    if (destRows.length === 0) {
+      // Tier 2: ILIKE substring match
+      const r = await pool.query(
+        `SELECT id, name, slug, category, region, image_url, short_description
          FROM destinations
          WHERE status = 'published'
-           AND (LOWER(name) LIKE $1 OR LOWER(region) LIKE $1 OR LOWER(category) LIKE $1)
-         LIMIT 8`,
-        [`%${q}%`]
+           AND (LOWER(name) LIKE $1 OR LOWER(region) LIKE $1 OR LOWER(category) LIKE $1 OR LOWER(COALESCE(highlights::text, '')) LIKE $1)
+         ORDER BY rating DESC NULLS LAST
+         LIMIT $2`,
+        [`%${q}%`, Math.ceil(limit / 2) + 2]
       );
-      rows = result.rows;
+      destRows = r.rows;
+    }
+    if (destRows.length === 0) {
+      // Tier 3: trigram similarity (catches typos like "darjeling" → "Darjeeling")
+      try {
+        const r = await pool.query(
+          `SELECT id, name, slug, category, region, image_url, short_description,
+                  similarity(LOWER(name), $1) AS sim
+           FROM destinations
+           WHERE status = 'published'
+             AND similarity(LOWER(name), $1) > 0.2
+           ORDER BY sim DESC, rating DESC NULLS LAST
+           LIMIT $2`,
+          [q, Math.ceil(limit / 2) + 2]
+        );
+        destRows = r.rows;
+      } catch { /* pg_trgm not installed yet */ }
     }
 
-    const suggestions = rows.map((r) => ({
+    const destinations = destRows.map((r) => ({
+      type: 'destination',
       id: r.id,
       name: r.name,
-      type: 'destination',
       slug: r.slug,
-      region: r.region,
+      subtitle: r.region || r.category || '',
+      image: r.image_url || null,
+      url: `#/explore/${r.slug}`,
     }));
 
-    return res.json({ suggestions });
+    // ─── 2. Festivals (in-memory match against festivals.js) ───
+    let festivals = [];
+    try {
+      const allFestivals = require('../data/festivals');
+      festivals = allFestivals
+        .filter((f) => {
+          const hay = `${f.name} ${f.bengaliName || ''} ${f.description || ''} ${(f.category || '')} ${(f.vibe || '')}`.toLowerCase();
+          return hay.includes(q);
+        })
+        .slice(0, 4)
+        .map((f) => ({
+          type: 'festival',
+          id: f.id,
+          name: f.name,
+          slug: f.id,
+          subtitle: f.bengaliName ? `${f.bengaliName} • ${f.typicalDates || ''}` : (f.typicalDates || f.category || ''),
+          image: f.image || null,
+          url: '#/festivals',
+        }));
+    } catch { /* festivals data not available */ }
+
+    // ─── 3. Food items ───
+    let foodItems = [];
+    try {
+      const foodModule = require('../data/bengaliFood');
+      const foods = foodModule.foods || foodModule || [];
+      foodItems = foods
+        .filter((f) => {
+          const hay = `${f.name || ''} ${f.bengaliName || ''} ${f.description || ''} ${(f.category || '')}`.toLowerCase();
+          return hay.includes(q);
+        })
+        .slice(0, 3)
+        .map((f) => ({
+          type: 'food',
+          id: f.id || f.slug,
+          name: f.name,
+          slug: f.id || f.slug,
+          subtitle: f.bengaliName || f.category || 'Bengali cuisine',
+          image: f.image || null,
+          url: '#/food',
+        }));
+    } catch { /* food data not available */ }
+
+    // Combine: destinations first, then festivals, then food
+    const suggestions = [
+      ...destinations.slice(0, Math.max(limit - festivals.length - foodItems.length, 3)),
+      ...festivals,
+      ...foodItems,
+    ].slice(0, limit);
+
+    return res.json({
+      suggestions,
+      counts: {
+        destinations: destinations.length,
+        festivals: festivals.length,
+        food: foodItems.length,
+      },
+    });
   } catch (err) {
+    console.error('Search suggestions error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });

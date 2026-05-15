@@ -1,6 +1,6 @@
 # ✨ NEW SOUTH 24 PARGANAS DESTINATIONS ADDED!
 
-## 🎉 **8 New Places Successfully Added to GOBRO!**
+## 🎉 **8 New Places Successfully Added to Bengal Trails!**
 
 **Total Destinations: 97 → 105** ✅
 
@@ -309,7 +309,7 @@ Gangasagar:                #/explore/gangasagar-sagar-island
 
 ---
 
-## 🎉 **GOBRO Now Features:**
+## 🎉 **Bengal Trails Now Features:**
 
 - ✅ **105 comprehensive destinations** (was 97)
 - ✅ **8 regions** across West Bengal
@@ -337,7 +337,7 @@ Gangasagar:                #/explore/gangasagar-sagar-island
 
 ## ✨ **Ready to Use!**
 
-All 8 new South 24 Parganas destinations are now **fully functional and accessible** throughout the GOBRO website!
+All 8 new South 24 Parganas destinations are now **fully functional and accessible** throughout the Bengal Trails website!
 
 Visit `#/explore` and filter by "South Bengal" to see them all! 🎉
 

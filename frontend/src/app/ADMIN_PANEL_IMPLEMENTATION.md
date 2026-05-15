@@ -1,4 +1,4 @@
-# 🔐 GOBRO Admin Panel - Full Implementation Guide
+# 🔐 Bengal Trails Admin Panel - Full Implementation Guide
 
 ## ✅ **What's Been Implemented**
 
@@ -47,7 +47,7 @@ Since the database stores user roles, you need to manually set your role to 'adm
 4. Edit the `value` field
 5. Find `"role": "user"` and change it to `"role": "admin"`
 6. Save changes
-7. Refresh your GOBRO website
+7. Refresh your Bengal Trails website
 
 ### **Option 2: Using Backend Endpoint (Future)**
 
@@ -251,7 +251,7 @@ I've set up the foundation. Here's what you need to complete:
 
 ## 🎨 **Design System**
 
-The admin panel uses GOBRO's existing design system:
+The admin panel uses Bengal Trails's existing design system:
 - **Primary Color**: Purple (#8B5CF6)
 - **Accent**: Pink gradient
 - **Font**: Poppins (headings), Inter (body)
@@ -263,7 +263,7 @@ The admin panel uses GOBRO's existing design system:
 ## 📝 **Testing the Admin Panel**
 
 1. **Set yourself as admin** (see instructions above)
-2. Sign in to GOBRO
+2. Sign in to Bengal Trails
 3. Click your name in header
 4. Click "Admin Dashboard" (purple badge)
 5. You should see the dashboard with stats!

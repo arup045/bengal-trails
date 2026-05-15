@@ -465,7 +465,7 @@ Tribeni Ghat:    #/explore/tribeni-ghat
 
 ---
 
-## 🎉 **GOBRO Now Features:**
+## 🎉 **Bengal Trails Now Features:**
 
 - ✅ **125 comprehensive destinations** (was 115)
 - ✅ **11 Hooghly places** (was 1)
@@ -496,7 +496,7 @@ Tribeni Ghat:    #/explore/tribeni-ghat
 
 ## ✨ **Ready to Use!**
 
-All 10 new Hooghly colonial heritage & pilgrimage destinations are now **fully functional and accessible** throughout the GOBRO website!
+All 10 new Hooghly colonial heritage & pilgrimage destinations are now **fully functional and accessible** throughout the Bengal Trails website!
 
 **Test them now:**
 - Visit `#/explore` 

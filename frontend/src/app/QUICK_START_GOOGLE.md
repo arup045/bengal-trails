@@ -27,7 +27,7 @@ https://xbnqaxxbzgnsqnifpqag.supabase.co/auth/v1/callback
 3. Choose: **"Web application"**
 
 4. Fill in:
-   - **Name:** `GOBRO Tourism`
+   - **Name:** `Bengal Trails Tourism`
    - **Authorized JavaScript origins:** 
      ```
      https://xbnqaxxbzgnsqnifpqag.supabase.co
@@ -61,7 +61,7 @@ https://xbnqaxxbzgnsqnifpqag.supabase.co/auth/v1/callback
 
 ### ✅ STEP 3: Test It! (30 seconds)
 
-1. Open your GOBRO website
+1. Open your Bengal Trails website
 2. Click **"Sign In"**
 3. Click **"Sign in with Google"** button
 4. Sign in with your Google account
@@ -77,7 +77,7 @@ If you haven't configured OAuth Consent Screen yet:
 1. Go to: https://console.cloud.google.com/apis/credentials/consent
 2. Choose **"External"**
 3. Fill in:
-   - **App name:** GOBRO - West Bengal Tourism
+   - **App name:** Bengal Trails - West Bengal Tourism
    - **User support email:** (your email)
    - **Developer contact:** (your email)
 4. Click **"Save and Continue"** 3 times
@@ -134,7 +134,7 @@ https://xbnqaxxbzgnsqnifpqag.supabase.co/auth/v1/callback
 
 ## ✨ Your Code is Ready!
 
-Your GOBRO website has:
+Your Bengal Trails website has:
 - ✅ Beautiful Google sign-in button
 - ✅ Backend OAuth integration  
 - ✅ Session handling

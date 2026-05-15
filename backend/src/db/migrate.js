@@ -4,7 +4,7 @@ const pool = require('./pool');
 async function migrate() {
   const client = await pool.connect();
   try {
-    console.log('🚀 Running Gobro database migration...');
+    console.log('🚀 Running Bengal Trails database migration...');
 
     await client.query('BEGIN');
 
@@ -337,6 +337,50 @@ async function migrate() {
       FOR EACH ROW EXECUTE FUNCTION update_destinations_tsv();
 
       UPDATE destinations SET tsv_search = NULL WHERE tsv_search IS NULL;
+
+      -- ── Trigram fuzzy search (for typo tolerance) ──
+      CREATE EXTENSION IF NOT EXISTS pg_trgm;
+      CREATE INDEX IF NOT EXISTS idx_destinations_name_trgm
+        ON destinations USING GIN (LOWER(name) gin_trgm_ops);
+      CREATE INDEX IF NOT EXISTS idx_destinations_region_trgm
+        ON destinations USING GIN (LOWER(region) gin_trgm_ops);
+    `);
+
+    // ── pgvector for semantic search (RAG) — optional, falls back gracefully ──
+    try {
+      await client.query(`CREATE EXTENSION IF NOT EXISTS vector;`);
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS content_embeddings (
+          id           SERIAL PRIMARY KEY,
+          content_type TEXT NOT NULL,        -- 'destination' | 'festival' | 'food'
+          content_id   TEXT NOT NULL,        -- slug for destinations, id for others
+          chunk_index  INT NOT NULL DEFAULT 0,
+          chunk_text   TEXT NOT NULL,
+          embedding    vector(768) NOT NULL,
+          metadata     JSONB,                -- { name, image, region, category }
+          created_at   TIMESTAMP DEFAULT NOW(),
+          UNIQUE(content_type, content_id, chunk_index)
+        );
+        CREATE INDEX IF NOT EXISTS idx_embeddings_type        ON content_embeddings(content_type);
+        CREATE INDEX IF NOT EXISTS idx_embeddings_content_id  ON content_embeddings(content_id);
+      `);
+      // HNSW index — fast cosine-similarity search at scale
+      // Wrapped in its own try since HNSW requires pgvector >= 0.5.0
+      try {
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS idx_embeddings_hnsw
+            ON content_embeddings USING hnsw (embedding vector_cosine_ops);
+        `);
+      } catch (idxErr) {
+        console.log('ℹ️  HNSW index unavailable (pgvector < 0.5); falling back to seq scan — still works, slightly slower at scale.');
+      }
+      console.log('✅ pgvector + content_embeddings table ready');
+    } catch (vecErr) {
+      console.log('ℹ️  pgvector extension unavailable on this Postgres — semantic search will be disabled. Other features unaffected.');
+    }
+
+    // Continue with no-op so the closing backtick is below
+    await client.query(`SELECT 1
     `);
 
     // ── Recently Viewed ───────────────────────────────────────────────────────────
@@ -369,16 +413,16 @@ async function migrate() {
     // ── Default site settings ────────────────────────────────────────────────
     await client.query(`
       INSERT INTO site_settings (key, value) VALUES
-        ('site_name',     '"GOBRO"'),
+        ('site_name',     '"Bengal Trails"'),
         ('site_tagline',  '"Discover the Magic of West Bengal"'),
-        ('contact_email', '"info@gobro.com"'),
+        ('contact_email', '"info@bengaltrails.com"'),
         ('maintenance_mode', 'false')
       ON CONFLICT (key) DO NOTHING;
     `);
 
     // ── First admin user ──────────────────────────────────────────────────────
     const bcrypt = require('bcryptjs');
-    const adminEmail = process.env.FIRST_ADMIN_EMAIL || 'admin@gobro.com';
+    const adminEmail = process.env.FIRST_ADMIN_EMAIL || 'admin@bengaltrails.com';
     const adminPass  = await bcrypt.hash('Admin@12345', 10);
     await client.query(`
       INSERT INTO users (email, password, name, role, status)

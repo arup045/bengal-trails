@@ -1,8 +1,8 @@
-# 🚀 GOBRO Deployment Checklist
+# 🚀 Bengal Trails Deployment Checklist
 
 ## Pre-Launch Manual Steps
 
-Complete these steps to fully launch your GOBRO tourism website to production.
+Complete these steps to fully launch your Bengal Trails tourism website to production.
 
 ---
 
@@ -14,7 +14,7 @@ Complete these steps to fully launch your GOBRO tourism website to production.
 
 1. **Go to Supabase Dashboard:**
    - Navigate to: https://app.supabase.com
-   - Select your GOBRO project
+   - Select your Bengal Trails project
 
 2. **Configure SMTP Settings:**
    - Go to `Authentication` → `Email Templates`
@@ -52,11 +52,11 @@ SMTP Password: [Your AWS SES SMTP Password]
 
 ### **Newsletter Email Template:**
 ```html
-Subject: Welcome to GOBRO - Your Bengal Adventure Awaits! 🎉
+Subject: Welcome to Bengal Trails - Your Bengal Adventure Awaits! 🎉
 
 Hello,
 
-Thank you for subscribing to GOBRO newsletter!
+Thank you for subscribing to Bengal Trails newsletter!
 
 You'll now receive:
 ✨ Exclusive travel tips for West Bengal
@@ -64,13 +64,13 @@ You'll now receive:
 📍 Hidden gem destinations
 🍛 Bengali food recommendations
 
-Start exploring: https://gobro.travel
+Start exploring: https://bengaltrails.netlify.app
 
 Happy Travels!
-The GOBRO Team
+The Bengal Trails Team
 
 ---
-Unsubscribe: https://gobro.travel/unsubscribe?email={{email}}
+Unsubscribe: https://bengaltrails.netlify.app/unsubscribe?email={{email}}
 ```
 
 ---
@@ -184,7 +184,7 @@ Unsubscribe: https://gobro.travel/unsubscribe?email={{email}}
    - Click "Debug"
 
 2. **Check Preview:**
-   - Title: "GOBRO - Discover West Bengal Tourism"
+   - Title: "Bengal Trails - Discover West Bengal Tourism"
    - Description: Should show full description
    - Image: Victoria Memorial image
    - If wrong, click "Scrape Again"
@@ -217,7 +217,7 @@ Unsubscribe: https://gobro.travel/unsubscribe?email={{email}}
 
 ### **What Good Previews Look Like:**
 ```
-Title: GOBRO - Discover West Bengal Tourism
+Title: Bengal Trails - Discover West Bengal Tourism
 Description: Explore 197+ authentic West Bengal destinations...
 Image: [Beautiful Victoria Memorial or Destination Photo]
 ```
@@ -333,10 +333,10 @@ Permissions-Policy: geolocation=(self), microphone=(), camera=()
 ## 9. 📱 Social Media Setup
 
 ### **Create Accounts:**
-- [ ] Facebook Page: @GOBROTravel
-- [ ] Instagram: @GOBROTravel
-- [ ] Twitter: @GOBROTravel
-- [ ] YouTube: GOBRO Travel
+- [ ] Facebook Page: @Bengal TrailsTravel
+- [ ] Instagram: @Bengal TrailsTravel
+- [ ] Twitter: @Bengal TrailsTravel
+- [ ] YouTube: Bengal Trails Travel
 
 ### **First Posts:**
 - Launch announcement
@@ -432,5 +432,5 @@ Permissions-Policy: geolocation=(self), microphone=(), camera=()
 ---
 
 **Generated:** February 6, 2026
-**Project:** GOBRO - West Bengal Tourism
+**Project:** Bengal Trails - West Bengal Tourism
 **Status:** Ready for Manual Steps

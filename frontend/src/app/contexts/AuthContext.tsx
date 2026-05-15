@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { API_BASE } from '../utils/api';
+import { API_BASE, authFetch } from '../utils/api';
 
 interface User {
   id: string;
@@ -32,17 +32,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const authFetch = (path: string, opts: RequestInit = {}) => {
-  const token = localStorage.getItem('access_token');
-  return fetch(`${API_BASE}${path}`, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(opts.headers || {}),
-    },
-  });
-};
+// authFetch now imported from utils/api (handles token refresh automatically)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -111,22 +101,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    try {
-      const res = await authFetch('/auth/signin-google', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) return { success: false, error: data.error || 'Google sign in failed' };
-      if (data.url) { window.location.href = data.url; return { success: true }; }
-      return { success: false, error: 'No OAuth URL received' };
-    } catch {
-      return { success: false, error: 'Network error' };
-    }
+    // Full-page redirect to the backend OAuth route. The backend handles the
+    // Google handshake and redirects back to /#/auth-callback?access_token=...
+    window.location.href = `${API_BASE}/auth/google`;
+    return { success: true };
   };
 
   const signInWithFacebook = async () => {
-    try {
-      const res = await authFetch('/auth/signin-facebook', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) return { success: false, error: data.error || 'Facebook sign in failed' };
+    window.location.href = `${API_BASE}/auth/facebook`;
+    return { success: true };
+  };
       if (data.url) { window.location.href = data.url; return { success: true }; }
       return { success: false, error: 'No OAuth URL received' };
     } catch {

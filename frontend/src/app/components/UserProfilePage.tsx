@@ -22,6 +22,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { uploadImage } from '../utils/api';
 
 interface ProfileFormData {
   name: string;
@@ -172,14 +173,62 @@ export function UserProfilePage() {
           className="bg-white rounded-3xl shadow-xl shadow-purple-100/50 p-8 mb-6"
         >
           <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Profile Picture */}
+            {/* Profile Picture — real avatar with upload */}
             <div className="relative">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white text-4xl font-bold shadow-xl">
-                {user.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
-              <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-purple-600 hover:bg-purple-50 transition-colors" aria-label="Change profile photo">
-                <Camera className="w-5 h-5" />
-              </button>
+              {user.avatarUrl || user.avatar_url ? (
+                <img
+                  src={user.avatarUrl || user.avatar_url}
+                  alt={user.name}
+                  className="w-32 h-32 rounded-full object-cover shadow-xl border-4 border-white"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white text-4xl font-bold shadow-xl">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
+              <label
+                className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-purple-600 hover:bg-purple-50 transition-colors cursor-pointer"
+                aria-label="Change profile photo"
+                title="Upload a new profile photo"
+              >
+                {avatarUploading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5" />
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={avatarUploading}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                      toast.error('Please choose an image file');
+                      return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                      toast.error('Image must be under 5MB');
+                      return;
+                    }
+                    setAvatarUploading(true);
+                    try {
+                      const { url } = await uploadImage(file);
+                      const r = await updateProfile({ avatarUrl: url, avatar_url: url } as any);
+                      if (r?.success !== false) {
+                        await refreshUser?.();
+                        toast.success('Profile photo updated');
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.message || 'Upload failed');
+                    } finally {
+                      setAvatarUploading(false);
+                      e.target.value = ''; // allow re-selecting the same file
+                    }
+                  }}
+                />
+              </label>
             </div>
 
             {/* User Info */}

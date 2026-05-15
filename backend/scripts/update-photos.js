@@ -90,7 +90,7 @@ const SLUG_TO_WIKIPEDIA = {
 function fetchWikiImage(title) {
   return new Promise((resolve) => {
     const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-    https.get(url, { headers: { 'User-Agent': 'GobroBengalTourism/1.0 (contact: arupbhattacharya450@gmail.com)' } }, (res) => {
+    https.get(url, { headers: { 'User-Agent': 'Bengal TrailsBengalTourism/1.0 (contact: arupbhattacharya450@gmail.com)' } }, (res) => {
       if (res.statusCode !== 200) return resolve(null);
       let data = '';
       res.on('data', (chunk) => (data += chunk));

@@ -180,7 +180,7 @@ export function AdminSetupPage() {
           </h1>
           
           <p className="text-gray-600">
-            Create the first admin account for GOBRO
+            Create the first admin account for Bengal Trails
           </p>
         </div>
 

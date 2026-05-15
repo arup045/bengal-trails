@@ -19,6 +19,8 @@ import { AITravelAssistant } from './components/AITravelAssistant';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { placesData } from './data/places-full';
 import { installGlobalErrorHandlers } from './utils/errorReporter';
+import { setPageMeta, PAGE_META } from './utils/seo';
+import { useStickyScroll } from './utils/useStickyScroll';
 
 installGlobalErrorHandlers();
 
@@ -111,10 +113,10 @@ export default function App() {
         }),
         getFaqSchema(getDefaultPlaceFaqs(currentPlace)),
         getBreadcrumbSchema([
-          { name: 'Home', url: 'https://gobro.travel/#/' },
-          { name: 'Explore', url: 'https://gobro.travel/#/explore' },
-          { name: currentPlace.region || 'West Bengal', url: 'https://gobro.travel/#/explore' },
-          { name: currentPlace.title, url: `https://gobro.travel/#/explore/${currentPlace.slug}` },
+          { name: 'Home', url: 'https://bengaltrails.netlify.app/#/' },
+          { name: 'Explore', url: 'https://bengaltrails.netlify.app/#/explore' },
+          { name: currentPlace.region || 'West Bengal', url: 'https://bengaltrails.netlify.app/#/explore' },
+          { name: currentPlace.title, url: `https://bengaltrails.netlify.app/#/explore/${currentPlace.slug}` },
         ]),
       );
     }
@@ -128,47 +130,47 @@ export default function App() {
       const place = placesData.find((p: any) => p.slug === currentSlug);
       if (place) {
         return {
-          title: `${place.title} – ${place.region} | GOBRO`,
+          title: `${place.title} – ${place.region} | Bengal Trails`,
           description: place.excerpt || place.description?.slice(0, 160) || '',
           image: place.heroImage?.url,
-          url: `https://gobro.travel/#/explore/${place.slug}`,
+          url: `https://bengaltrails.netlify.app/#/explore/${place.slug}`,
         };
       }
     }
     switch (currentPage) {
       case 'home':
         return {
-          title: 'GOBRO - Discover West Bengal Tourism | Authentic Travel Experiences',
+          title: 'Bengal Trails - Discover West Bengal Tourism | Authentic Travel Experiences',
           description: 'Explore 197+ authentic West Bengal destinations. Plan trips, discover Bengali cuisine, book experiences. Your trusted Bengal travel companion with trip planner, maps & guides.',
         };
       case 'explore':
         return {
-          title: 'Explore West Bengal Destinations | GOBRO Travel Guide',
+          title: 'Explore West Bengal Destinations | Bengal Trails Travel Guide',
           description: 'Browse 197+ West Bengal tourist destinations including Darjeeling, Sundarbans, Kolkata heritage sites. Filter by region, category, budget. Plan your Bengal adventure.',
         };
       case 'food':
         return {
-          title: 'Bengali Food Guide | Authentic Cuisine & Restaurants | GOBRO',
+          title: 'Bengali Food Guide | Authentic Cuisine & Restaurants | Bengal Trails',
           description: 'Discover 50+ authentic Bengali restaurants, street food, traditional dishes. Complete guide to West Bengal cuisine with recommendations and locations.',
         };
       case 'wishlist':
         return {
-          title: 'My Travel Wishlist | GOBRO',
+          title: 'My Travel Wishlist | Bengal Trails',
           description: 'Your saved West Bengal destinations. Plan trips, share wishlist, get directions to your favorite places.',
         };
       case 'planner':
         return {
-          title: 'Trip Planner | Plan Your West Bengal Journey | GOBRO',
+          title: 'Trip Planner | Plan Your West Bengal Journey | Bengal Trails',
           description: 'Plan your perfect West Bengal trip. Create itineraries, get weather forecasts, budget estimates, and travel recommendations.',
         };
       case 'phrasebook':
         return {
-          title: 'Bengali Phrasebook | Learn Essential Bengali Phrases | GOBRO',
+          title: 'Bengali Phrasebook | Learn Essential Bengali Phrases | Bengal Trails',
           description: '60+ essential Bengali phrases with pronunciation. Learn greetings, directions, food ordering, shopping phrases for your West Bengal trip.',
         };
       default:
         return {
-          title: 'GOBRO - West Bengal Tourism & Travel Guide',
+          title: 'Bengal Trails - West Bengal Tourism & Travel Guide',
           description: 'Your complete guide to West Bengal tourism. Discover destinations, plan trips, explore culture.',
         };
     }
@@ -379,6 +381,34 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+
+  // Sticky search bar: shows the header search after user scrolls past the page-level search
+  const { sentinelRef, isSticky } = useStickyScroll();
+
+  // ── SEO: set page meta on route change ──────────────────────────────────────
+  useEffect(() => {
+    // Map currentPage to PAGE_META entries; fall back to home
+    const routeToMeta: Record<string, keyof typeof PAGE_META | undefined> = {
+      home: 'home',
+      explore: 'explore',
+      festivals: 'festivals',
+      food: 'food',
+      map: 'map',
+      community: 'community',
+      budget: 'budget',
+      itinerary: 'itinerary',
+      wishlist: 'wishlist',
+    };
+    const key = routeToMeta[currentPage];
+    if (key && PAGE_META[key]) {
+      setPageMeta(PAGE_META[key]);
+    } else if (currentPage === 'place') {
+      // Place pages get their meta set by PlaceDetailPage itself via setDestinationMeta()
+      // so we skip here. Default to home meta if slug not loaded yet.
+    }
+  }, [currentPage]);
+
+
   return (
     <LanguageProvider>
       <AuthProvider>
@@ -411,13 +441,13 @@ export default function App() {
 
         <ErrorBoundary>
           {/* Header is now universal across all pages */}
-          <Header />
+          <Header showSearchBar={currentPage !== 'home' || isSticky} />
 
           <main id="main-content" role="main" tabIndex={-1}>
             <Suspense fallback={<PageLoader />}>
               {currentPage === 'home' && (
                 <>
-                  <Hero />
+                  <Hero searchSentinelRef={sentinelRef} />
                   <Features />
                   <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><DestinationGridSkeleton count={3} /></div>}>
                     <ToolsSection />

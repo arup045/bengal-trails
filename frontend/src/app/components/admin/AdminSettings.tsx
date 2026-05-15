@@ -23,8 +23,8 @@ export function AdminSettings() {
     newsletterConfirmation: true
   });
   const [seo, setSeo] = useState({
-    title: 'GOBRO - Explore West Bengal Tourism',
-    description: 'Discover 197+ amazing destinations across West Bengal. Plan your perfect trip with GOBRO.',
+    title: 'Bengal Trails - Explore West Bengal Tourism',
+    description: 'Discover 197+ amazing destinations across West Bengal. Plan your perfect trip with Bengal Trails.',
     keywords: 'West Bengal tourism, Darjeeling, Sundarbans, travel guide, India tourism'
   });
   const handleSaveSettings = async () => {

@@ -1,4 +1,4 @@
-# 🔐 Google Sign-In Setup Guide for GOBRO
+# 🔐 Google Sign-In Setup Guide for Bengal Trails
 
 ## ✅ Your Code is READY! Just Need 5-Minute Setup
 
@@ -28,7 +28,7 @@ Your website code is **100% ready** for Google Sign-In. You just need to configu
 
 4. **Configure OAuth Client:**
    
-   **Application name:** GOBRO Tourism
+   **Application name:** Bengal Trails Tourism
    
    **Authorized JavaScript origins:**
    ```
@@ -59,7 +59,7 @@ If you haven't set up the consent screen:
 1. Click **"Configure Consent Screen"**
 2. Choose **"External"** → Click **"Create"**
 3. Fill in:
-   - **App name:** GOBRO - West Bengal Tourism
+   - **App name:** Bengal Trails - West Bengal Tourism
    - **User support email:** (your email)
    - **Developer contact:** (your email)
 4. Click **"Save and Continue"**
@@ -76,7 +76,7 @@ If you haven't set up the consent screen:
 
 1. **Go to Your Supabase Dashboard:**
    - Visit: https://supabase.com/dashboard
-   - Select your GOBRO project
+   - Select your Bengal Trails project
 
 2. **Enable Google Provider:**
    - Go to: **Authentication** → **Providers**
@@ -104,7 +104,7 @@ If you haven't set up the consent screen:
 3. **Click the "Sign in with Google" button**
 4. **You should see Google's login screen**
 5. **Sign in with your Google account**
-6. **You'll be redirected back to GOBRO, logged in!**
+6. **You'll be redirected back to Bengal Trails, logged in!**
 
 ---
 
@@ -144,7 +144,7 @@ https://<YOUR-PROJECT-ID>.supabase.co/auth/v1/callback
 
 ### Google login shows "This app isn't verified"
 **Problem:** Your app is in testing mode
-**Fix:** This is normal during development! Users can click "Advanced" → "Go to GOBRO (unsafe)" to continue
+**Fix:** This is normal during development! Users can click "Advanced" → "Go to Bengal Trails (unsafe)" to continue
 **For Production:** Submit your app for Google verification
 
 ---
@@ -155,7 +155,7 @@ Once configured, your users can:
 
 1. ✅ Click "Sign in with Google" button
 2. ✅ Authenticate with their Google account
-3. ✅ Automatically create a GOBRO profile
+3. ✅ Automatically create a Bengal Trails profile
 4. ✅ Access all features (wishlist, trip planner, etc.)
 5. ✅ Stay logged in across sessions
 

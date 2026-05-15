@@ -12,11 +12,11 @@ interface SEOProps {
 }
 
 const DEFAULT_SEO = {
-  title: 'GOBRO - Discover West Bengal Tourism | Authentic Travel Experiences',
-  description: 'Explore the authentic beauty of West Bengal with GOBRO. Discover 197+ destinations, plan trips, find Bengali cuisine, and experience culture. Your trusted Bengal travel companion.',
+  title: 'Bengal Trails - Discover West Bengal Tourism | Authentic Travel Experiences',
+  description: 'Explore the authentic beauty of West Bengal with Bengal Trails. Discover 197+ destinations, plan trips, find Bengali cuisine, and experience culture. Your trusted Bengal travel companion.',
   keywords: 'West Bengal tourism, Bengal travel, Darjeeling, Sundarbans, Kolkata tourism, Bengali culture, India travel, heritage tourism, tea gardens, Bengali food, Durga Puja, travel planner',
   image: 'https://images.unsplash.com/photo-1697817665440-f988c6d5080f?w=1200',
-  url: typeof window !== 'undefined' ? window.location.href : 'https://gobro.travel',
+  url: typeof window !== 'undefined' ? window.location.href : 'https://bengaltrails.netlify.app',
   type: 'website' as const,
 };
 
@@ -51,7 +51,7 @@ export function SEOHead({
     // Basic SEO tags
     setMetaTag('description', description);
     setMetaTag('keywords', keywords);
-    setMetaTag('author', 'GOBRO Travel');
+    setMetaTag('author', 'Bengal Trails Travel');
     
     // Open Graph tags
     setMetaTag('og:title', title, true);
@@ -59,7 +59,7 @@ export function SEOHead({
     setMetaTag('og:image', image, true);
     setMetaTag('og:url', url, true);
     setMetaTag('og:type', type, true);
-    setMetaTag('og:site_name', 'GOBRO - West Bengal Tourism', true);
+    setMetaTag('og:site_name', 'Bengal Trails - West Bengal Tourism', true);
     setMetaTag('og:locale', 'en_US', true);
 
     // Twitter Card tags
@@ -67,8 +67,8 @@ export function SEOHead({
     setMetaTag('twitter:title', title);
     setMetaTag('twitter:description', description);
     setMetaTag('twitter:image', image);
-    setMetaTag('twitter:site', '@GOBROTravel');
-    setMetaTag('twitter:creator', '@GOBROTravel');
+    setMetaTag('twitter:site', '@Bengal TrailsTravel');
+    setMetaTag('twitter:creator', '@Bengal TrailsTravel');
 
     // Additional article meta tags
     if (type === 'article') {
@@ -160,10 +160,10 @@ export function useStructuredData(data: any) {
 export const getOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'TravelAgency',
-  name: 'GOBRO',
-  alternateName: 'GOBRO Travel',
-  url: 'https://gobro.travel',
-  logo: 'https://gobro.travel/logo.png',
+  name: 'Bengal Trails',
+  alternateName: 'Bengal Trails Travel',
+  url: 'https://bengaltrails.netlify.app',
+  logo: 'https://bengaltrails.netlify.app/logo.png',
   description: 'West Bengal\'s premier travel companion offering authentic tourism experiences, trip planning, and cultural insights.',
   address: {
     '@type': 'PostalAddress',
@@ -179,9 +179,9 @@ export const getOrganizationSchema = () => ({
     availableLanguage: ['English', 'Bengali', 'Hindi'],
   },
   sameAs: [
-    'https://www.facebook.com/GOBROTravel',
-    'https://twitter.com/GOBROTravel',
-    'https://www.instagram.com/GOBROTravel',
+    'https://www.facebook.com/Bengal TrailsTravel',
+    'https://twitter.com/Bengal TrailsTravel',
+    'https://www.instagram.com/Bengal TrailsTravel',
   ],
 });
 
@@ -191,7 +191,7 @@ export const getTouristAttractionSchema = (place: any) => ({
   name: place.title,
   description: place.description,
   image: place.image,
-  url: `https://gobro.travel/#/explore/${place.slug}`,
+  url: `https://bengaltrails.netlify.app/#/explore/${place.slug}`,
   address: {
     '@type': 'PostalAddress',
     addressLocality: place.district,
@@ -251,18 +251,18 @@ export const getDefaultPlaceFaqs = (place: any) => [
     question: `What is the starting price to visit ${place.title}?`,
     answer: place.priceFrom
       ? `Trips to ${place.title} typically start from ${place.priceFrom} per person.`
-      : `Costs vary based on accommodation and travel choices. Use the GOBRO Budget Estimator for an accurate plan.`,
+      : `Costs vary based on accommodation and travel choices. Use the Bengal Trails Budget Estimator for an accurate plan.`,
   },
 ];
 
 export const getWebsiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'GOBRO',
-  url: 'https://gobro.travel',
+  name: 'Bengal Trails',
+  url: 'https://bengaltrails.netlify.app',
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://gobro.travel/#/explore?search={search_term_string}',
+    target: 'https://bengaltrails.netlify.app/#/explore?search={search_term_string}',
     'query-input': 'required name=search_term_string',
   },
 });

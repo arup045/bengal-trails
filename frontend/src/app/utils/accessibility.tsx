@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 /**
- * Accessibility utilities for GOBRO
+ * Accessibility utilities for Bengal Trails
  */
 
 // Skip to main content link (for keyboard navigation)

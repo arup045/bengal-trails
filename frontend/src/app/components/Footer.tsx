@@ -123,7 +123,7 @@ export function Footer() {
                     <circle cx="16" cy="32" r="12" stroke="#FFA500" strokeWidth="0.6" opacity="0.4" fill="none"/>
                     <circle cx="16" cy="32" r="14" stroke="#FFA500" strokeWidth="0.4" opacity="0.3" fill="none"/>
                     
-                    {/* Main abstract GO/GOBRO shape */}
+                    {/* Main abstract Bengal Trails logo shape */}
                     <path 
                       d="M 32 11 C 28 11 25 14 25 18 C 25 22 28 25 32 25 C 36 25 39 22 39 18 C 39 14 36 11 32 11 Z M 32 14 C 34 14 36 16 36 18 C 36 20 34 22 32 22 C 30 22 28 20 28 18 C 28 16 30 14 32 14 Z"
                       fill="white"
@@ -135,7 +135,7 @@ export function Footer() {
                     />
                   </svg>
                 </div>
-                <span className="text-3xl" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800 }}>GOBRO</span>
+                <span className="text-3xl" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800 }}>Bengal Trails</span>
               </div>
               <p className="text-orange-100 mb-6 leading-relaxed">
                 Discover the soul of West Bengal. Experience authentic culture, breathtaking landscapes, and unforgettable memories with Bengal's most trusted travel companion.
@@ -310,7 +310,7 @@ export function Footer() {
               viewport={{ once: true }}
               className="text-orange-200 text-center md:text-left flex items-center gap-2"
             >
-              © 2025 GOBRO. Made with <Heart className="w-4 h-4 fill-orange-400 text-orange-400" /> in West Bengal
+              © 2025 Bengal Trails. Made with <Heart className="w-4 h-4 fill-orange-400 text-orange-400" /> in West Bengal
             </motion.p>
             
             {/* Social Links */}

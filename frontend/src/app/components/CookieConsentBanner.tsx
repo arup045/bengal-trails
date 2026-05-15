@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cookie, X } from 'lucide-react';
 
-const STORAGE_KEY = 'gobro_cookie_consent_v1';
+const STORAGE_KEY = 'bt_cookie_consent_v1';
 
 type Choice = 'accepted' | 'rejected';
 
@@ -48,7 +48,7 @@ export function CookieConsentBanner() {
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-gray-900 mb-1">We use cookies</h3>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Essential cookies keep you signed in. Analytics cookies help us improve GOBRO. Read our{' '}
+                Essential cookies keep you signed in. Analytics cookies help us improve Bengal Trails. Read our{' '}
                 <a href="#/cookies" className="text-[#7d1f2e] underline">
                   Cookie Policy
                 </a>

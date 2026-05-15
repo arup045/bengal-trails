@@ -211,7 +211,7 @@ export function BudgetEstimator() {
                 <TrendingUp className="w-5 h-5 text-purple-600" />
                 Travel Style
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {(['budget', 'mid-range', 'luxury'] as const).map((style) => (
                   <button
                     key={style}

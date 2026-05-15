@@ -1,6 +1,6 @@
 {
-  "name": "GOBRO - West Bengal Tourism",
-  "short_name": "GOBRO",
+  "name": "Bengal Trails - West Bengal Tourism",
+  "short_name": "Bengal Trails",
   "description": "Discover the authentic beauty of West Bengal. Experience culture, landscapes, and unforgettable memories with Bengal's most trusted travel companion.",
   "start_url": "/",
   "display": "standalone",
@@ -25,7 +25,7 @@
   ],
   "screenshots": [
     {
-      "src": "data:image/svg+xml,%3Csvg width='540' height='720' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%237d1f2e' width='540' height='720'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='48' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3EGOBRO Screenshot%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg width='540' height='720' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%237d1f2e' width='540' height='720'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='48' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3EBengal Trails Screenshot%3C/text%3E%3C/svg%3E",
       "sizes": "540x720",
       "type": "image/svg+xml",
       "form_factor": "narrow"

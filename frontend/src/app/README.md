@@ -1,4 +1,4 @@
-# 🌟 GOBRO - West Bengal Tourism Website
+# 🌟 Bengal Trails - West Bengal Tourism Website
 
 > **Discover the Heart of West Bengal** - A comprehensive, fully functional tourism platform showcasing 197+ authentic destinations across West Bengal with advanced search, filters, and beautiful animations.
 

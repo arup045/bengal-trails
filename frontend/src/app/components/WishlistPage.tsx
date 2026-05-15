@@ -47,7 +47,7 @@ export function WishlistPage() {
     const url = window.location.href;
     
     if (navigator.share) {
-      navigator.share({ title: 'My GOBRO Wishlist', text, url });
+      navigator.share({ title: 'My Bengal Trails Wishlist', text, url });
     } else {
       navigator.clipboard.writeText(`${text}\n${url}`);
       toast.success('Wishlist copied to clipboard!');

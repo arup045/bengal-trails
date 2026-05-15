@@ -6,6 +6,19 @@ import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
+
+// Razorpay SDK loader — only loads checkout.js on demand
+function loadRazorpay(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) return resolve(true);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 interface BookingSystemProps {
   destinationSlug: string;
   destinationName: string;
@@ -67,6 +80,8 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
     };
   };
 
+  // Submit booking with real Razorpay checkout
+  // Falls back to dev-mode flow if backend reports Razorpay isn't configured.
   const handleSubmitBooking = async () => {
     if (!user) {
       toast.error('Please sign in to make a booking');
@@ -81,6 +96,77 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
     try {
       setLoading(true);
+
+      // Step 1: Create Razorpay order on backend
+      const orderRes = await fetch(`${API_BASE}/payments/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+        },
+        body: JSON.stringify({ amount: Math.round(costs.total) }),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) {
+        toast.error(orderData.error || 'Could not create payment order');
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: If real Razorpay, open checkout; if dev mode, skip directly to booking
+      if (!orderData.order?.dev_mode && orderData.keyId !== 'dev_mode_no_real_payment') {
+        const sdkLoaded = await loadRazorpay();
+        if (!sdkLoaded) {
+          toast.error('Could not load payment gateway. Try again.');
+          setLoading(false);
+          return;
+        }
+        const paymentResult: { paymentId: string; orderId: string; signature: string } | null = await new Promise((resolve) => {
+          const rzp = new (window as any).Razorpay({
+            key: orderData.keyId,
+            amount: orderData.order.amount,
+            currency: orderData.order.currency || 'INR',
+            order_id: orderData.order.id,
+            name: 'Bengal Trails',
+            description: `Booking for ${destinationName}`,
+            prefill: {
+              name: user.name || '',
+              email: user.email || '',
+            },
+            theme: { color: '#9333ea' },
+            handler: (response: any) => resolve({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+            }),
+            modal: { ondismiss: () => resolve(null) },
+          });
+          rzp.open();
+        });
+
+        if (!paymentResult) {
+          toast.info('Payment cancelled');
+          setLoading(false);
+          return;
+        }
+
+        // Step 3: Verify payment on backend
+        const verifyRes = await fetch(`${API_BASE}/payments/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+          },
+          body: JSON.stringify(paymentResult),
+        });
+        if (!verifyRes.ok) {
+          toast.error('Payment verification failed');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Step 4: Create booking record (works for both real and dev mode)
       const response = await fetch(
         `${API_BASE}/bookings`,
         {
@@ -407,10 +493,10 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
               <p className="text-gray-600">Your payment information is encrypted and secure</p>
             </div>
 
-            <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
-              <p className="text-yellow-800 font-semibold mb-2">Demo Mode Active</p>
-              <p className="text-yellow-700 text-sm">
-                This is a demonstration. No actual payment will be processed. Click "Confirm Booking" to simulate a successful booking.
+            <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-blue-800 font-semibold mb-2">Payment</p>
+              <p className="text-blue-700 text-sm">
+                You'll be redirected to Razorpay's secure checkout. If the backend doesn't have Razorpay keys configured yet, the booking will be recorded without a charge (dev mode).
               </p>
             </div>
 

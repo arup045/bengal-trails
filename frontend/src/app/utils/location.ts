@@ -1,4 +1,4 @@
-// Location tracking utilities for GOBRO
+// Location tracking utilities for Bengal Trails
 
 export interface LocationCoords {
   latitude: number;

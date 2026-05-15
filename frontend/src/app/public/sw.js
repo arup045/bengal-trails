@@ -1,4 +1,4 @@
-// GOBRO Service Worker
+// Bengal Trails Service Worker
 const CACHE_NAME = 'gobro-v1';
 const RUNTIME_CACHE = 'gobro-runtime-v1';
 
@@ -13,7 +13,7 @@ const PRECACHE_URLS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('GOBRO: Opened cache');
+      console.log('Bengal Trails: Opened cache');
       return cache.addAll(PRECACHE_URLS);
     }).then(() => {
       return self.skipWaiting();
@@ -85,7 +85,7 @@ self.addEventListener('sync', (event) => {
 // Push notifications
 self.addEventListener('push', (event) => {
   const options = {
-    body: event.data ? event.data.text() : 'New update from GOBRO!',
+    body: event.data ? event.data.text() : 'New update from Bengal Trails!',
     icon: '/manifest.json',
     badge: '/manifest.json',
     vibrate: [200, 100, 200],
@@ -106,7 +106,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('GOBRO Travel Updates', options)
+    self.registration.showNotification('Bengal Trails Travel Updates', options)
   );
 });
 

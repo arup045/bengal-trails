@@ -21,7 +21,7 @@ export function LegalPage({ page }: LegalPageProps) {
         },
         {
           heading: '3. Data Storage',
-          body: 'Account data is stored securely with Supabase. Passwords are hashed and never stored in plaintext. We retain data only as long as necessary to provide the service.',
+          body: 'Account data is stored securely in a PostgreSQL database hosted on Render. Passwords are hashed with bcrypt and never stored in plaintext. Uploaded photos are stored via Cloudinary CDN. We retain data only as long as necessary to provide the service.',
         },
         {
           heading: '4. Cookies',
@@ -42,19 +42,19 @@ export function LegalPage({ page }: LegalPageProps) {
       sections: [
         {
           heading: '1. Acceptance',
-          body: 'By using GOBRO, you agree to these terms. If you do not agree, please do not use the service.',
+          body: 'By using Bengal Trails, you agree to these terms. If you do not agree, please do not use the service.',
         },
         {
           heading: '2. Use of Service',
-          body: 'GOBRO provides travel information about West Bengal for personal, non-commercial use. You agree not to misuse the service, attempt to disrupt it, or use it to violate any law.',
+          body: 'Bengal Trails provides travel information about West Bengal for personal, non-commercial use. You agree not to misuse the service, attempt to disrupt it, or use it to violate any law.',
         },
         {
           heading: '3. User Content',
-          body: 'You retain ownership of content you submit (reviews, photos). By submitting, you grant GOBRO a non-exclusive license to display it on the platform.',
+          body: 'You retain ownership of content you submit (reviews, photos). By submitting, you grant Bengal Trails a non-exclusive license to display it on the platform.',
         },
         {
           heading: '4. Travel Information',
-          body: 'Destination details, prices, and timings are provided for guidance only. Verify with official sources before traveling. GOBRO is not liable for inaccuracies or travel outcomes.',
+          body: 'Destination details, prices, and timings are provided for guidance only. Verify with official sources before traveling. Bengal Trails is not liable for inaccuracies or travel outcomes.',
         },
         {
           heading: '5. Account Termination',
@@ -62,7 +62,7 @@ export function LegalPage({ page }: LegalPageProps) {
         },
         {
           heading: '6. Limitation of Liability',
-          body: 'The service is provided "as is" without warranties. To the maximum extent permitted by law, GOBRO is not liable for indirect or consequential damages.',
+          body: 'The service is provided "as is" without warranties. To the maximum extent permitted by law, Bengal Trails is not liable for indirect or consequential damages.',
         },
       ],
     },

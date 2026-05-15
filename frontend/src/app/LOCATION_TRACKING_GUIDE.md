@@ -1,8 +1,8 @@
-# 📍 GOBRO Location Tracking & Map Services - Complete Guide
+# 📍 Bengal Trails Location Tracking & Map Services - Complete Guide
 
 ## 🎉 What's Integrated
 
-Your GOBRO tourism website now has **free location tracking and map services** built directly into existing pages! No API keys required - everything uses browser Geolocation API with smart permission handling.
+Your Bengal Trails tourism website now has **free location tracking and map services** built directly into existing pages! No API keys required - everything uses browser Geolocation API with smart permission handling.
 
 ---
 
@@ -438,7 +438,7 @@ All 197 West Bengal destinations already have coordinates! ✅
 
 ## 🎉 Summary
 
-Your GOBRO website now has **professional location tracking** features:
+Your Bengal Trails website now has **professional location tracking** features:
 
 - 🗺️ **Near Me page** - Find destinations by distance
 - 📏 **Distance calculation** - Accurate to ~1 meter

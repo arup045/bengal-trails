@@ -42,7 +42,7 @@ export function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-black text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            GOBRO
+            Bengal Trails
           </h1>
           <p className="text-purple-100 text-lg">Admin Login</p>
         </div>
@@ -91,7 +91,7 @@ export function AdminLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  placeholder="admin@gobro.com"
+                  placeholder="admin@bengaltrails.com"
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ export function AdminLoginPage() {
 
         {/* Footer */}
         <p className="text-center text-purple-100 text-sm mt-6">
-          GOBRO Tourism Admin Panel © 2026
+          Bengal Trails Tourism Admin Panel © 2026
         </p>
       </div>
     </div>

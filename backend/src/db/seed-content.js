@@ -36,19 +36,19 @@ const blogPosts = [
 const forumThreads = [
   { title: 'Best time to visit Darjeeling for clear Kanchenjunga views?', category: 'travel-tips',
     content: 'Planning my first trip and want to make sure I get those famous mountain views. Friends have given conflicting advice — some say October, others swear by April. What\'s your experience?',
-    user_email: 'priya@gobro.com', tags: ['darjeeling', 'weather'] },
+    user_email: 'priya@bengaltrails.com', tags: ['darjeeling', 'weather'] },
   { title: 'Solo female traveler heading to Sundarbans — safety tips?', category: 'safety',
     content: 'Going on a 2-day safari next month. Any recommendations for trustworthy tour operators and dos/donts as a solo woman traveler?',
-    user_email: 'priya@gobro.com', tags: ['sundarbans', 'solo-travel', 'safety'] },
+    user_email: 'priya@bengaltrails.com', tags: ['sundarbans', 'solo-travel', 'safety'] },
   { title: 'Hidden gems near Kolkata for a weekend trip?', category: 'recommendations',
     content: 'Tired of going to Digha and Mandarmani every weekend. Looking for offbeat places within 200km of Kolkata. Suggestions please!',
-    user_email: 'arjun@gobro.com', tags: ['kolkata', 'weekend', 'offbeat'] },
+    user_email: 'arjun@bengaltrails.com', tags: ['kolkata', 'weekend', 'offbeat'] },
   { title: 'Vegetarian food options in Bengal — is it really hard?', category: 'food',
     content: 'I\'m a strict vegetarian and worried about food options when traveling through West Bengal. Have any veg travelers been there recently? What worked for you?',
-    user_email: 'rohan@gobro.com', tags: ['food', 'vegetarian'] },
+    user_email: 'rohan@bengaltrails.com', tags: ['food', 'vegetarian'] },
   { title: 'Toy Train booking — IRCTC vs offline counter?', category: 'travel-tips',
     content: 'Trying to book the Darjeeling Himalayan Railway joy ride. IRCTC website keeps showing "no availability" but heard offline counter has tickets. Anyone done this recently?',
-    user_email: 'arjun@gobro.com', tags: ['darjeeling', 'toy-train', 'booking'] },
+    user_email: 'arjun@bengaltrails.com', tags: ['darjeeling', 'toy-train', 'booking'] },
 ];
 
 async function seed() {
@@ -87,7 +87,7 @@ async function seed() {
 
     // Create sample users for forum content
     const bcrypt = require('bcryptjs');
-    const users = ['priya@gobro.com', 'arjun@gobro.com', 'rohan@gobro.com'];
+    const users = ['priya@bengaltrails.com', 'arjun@bengaltrails.com', 'rohan@bengaltrails.com'];
     const userIds = {};
     for (const email of users) {
       const name = email.split('@')[0];
@@ -115,10 +115,10 @@ async function seed() {
 
     // Add a few sample reviews to popular destinations
     const sampleReviews = [
-      { slug: 'darjeeling', user: 'priya@gobro.com', rating: 5, title: 'Absolutely magical!', content: 'The toy train ride was the highlight of my trip. Misty mountains, hot tea, and warm hospitality. Cannot wait to go back!', visit_date: '2024-11-15' },
-      { slug: 'darjeeling', user: 'arjun@gobro.com', rating: 4, title: 'Beautiful but crowded', content: 'Stunning views but very touristy in peak season. Recommend visiting in shoulder months for a quieter experience.', visit_date: '2024-12-20' },
-      { slug: 'sundarbans-national-park', user: 'priya@gobro.com', rating: 5, title: 'Once in a lifetime!', content: 'We spotted a tiger! The boat safari was thrilling. Stay overnight at Sajnekhali for the best experience.', visit_date: '2025-01-10' },
-      { slug: 'shantiniketan', user: 'rohan@gobro.com', rating: 5, title: 'Tagore\'s spirit lives here', content: 'Visit during Poush Mela for the full cultural experience. The Baul singers are mesmerizing.', visit_date: '2024-12-25' },
+      { slug: 'darjeeling', user: 'priya@bengaltrails.com', rating: 5, title: 'Absolutely magical!', content: 'The toy train ride was the highlight of my trip. Misty mountains, hot tea, and warm hospitality. Cannot wait to go back!', visit_date: '2024-11-15' },
+      { slug: 'darjeeling', user: 'arjun@bengaltrails.com', rating: 4, title: 'Beautiful but crowded', content: 'Stunning views but very touristy in peak season. Recommend visiting in shoulder months for a quieter experience.', visit_date: '2024-12-20' },
+      { slug: 'sundarbans-national-park', user: 'priya@bengaltrails.com', rating: 5, title: 'Once in a lifetime!', content: 'We spotted a tiger! The boat safari was thrilling. Stay overnight at Sajnekhali for the best experience.', visit_date: '2025-01-10' },
+      { slug: 'shantiniketan', user: 'rohan@bengaltrails.com', rating: 5, title: 'Tagore\'s spirit lives here', content: 'Visit during Poush Mela for the full cultural experience. The Baul singers are mesmerizing.', visit_date: '2024-12-25' },
     ];
 
     for (const r of sampleReviews) {

@@ -31,13 +31,13 @@ async function sendPasswordResetEmail(email, token) {
   }
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || `"Gobro Travel" <noreply@gobro.com>`,
+    from: process.env.EMAIL_FROM || `"Bengal Trails Travel" <noreply@bengaltrails.com>`,
     to: email,
-    subject: 'Reset your Gobro password',
+    subject: 'Reset your Bengal Trails password',
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
         <h2 style="color:#1a1a1a">Reset your password</h2>
-        <p style="color:#555">Click the button below to reset your Gobro password. This link expires in 1 hour.</p>
+        <p style="color:#555">Click the button below to reset your Bengal Trails password. This link expires in 1 hour.</p>
         <a href="${resetUrl}"
            style="display:inline-block;background:#e85d24;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin:16px 0">
           Reset Password
@@ -60,12 +60,12 @@ async function sendWelcomeEmail(email, name) {
   }
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || `"Gobro Travel" <noreply@gobro.com>`,
+    from: process.env.EMAIL_FROM || `"Bengal Trails Travel" <noreply@bengaltrails.com>`,
     to: email,
-    subject: `Welcome to Gobro, ${name}! 🌿`,
+    subject: `Welcome to Bengal Trails, ${name}! 🌿`,
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-        <h2 style="color:#1a1a1a">Welcome to Gobro, ${name}!</h2>
+        <h2 style="color:#1a1a1a">Welcome to Bengal Trails, ${name}!</h2>
         <p style="color:#555">You're now part of West Bengal's premier travel community.</p>
         <p style="color:#555">Start exploring 197+ amazing destinations across the state.</p>
         <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/#/explore"
@@ -91,21 +91,21 @@ async function sendNewsletterEmail(subscribers, subject, body) {
   for (const email of subscribers) {
     try {
       await transporter.sendMail({
-        from: process.env.EMAIL_FROM || `"Gobro Travel" <noreply@gobro.com>`,
+        from: process.env.EMAIL_FROM || `"Bengal Trails Travel" <noreply@bengaltrails.com>`,
         to: email,
         subject,
         html: `
           <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f9f6f2;padding:0">
             <div style="background:linear-gradient(135deg,#7c3aed,#9333ea);padding:24px;text-align:center">
-              <h1 style="color:#fff;margin:0;font-size:28px;letter-spacing:1px">GOBRO</h1>
+              <h1 style="color:#fff;margin:0;font-size:28px;letter-spacing:1px">Bengal Trails</h1>
               <p style="color:#e9d5ff;margin:6px 0 0;font-size:13px">Discover West Bengal</p>
             </div>
             <div style="background:#fff;padding:32px 28px;line-height:1.6;color:#1a1a1a">
               ${body}
             </div>
             <div style="padding:20px;text-align:center;color:#888;font-size:12px">
-              <p>You received this because you subscribed to the Gobro newsletter.</p>
-              <p style="margin-top:6px"><a href="${process.env.FRONTEND_URL || '#'}" style="color:#7c3aed">Visit Gobro</a></p>
+              <p>You received this because you subscribed to the Bengal Trails newsletter.</p>
+              <p style="margin-top:6px"><a href="${process.env.FRONTEND_URL || '#'}" style="color:#7c3aed">Visit Bengal Trails</a></p>
             </div>
           </div>
         `,

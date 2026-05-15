@@ -194,7 +194,7 @@ export function SystemCheck() {
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-4xl mb-2 text-purple-600">GOBRO System Check</h1>
+              <h1 className="text-4xl mb-2 text-purple-600">Bengal Trails System Check</h1>
               <p className="text-gray-600">Comprehensive website functionality test</p>
             </div>
             <a href="#/" className="text-purple-600 hover:text-purple-700">← Back to Home</a>

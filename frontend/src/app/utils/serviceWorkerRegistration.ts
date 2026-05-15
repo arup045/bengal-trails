@@ -1,4 +1,4 @@
-// Service Worker Registration for GOBRO
+// Service Worker Registration for Bengal Trails
 
 export function register() {
   if ('serviceWorker' in navigator) {

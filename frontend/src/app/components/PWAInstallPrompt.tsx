@@ -13,10 +13,10 @@ export function PWAInstallPrompt() {
         navigator.serviceWorker
           .register('/sw.js')
           .then((registration) => {
-            console.log('GOBRO: Service Worker registered successfully:', registration.scope);
+            console.log('Bengal Trails: Service Worker registered successfully:', registration.scope);
           })
           .catch((error) => {
-            console.log('GOBRO: Service Worker registration failed:', error);
+            console.log('Bengal Trails: Service Worker registration failed:', error);
           });
       });
     }
@@ -41,7 +41,7 @@ export function PWAInstallPrompt() {
 
     // Check if app is already installed
     window.addEventListener('appinstalled', () => {
-      console.log('GOBRO: App was installed');
+      console.log('Bengal Trails: App was installed');
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
     });
@@ -61,7 +61,7 @@ export function PWAInstallPrompt() {
 
     // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`GOBRO: User response to the install prompt: ${outcome}`);
+    console.log(`Bengal Trails: User response to the install prompt: ${outcome}`);
 
     // Clear the deferred prompt
     setDeferredPrompt(null);
@@ -97,7 +97,7 @@ export function PWAInstallPrompt() {
               </div>
 
               <div className="flex-1">
-                <h3 className="text-lg font-bold mb-2">Install GOBRO App</h3>
+                <h3 className="text-lg font-bold mb-2">Install Bengal Trails App</h3>
                 <p className="text-purple-100 text-sm mb-4">
                   Get quick access to West Bengal travel guides, offline access, and a faster experience!
                 </p>
