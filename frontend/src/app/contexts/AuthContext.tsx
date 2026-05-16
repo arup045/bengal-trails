@@ -111,18 +111,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = `${API_BASE}/auth/facebook`;
     return { success: true };
   };
-      if (data.url) { window.location.href = data.url; return { success: true }; }
-      return { success: false, error: 'No OAuth URL received' };
-    } catch {
-      return { success: false, error: 'Network error' };
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      await authFetch('/auth/signout', { method: 'POST' });
-    } catch { /* ignore */ } finally {
-      localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('admin_session');
       setAccessToken(null);
