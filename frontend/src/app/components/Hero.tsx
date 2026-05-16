@@ -1,5 +1,5 @@
 import { TrendingUp, Camera, Utensils, Car, Mountain, Bike } from 'lucide-react';
-import { memo, RefObject } from 'react';
+import { memo } from 'react';
 import { SmartSearchBar } from './SmartSearchBar';
 
 const TourTypeButton = memo(({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) => (
@@ -13,14 +13,7 @@ const TourTypeButton = memo(({ icon, label, href }: { icon: React.ReactNode; lab
 ));
 TourTypeButton.displayName = 'TourTypeButton';
 
-interface HeroProps {
-  /** Optional ref attached to the hero's search bar wrapper — used by the
-   * parent to detect when this bar scrolls out of view (so the header
-   * sticky search can slide in). */
-  searchSentinelRef?: RefObject<HTMLDivElement | null>;
-}
-
-export function Hero({ searchSentinelRef }: HeroProps) {
+export function Hero() {
   return (
     <section className="relative bg-gradient-to-br from-purple-700 via-purple-600 to-orange-500 overflow-hidden">
       {/* Background image */}
@@ -48,7 +41,7 @@ export function Hero({ searchSentinelRef }: HeroProps) {
         </div>
 
         {/* The unified smart search bar — same component used everywhere */}
-        <div ref={searchSentinelRef} className="max-w-2xl mx-auto mb-8 relative">
+        <div className="max-w-2xl mx-auto mb-8 relative">
           <SmartSearchBar
             size="lg"
             placeholder="Search destinations, festivals, food…"

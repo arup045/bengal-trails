@@ -20,7 +20,7 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { placesData } from './data/places-full';
 import { installGlobalErrorHandlers } from './utils/errorReporter';
 import { setPageMeta, PAGE_META } from './utils/seo';
-import { useStickyScroll } from './utils/useStickyScroll';
+
 
 installGlobalErrorHandlers();
 
@@ -382,8 +382,6 @@ export default function App() {
   };
 
 
-  // Sticky search bar: shows the header search after user scrolls past the page-level search
-  const { sentinelRef, isSticky } = useStickyScroll();
 
   // ── SEO: set page meta on route change ──────────────────────────────────────
   useEffect(() => {
@@ -447,7 +445,7 @@ export default function App() {
             <Suspense fallback={<PageLoader />}>
               {currentPage === 'home' && (
                 <>
-                  <Hero searchSentinelRef={sentinelRef} />
+                  <Hero />
                   <Features />
                   <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><DestinationGridSkeleton count={3} /></div>}>
                     <ToolsSection />
