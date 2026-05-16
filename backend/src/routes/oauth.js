@@ -44,10 +44,12 @@ function setRefreshCookie(res, refreshToken) {
 }
 
 function callbackBase(req) {
-  // Use API_BASE_URL if explicitly set (recommended for prod), otherwise infer
-  // from the incoming request — needed because Render terminates HTTPS and the
-  // app sees HTTP internally.
-  return process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  // Use API_BASE_URL if explicitly set (recommended for prod), otherwise infer.
+  // Render terminates HTTPS before traffic reaches the app, so req.protocol is 'http'.
+  // We force 'https' when in production to avoid redirect_uri_mismatch errors.
+  if (process.env.API_BASE_URL) return process.env.API_BASE_URL;
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : req.protocol;
+  return `${protocol}://${req.get('host')}`;
 }
 
 function frontendUrl() {

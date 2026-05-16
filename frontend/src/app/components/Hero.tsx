@@ -31,7 +31,7 @@ export function Hero({ searchSentinelRef }: HeroProps) {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 py-20 sm:py-24 relative">
+      <div className="max-w-7xl mx-auto px-6 pt-28 pb-20 sm:pt-32 sm:pb-24 relative">
         <p className="text-center text-white/90 mb-6">🌟 Explore India's Cultural Capital</p>
 
         <div className="text-center space-y-4 mb-10">

@@ -441,9 +441,9 @@ export default function App() {
 
         <ErrorBoundary>
           {/* Header is now universal across all pages */}
-          <Header showSearchBar={currentPage !== 'home' || isSticky} />
+          <Header />
 
-          <main id="main-content" role="main" tabIndex={-1}>
+          <main id="main-content" role="main" tabIndex={-1} className={currentPage === 'home' ? '' : 'pt-16'}>
             <Suspense fallback={<PageLoader />}>
               {currentPage === 'home' && (
                 <>
