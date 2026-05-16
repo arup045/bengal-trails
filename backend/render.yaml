@@ -1,11 +1,9 @@
-# Render.com deployment config
-# This file lets you deploy with one click via Blueprint
-
 services:
   - type: web
     name: gobro-api
     env: node
     plan: free
+    rootDir: backend
     buildCommand: npm install
     startCommand: npm run migrate && npm run seed && npm run seed:content && npm start
     healthCheckPath: /health
@@ -22,10 +20,6 @@ services:
         value: admin@gobro.com
       - key: PORT
         value: 3000
-      - key: DATABASE_URL
-        fromDatabase:
-          name: gobro-postgres
-          property: connectionString
 
 databases:
   - name: gobro-postgres

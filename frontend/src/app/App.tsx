@@ -82,7 +82,7 @@ const PageLoader = () => (
 );
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist' | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals' | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools' | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup' | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification' | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact' | 'emergency' | 'not-found'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist' | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals' | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools' | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup' | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification' | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact' | 'emergency' | 'not-found' | 'oauth-success'>('home');
   const [currentSlug, setCurrentSlug] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -443,7 +443,7 @@ export default function App() {
           {/* Header is now universal across all pages */}
           <Header />
 
-          <main id="main-content" role="main" tabIndex={-1} className={currentPage === 'home' ? '' : 'pt-16'}>
+          <main id="main-content" role="main" tabIndex={-1} className="">
             <Suspense fallback={<PageLoader />}>
               {currentPage === 'home' && (
                 <>
@@ -543,6 +543,8 @@ export default function App() {
               {currentPage === 'contact' && <LegalPage page="contact" />}
 
               {currentPage === 'emergency' && <EmergencyInfo />}
+
+              {currentPage === 'oauth-success' && <OAuthSuccessPage />}
 
               {currentPage === 'not-found' && <NotFoundPage />}
             </Suspense>
