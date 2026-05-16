@@ -111,6 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = `${API_BASE}/auth/facebook`;
     return { success: true };
   };
+
+  const signOut = async () => {
+    try {
+      await authFetch('/auth/signout', { method: 'POST' });
+    } catch { /* ignore */ } finally {
+      localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('admin_session');
       setAccessToken(null);
