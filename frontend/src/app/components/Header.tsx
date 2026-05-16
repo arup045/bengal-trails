@@ -32,12 +32,16 @@ function HeaderSearch() {
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const { user, signOut, isAdmin } = useAuth();
   const userRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fn = () => setSearchVisible(window.scrollY > 280);
+    const fn = () => {
+      setScrolled(window.scrollY > 10);
+      setSearchVisible(window.scrollY > 280);
+    };
     window.addEventListener('scroll', fn, { passive: true });
     fn();
     return () => window.removeEventListener('scroll', fn);
@@ -63,7 +67,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <header className={`sticky top-0 z-50 bg-white transition-all duration-200 ${scrolled ? "border-b border-gray-200 shadow-md" : "border-b border-gray-100"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14 gap-4">
 
