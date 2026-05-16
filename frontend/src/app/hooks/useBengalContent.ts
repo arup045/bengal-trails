@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_BASE ||
-  (typeof window !== 'undefined' && (window as any).__Bengal Trails_API_BASE__) ||
+  (typeof window !== 'undefined' && (window as any).__BengalTrails_API_BASE__) ||
   'http://localhost:3000/api';
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {

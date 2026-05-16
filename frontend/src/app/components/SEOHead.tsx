@@ -67,8 +67,8 @@ export function SEOHead({
     setMetaTag('twitter:title', title);
     setMetaTag('twitter:description', description);
     setMetaTag('twitter:image', image);
-    setMetaTag('twitter:site', '@Bengal TrailsTravel');
-    setMetaTag('twitter:creator', '@Bengal TrailsTravel');
+    setMetaTag('twitter:site', '@BengalTrailsTravel');
+    setMetaTag('twitter:creator', '@BengalTrailsTravel');
 
     // Additional article meta tags
     if (type === 'article') {
@@ -179,9 +179,9 @@ export const getOrganizationSchema = () => ({
     availableLanguage: ['English', 'Bengali', 'Hindi'],
   },
   sameAs: [
-    'https://www.facebook.com/Bengal TrailsTravel',
-    'https://twitter.com/Bengal TrailsTravel',
-    'https://www.instagram.com/Bengal TrailsTravel',
+    'https://www.facebook.com/BengalTrailsTravel',
+    'https://twitter.com/BengalTrailsTravel',
+    'https://www.instagram.com/BengalTrailsTravel',
   ],
 });
 

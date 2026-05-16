@@ -357,9 +357,9 @@ export function InstagramSpots() {
           transition={{ delay: 0.6 }}
           className="mt-8 bg-white rounded-3xl p-8 shadow-lg text-center"
         >
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">🏆 #Bengal TrailsPhotoChallenge</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">🏆 #BengalTrailsPhotoChallenge</h3>
           <p className="text-gray-600 mb-6">
-            Share your best West Bengal shots with <span className="font-semibold text-purple-600">#Bengal TrailsPhotoChallenge</span> 
+            Share your best West Bengal shots with <span className="font-semibold text-purple-600">#BengalTrailsPhotoChallenge</span> 
             <br />Tag us and get featured on our page!
           </p>
           <div className="flex justify-center gap-4">
