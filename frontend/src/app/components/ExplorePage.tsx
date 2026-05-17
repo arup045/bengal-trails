@@ -486,10 +486,11 @@ export function ExplorePage() {
                 type="text"
                 placeholder="Search destinations, experiences, or activities..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-8 py-4 bg-transparent text-white placeholder-white/60 text-lg focus:outline-none rounded-full"
+                onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key==="Enter" && setSearchQuery(searchQuery)}
+                className="w-full pl-16 pr-32 py-4 bg-transparent text-white placeholder-white/60 text-lg focus:outline-none rounded-full"
               />
-              {searchQuery && (
+              <button onClick={() => { if(searchQuery.trim()) window.location.hash="/explore?q="+encodeURIComponent(searchQuery.trim()); }} className="absolute right-3 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-md">Search</button>
+            {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
                   className="absolute right-8 top-1/2 -translate-y-1/2 text-white/80 hover:text-white transition-colors"
