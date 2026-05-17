@@ -44,6 +44,7 @@ export function Hero() {
         <div className="max-w-2xl mx-auto mb-8 relative">
           <SmartSearchBar
             size="lg"
+            showButton={true}
             placeholder="Search destinations, festivals, food…"
           />
         </div>

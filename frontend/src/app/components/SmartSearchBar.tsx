@@ -152,7 +152,7 @@ export function SmartSearchBar({
         // Free-text submit → go to explore filtered
         setIsOpen(false);
         if (onSelect) onSelect({ type: 'query', query: query.trim() });
-        else window.location.hash = `#/explore?location=${encodeURIComponent(query.trim())}`;
+        else window.location.hash = `#/explore?q=${encodeURIComponent(query.trim())}`;
       }
     } else if (e.key === 'Escape') {
       setIsOpen(false);
@@ -266,7 +266,7 @@ export function SmartSearchBar({
                 No results for "<span className="font-medium text-gray-700">{query}</span>"
                 <button
                   onClick={() => {
-                    window.location.hash = `#/explore?location=${encodeURIComponent(query)}`;
+                    window.location.hash = `#/explore?q=${encodeURIComponent(query)}`;
                     setIsOpen(false);
                   }}
                   className="block mt-2 mx-auto text-purple-600 hover:text-purple-700 font-medium"
@@ -279,7 +279,7 @@ export function SmartSearchBar({
             {query.trim() && flatSuggestions.length > 0 && (
               <button
                 onClick={() => {
-                  window.location.hash = `#/explore?location=${encodeURIComponent(query)}`;
+                  window.location.hash = `#/explore?q=${encodeURIComponent(query)}`;
                   setIsOpen(false);
                 }}
                 className="w-full px-4 py-3 text-sm font-medium text-purple-600 hover:bg-purple-50 border-t border-gray-100 flex items-center justify-center gap-2"
