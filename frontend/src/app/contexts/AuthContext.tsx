@@ -101,13 +101,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    // Guard: if API_BASE still points to localhost in production, OAuth will fail.
+    // Ensure VITE_API_BASE is set in Vercel → Settings → Environment Variables.
+    if (import.meta.env.PROD && API_BASE.includes('localhost')) {
+      return { success: false, error: 'Google sign-in is not configured for this deployment. Please contact support.' };
+    }
     // Full-page redirect to the backend OAuth route. The backend handles the
-    // Google handshake and redirects back to /#/auth-callback?access_token=...
+    // Google handshake and redirects back to /#/oauth-success?token=...
     window.location.href = `${API_BASE}/auth/google`;
     return { success: true };
   };
 
   const signInWithFacebook = async () => {
+    if (import.meta.env.PROD && API_BASE.includes('localhost')) {
+      return { success: false, error: 'Facebook sign-in is not configured for this deployment. Please contact support.' };
+    }
     window.location.href = `${API_BASE}/auth/facebook`;
     return { success: true };
   };

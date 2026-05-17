@@ -88,7 +88,7 @@ export async function saveForOfflineSync(
 // IndexedDB helper
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('gobro-offline', 1);
+    const request = indexedDB.open('bengaltrails-offline', 1);
 
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);

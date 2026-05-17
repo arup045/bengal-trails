@@ -4,7 +4,7 @@ interface LegalPageProps {
   page: 'privacy' | 'terms' | 'cookies' | 'contact';
 }
 
-const SUPPORT_EMAIL = 'hello@gobro.travel';
+const SUPPORT_EMAIL = 'hello@bengaltrails.com';
 
 export function LegalPage({ page }: LegalPageProps) {
   const content = {

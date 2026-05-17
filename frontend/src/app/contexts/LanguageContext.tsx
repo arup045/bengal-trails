@@ -258,12 +258,12 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(() => {
-    const saved = localStorage.getItem('gobro-language');
+    const saved = localStorage.getItem('bengaltrails-language');
     return (saved as Language) || 'en';
   });
 
   useEffect(() => {
-    localStorage.setItem('gobro-language', language);
+    localStorage.setItem('bengaltrails-language', language);
     document.documentElement.lang = language;
   }, [language]);
 

@@ -357,7 +357,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
                   <ImageUploader
                     value=""
                     onChange={(url) => url && setPhotos([url])}
-                    folder="gobro/reviews"
+                    folder="bengal-trails/reviews"
                     helperText="Share a photo of your visit (up to 4)"
                     showUrlInput={false}
                   />
@@ -381,7 +381,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
                         <ImageUploader
                           value=""
                           onChange={(url) => url && setPhotos([...photos, url])}
-                          folder="gobro/reviews"
+                          folder="bengal-trails/reviews"
                           showUrlInput={false}
                           allowDrop={false}
                           className="h-full"

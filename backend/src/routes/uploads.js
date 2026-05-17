@@ -29,7 +29,7 @@ function getCloudinary() {
 }
 
 // Upload to cloudinary
-function uploadToCloudinary(buffer, folder = 'gobro') {
+function uploadToCloudinary(buffer, folder = 'bengal-trails') {
   return new Promise((resolve, reject) => {
     const cld = getCloudinary();
     if (!cld) return reject(new Error('Cloudinary not configured'));
@@ -58,7 +58,7 @@ router.post('/image', authenticate, limiters.upload, upload.single('image'), asy
       });
     }
 
-    const folder = req.body.folder || `gobro/${req.user.id}`;
+    const folder = req.body.folder || `bengal-trails/${req.user.id}`;
     const result = await uploadToCloudinary(req.file.buffer, folder);
 
     return res.json({
@@ -79,7 +79,7 @@ router.post('/multiple', authenticate, limiters.upload, upload.array('images', 8
     if (!req.files?.length) return res.status(400).json({ error: 'No files uploaded' });
 
     const cld = getCloudinary();
-    const folder = req.body.folder || `gobro/${req.user.id}`;
+    const folder = req.body.folder || `bengal-trails/${req.user.id}`;
     const urls = [];
 
     for (const file of req.files) {

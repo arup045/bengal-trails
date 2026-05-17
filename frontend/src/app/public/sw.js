@@ -1,6 +1,6 @@
 // Bengal Trails Service Worker
-const CACHE_NAME = 'gobro-v1';
-const RUNTIME_CACHE = 'gobro-runtime-v1';
+const CACHE_NAME = 'bengaltrails-v1';
+const RUNTIME_CACHE = 'bengaltrails-runtime-v1';
 
 // Assets to cache on install
 const PRECACHE_URLS = [

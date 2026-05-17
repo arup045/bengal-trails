@@ -448,7 +448,7 @@ export function DestinationManagement() {
                     ...formData,
                     heroImage: { ...formData.heroImage!, url }
                   })}
-                  folder="gobro/destinations"
+                  folder="bengal-trails/destinations"
                   helperText="Click to upload from your computer, or paste a URL below."
                 />
 

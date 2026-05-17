@@ -526,7 +526,11 @@ export function SignInPage() {
                           type="button"
                           onClick={async () => {
                             setLoading(true);
-                            await signInWithGoogle();
+                            const gResult = await signInWithGoogle();
+                            if (gResult && !gResult.success && gResult.error) {
+                              setApiError(gResult.error);
+                              toast.error(gResult.error);
+                            }
                             setLoading(false);
                           }}
                           disabled={loading}
@@ -547,7 +551,11 @@ export function SignInPage() {
                           type="button"
                           onClick={async () => {
                             setLoading(true);
-                            await signInWithFacebook();
+                            const fbResult = await signInWithFacebook();
+                            if (fbResult && !fbResult.success && fbResult.error) {
+                              setApiError(fbResult.error);
+                              toast.error(fbResult.error);
+                            }
                             setLoading(false);
                           }}
                           disabled={loading}
@@ -792,7 +800,11 @@ export function SignInPage() {
                           type="button"
                           onClick={async () => {
                             setLoading(true);
-                            await signInWithGoogle();
+                            const gResult = await signInWithGoogle();
+                            if (gResult && !gResult.success && gResult.error) {
+                              setApiError(gResult.error);
+                              toast.error(gResult.error);
+                            }
                             setLoading(false);
                           }}
                           disabled={loading}
@@ -813,7 +825,11 @@ export function SignInPage() {
                           type="button"
                           onClick={async () => {
                             setLoading(true);
-                            await signInWithFacebook();
+                            const fbResult = await signInWithFacebook();
+                            if (fbResult && !fbResult.success && fbResult.error) {
+                              setApiError(fbResult.error);
+                              toast.error(fbResult.error);
+                            }
                             setLoading(false);
                           }}
                           disabled={loading}

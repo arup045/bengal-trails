@@ -55,7 +55,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onSearch }) => {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('gobro-recent-searches');
+    const saved = localStorage.getItem('bengaltrails-recent-searches');
     if (saved) {
       setRecentSearches(JSON.parse(saved));
     }
@@ -116,7 +116,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onSearch }) => {
   const addToRecentSearches = (search: string) => {
     const updated = [search, ...recentSearches.filter((s) => s !== search)].slice(0, 5);
     setRecentSearches(updated);
-    localStorage.setItem('gobro-recent-searches', JSON.stringify(updated));
+    localStorage.setItem('bengaltrails-recent-searches', JSON.stringify(updated));
   };
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {

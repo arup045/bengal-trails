@@ -429,11 +429,9 @@ async function migrate() {
       VALUES ($1, $2, 'Admin', 'admin', 'active')
       ON CONFLICT (email) DO NOTHING;
     `, [adminEmail, adminPass]);
-// Full-text search indexes
-await client.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm;`);
-await client.query(`CREATE INDEX IF NOT EXISTS idx_destinations_name_trgm ON destinations USING GIN (name gin_trgm_ops);`);
-await client.query(`CREATE INDEX IF NOT EXISTS idx_festivals_name_trgm ON festivals USING GIN (name gin_trgm_ops);`);
-await client.query(`CREATE INDEX IF NOT EXISTS idx_food_name_trgm ON food USING GIN (name gin_trgm_ops);`);
+
+    // ── Extra trigram indexes (destinations only — festivals/food served from JSON) ──
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_destinations_name_trgm ON destinations USING GIN (name gin_trgm_ops);`);
 
     await client.query('COMMIT');
     console.log('✅ Migration complete!');

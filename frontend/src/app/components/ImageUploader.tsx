@@ -8,7 +8,7 @@ interface ImageUploaderProps {
   value?: string;
   /** Called with the uploaded image URL on success */
   onChange: (url: string, publicId?: string) => void;
-  /** Folder on Cloudinary (e.g. 'destinations', 'reviews'). Default 'gobro/uploads' */
+  /** Folder on Cloudinary (e.g. 'destinations', 'reviews'). Default 'bengal-trails/uploads' */
   folder?: string;
   /** Allow drag-and-drop. Default true */
   allowDrop?: boolean;
@@ -37,7 +37,7 @@ interface ImageUploaderProps {
 export function ImageUploader({
   value = '',
   onChange,
-  folder = 'gobro/uploads',
+  folder = 'bengal-trails/uploads',
   allowDrop = true,
   showUrlInput = true,
   maxSizeMB = 5,
