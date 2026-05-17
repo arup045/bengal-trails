@@ -149,7 +149,7 @@ export function Footer() {
                 </div>
                 <a href="#/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
                   <Mail className="w-4 h-4 text-orange-400" />
-                  <span className="text-sm">hello@gobro.travel</span>
+                  <span className="text-sm">hello@bengaltrails.com</span>
                 </a>
                 <a href="#/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
                   <Phone className="w-4 h-4 text-orange-400" />
