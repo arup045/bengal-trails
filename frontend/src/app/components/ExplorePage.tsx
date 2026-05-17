@@ -77,6 +77,10 @@ export function ExplorePage() {
       if (queryStart === -1) return;
       const params = new URLSearchParams(hash.slice(queryStart + 1));
       const location = params.get('location');
+    const q = params.get('q');
+    if (q) setSearchQuery(q);
+    const q = params.get('q');
+    if (q) setSearchQuery(q);
       const activity = params.get('activity');
       const tourType = params.get('tourType');
       if (location) setSearchQuery(location);
