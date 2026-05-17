@@ -12,8 +12,7 @@ import {
   SheetTrigger,
 } from './ui/sheet';
 
-/* HeaderSearch removed */
-function HeaderSearchOLD() {
+function HeaderSearch() {
   const [q, setQ] = useState('');
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
