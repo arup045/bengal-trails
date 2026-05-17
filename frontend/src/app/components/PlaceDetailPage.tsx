@@ -423,6 +423,19 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
+{place.latitude && place.longitude && (
+  <div className="mt-6 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+    <iframe
+      title={`Map of ${place.name}`}
+      width="100%"
+      height="400"
+      style={{border:0}}
+      loading="lazy"
+      allowFullScreen
+      src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyD-placeholder&q=${place.latitude},${place.longitude}&zoom=13`}
+    />
+  </div>
+)}
                 <TransportGuideSection destinationSlug={place.slug} />
               </motion.div>
             )}
