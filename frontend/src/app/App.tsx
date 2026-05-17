@@ -51,6 +51,7 @@ const AdminLoginPage = lazy(() => import('./components/AdminLoginPage').then(m =
 const AdminSetupPage = lazy(() => import('./components/AdminSetupPage').then(m => ({ default: m.AdminSetupPage })));
 const LegalPage = lazy(() => import('./components/LegalPage').then(m => ({ default: m.LegalPage })));
 const EmergencyInfo = lazy(() => import('./components/EmergencyInfo').then(m => ({ default: m.EmergencyInfo })));
+const TourPackagesPage = lazy(() => import('./components/TourPackagesPage').then(m => ({ default: m.TourPackagesPage })));
 const BlogPage = lazy(() => import('./components/BlogPage').then(m => ({ default: m.BlogPage })));
 const NotFoundPage = lazy(() => import('./components/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
@@ -313,6 +314,8 @@ export default function App() {
         setCurrentPage('social');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('/#/social', 'Social Features');
+      } else if (hash === '/tours' || hash.startsWith('/tours/')) {
+        setCurrentPage('tours' as any);
       } else if (hash === '/blog' || hash.startsWith('/blog/')) {
         setCurrentPage('blog' as any);
       } else if (hash === '/community') {
@@ -533,6 +536,7 @@ export default function App() {
 
               {currentPage === 'social' && <SocialFeatures />}
 
+              {currentPage === 'tours' && <TourPackagesPage />}
               {currentPage === 'blog' && <BlogPage />}
               {currentPage === 'community' && <UserGeneratedContent />}
 
