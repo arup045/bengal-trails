@@ -607,7 +607,7 @@ export function SignInPage() {
                         <label className="text-gray-700 text-sm mb-2 block">Full name</label>
                         <input
                           type="text"
-                          placeholder="Arup Bhattacharya"
+                          placeholder="Enter your full name"
                           value={signupForm.fullName}
                           onChange={(e) => {
                             setSignupForm({ ...signupForm, fullName: e.target.value });
