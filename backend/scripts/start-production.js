@@ -1,22 +1,24 @@
-/**
- * Production startup script for Render.
- * Runs migration first, then starts the API server.
- * If migration fails, logs the error but still starts the server
- * (so health check passes and Render doesn't kill the deploy).
- */
-const { execSync } = require('child_process');
+// Bengal Trails - Production startup script for Render
+// Runs migrate first, then starts the server.
+// If migration fails, it still starts (so health check passes).
 
-console.log('\n🚀 Bengal Trails — Production Startup\n');
+'use strict';
 
-// ── Step 1: Run migration ─────────────────────────────────────────────────────
+var child_process = require('child_process');
+var path = require('path');
+
+var backendDir = path.join(__dirname, '..');
+
+console.log('[startup] Running database migration...');
 try {
-  console.log('📦 Running database migration...');
-  execSync('node src/db/migrate.js', { stdio: 'inherit', cwd: __dirname + '/..' });
-  console.log('✅ Migration done\n');
-} catch (err) {
-  console.error('⚠️  Migration error (server will still start):', err.message);
+  child_process.execSync('node src/db/migrate.js', {
+    stdio: 'inherit',
+    cwd: backendDir
+  });
+  console.log('[startup] Migration complete.');
+} catch (e) {
+  console.error('[startup] Migration failed (server will still start):', e.message);
 }
 
-// ── Step 2: Start the API server ──────────────────────────────────────────────
-console.log('🌐 Starting API server...');
-require('../src/index.js');
+console.log('[startup] Starting API server...');
+require(path.join(backendDir, 'src', 'index.js'));
