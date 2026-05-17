@@ -144,6 +144,20 @@ app.get('/health', (req, res) => res.json({ status: 'ok', service: 'bengal-trail
 app.use('/api/auth/signup', signupLimiter);
 app.use('/api/auth',            authLimiter, authRoutes);
 app.use('/api/reviews',         reviewRoutes);
+
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    smtp_host: process.env.SMTP_HOST || 'NOT SET',
+    smtp_port: process.env.SMTP_PORT || 'NOT SET',
+    smtp_user: process.env.SMTP_USER || 'NOT SET',
+    smtp_pass: process.env.SMTP_PASS ? 'SET' : 'NOT SET',
+    jwt_secret: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
+    database: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
+    frontend_url: process.env.FRONTEND_URL || 'NOT SET',
+    node_env: process.env.NODE_ENV || 'NOT SET'
+  });
+});
+
 app.use('/api',                 searchLimiter, generalRoutes);   // bookings, newsletter, notifications, search, report
 app.use('/api/social',          socialRoutes);
 app.use('/api/forum',           forumRoutes);
