@@ -51,6 +51,7 @@ const AdminLoginPage = lazy(() => import('./components/AdminLoginPage').then(m =
 const AdminSetupPage = lazy(() => import('./components/AdminSetupPage').then(m => ({ default: m.AdminSetupPage })));
 const LegalPage = lazy(() => import('./components/LegalPage').then(m => ({ default: m.LegalPage })));
 const EmergencyInfo = lazy(() => import('./components/EmergencyInfo').then(m => ({ default: m.EmergencyInfo })));
+const BlogPage = lazy(() => import('./components/BlogPage').then(m => ({ default: m.BlogPage })));
 const NotFoundPage = lazy(() => import('./components/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
@@ -530,6 +531,7 @@ export default function App() {
 
               {currentPage === 'social' && <SocialFeatures />}
 
+              {currentPage === 'blog' && <BlogPage />}
               {currentPage === 'community' && <UserGeneratedContent />}
 
               {currentPage === 'privacy' && <LegalPage page="privacy" />}
