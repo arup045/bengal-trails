@@ -78,5 +78,21 @@ router.post('/:id/helpful', optionalAuth, async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 });
-
+// GET real average rating stats for a destination
+router.get('/stats/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const result = await pool.query(
+      `SELECT 
+        COALESCE(AVG(rating)::numeric(3,2), 0) as average_rating,
+        COUNT(*) as total_reviews
+       FROM reviews 
+       WHERE destination_slug = $1 AND status = 'published'`,
+      [slug]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
 module.exports = router;
