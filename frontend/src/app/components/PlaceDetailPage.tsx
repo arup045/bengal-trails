@@ -423,29 +423,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-{place.latitude && place.longitude && (
-  <div className="mt-6 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-    <div className="bg-gray-50 px-4 py-2 flex items-center justify-between border-b border-gray-200">
-      <span className="text-sm font-semibold text-gray-700">📍 Location Map</span>
-      
-        href={`https://www.openstreetmap.org/?mlat=${place.latitude}&mlon=${place.longitude}&zoom=13`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-xs text-purple-600 hover:text-purple-700 font-medium"
-      >
-        Open full map →
-      </a>
-    </div>
-    <iframe
-      title={`Map of ${place.name}`}
-      width="100%"
-      height="380"
-      style={{ border: 0 }}
-      loading="lazy"
-      src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(place.longitude)-0.05},${parseFloat(place.latitude)-0.05},${parseFloat(place.longitude)+0.05},${parseFloat(place.latitude)+0.05}&layer=mapnik&marker=${place.latitude},${place.longitude}`}
-    />
-  </div>
-)}                <TransportGuideSection destinationSlug={place.slug} />
+             <TransportGuideSection destinationSlug={place.slug} />
               </motion.div>
             )}
 
