@@ -1,6 +1,7 @@
 import { Menu, Heart, User, LogOut, Shield, Users, Search, X, MapPin, ChevronDown, Globe } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { GlobalSearchBar } from './GlobalSearchBar';
 import { useAuth } from '../contexts/AuthContext';
 import { NotificationSystem } from './NotificationSystem';
 import {
@@ -11,7 +12,8 @@ import {
   SheetTrigger,
 } from './ui/sheet';
 
-function HeaderSearch() {
+/* HeaderSearch removed */
+function HeaderSearchOLD() {
   const [q, setQ] = useState('');
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +95,7 @@ export function Header() {
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}
                   transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                 >
-                  <HeaderSearch />
+                  <GlobalSearchBar size="sm" placeholder="Search destinations..." />
                 </motion.div>
               )}
             </AnimatePresence>

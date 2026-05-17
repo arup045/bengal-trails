@@ -141,6 +141,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok', service: 'bengal-trail
 // ══════════════════════════════════════════════════════════════════════════════
 
 // Apply signup-specific limit BEFORE the general auth route mount
+app.use('/api/suggestions', require('./routes/suggestions'));
 app.use('/api/auth/signup', signupLimiter);
 app.use('/api/auth',            authLimiter, authRoutes);
 app.use('/api/reviews',         reviewRoutes);
