@@ -313,6 +313,8 @@ export default function App() {
         setCurrentPage('social');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('/#/social', 'Social Features');
+      } else if (hash === '/blog' || hash.startsWith('/blog/')) {
+        setCurrentPage('blog' as any);
       } else if (hash === '/community') {
         setCurrentPage('community');
         window.scrollTo({ top: 0, behavior: 'smooth' });
