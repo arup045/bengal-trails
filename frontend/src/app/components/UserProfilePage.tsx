@@ -41,6 +41,7 @@ export function UserProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'wishlist' | 'itineraries'>('profile');
   
   const [formData, setFormData] = useState<ProfileFormData>({
