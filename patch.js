@@ -1,8 +1,24 @@
 const fs = require('fs');
-let c = fs.readFileSync('backend/backend/src/index.js', 'utf8');
+const path = require('path');
+
+// Find index.js automatically
+const possible = [
+  'backend/src/index.js',
+  'backend/backend/src/index.js',
+  'src/index.js'
+];
+
+let indexPath = null;
+for (const p of possible) {
+  if (fs.existsSync(p)) { indexPath = p; break; }
+}
+
+if (!indexPath) { console.log('index.js NOT FOUND'); process.exit(1); }
+console.log('Found:', indexPath);
+
+let c = fs.readFileSync(indexPath, 'utf8');
 
 const debugRoute = `
-// Temporary debug route - remove after fixing
 app.get('/api/debug-env', (req, res) => {
   res.json({
     smtp_host: process.env.SMTP_HOST || 'NOT SET',
@@ -17,6 +33,6 @@ app.get('/api/debug-env', (req, res) => {
 });
 `;
 
-c = c.replace('app.use(\'/api\'', debugRoute + '\napp.use(\'/api\'');
-fs.writeFileSync('backend/backend/src/index.js', c);
-console.log('Debug route added');
+c = c.replace("app.use('/api'", debugRoute + "\napp.use('/api'");
+fs.writeFileSync(indexPath, c);
+console.log('Debug route added to:', indexPath);
