@@ -49,6 +49,7 @@ export function SmartSearchBar({
   onSelect,
   className = '',
   dropdownAbove = false,
+  showButton = false,
 }: SmartSearchBarProps) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -169,7 +170,8 @@ export function SmartSearchBar({
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      <div className={`relative ${sizeClasses.container}`}>
+      <div className="flex items-center gap-2">
+        <div className={`relative flex-1 ${sizeClasses.container}`}>
         <Search className={`absolute top-1/2 -translate-y-1/2 ${sizeClasses.icon} text-gray-400 pointer-events-none`} />
         <input
           ref={inputRef}
@@ -191,6 +193,14 @@ export function SmartSearchBar({
             aria-label="Clear search"
           >
             <X />
+          </button>
+        )}
+        </div>
+        {showButton && (
+          <button onClick={() => { if (query.trim()) { window.location.hash = '/explore?q=' + encodeURIComponent(query.trim()); setIsOpen(false); } }}
+            className="shrink-0 h-14 px-6 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full flex items-center gap-2 transition-all shadow-md text-base">
+            <Search className="w-5 h-5" />
+            <span>Search</span>
           </button>
         )}
       </div>
