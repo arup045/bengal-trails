@@ -159,9 +159,6 @@ app.get('/api/debug-env', (req, res) => {
   });
 });
 
-
-});
-
 app.use('/api',                 searchLimiter, generalRoutes);   // bookings, newsletter, notifications, search, report
 app.use('/api/social',          socialRoutes);
 app.use('/api/forum',           forumRoutes);
