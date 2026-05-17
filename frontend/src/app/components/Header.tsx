@@ -95,7 +95,7 @@ export function Header() {
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}
                   transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                 >
-                  <GlobalSearchBar size="sm" placeholder="Search destinations..." />
+                  <HeaderSearch />
                 </motion.div>
               )}
             </AnimatePresence>
