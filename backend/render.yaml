@@ -5,7 +5,9 @@ services:
     plan: free
     rootDir: backend
     buildCommand: npm install
-    startCommand: npm run migrate && npm run seed && npm run seed:content && npm start
+    # ✅ Uses the graceful startup script — migrates DB then starts server.
+    # Never fails the deploy even if DB already migrated or seed data exists.
+    startCommand: npm run start:prod
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -14,10 +16,11 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      # ⚠️  Replace * with your actual Vercel URL for proper CORS
       - key: FRONTEND_URL
         value: '*'
       - key: FIRST_ADMIN_EMAIL
-        value: admin@gobro.com
+        value: admin@bengaltrails.com
       - key: PORT
         value: 3000
 

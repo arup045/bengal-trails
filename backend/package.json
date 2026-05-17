@@ -11,7 +11,8 @@
     "seed:content": "node src/db/seed-content.js",
     "photos": "node scripts/update-photos.js",
     "migrate:images": "node scripts/migrate-images-to-cloudinary.js",
-    "embed": "node scripts/embed-content.js"
+    "embed": "node scripts/embed-content.js",
+    "start:prod": "node scripts/start-production.js"
   },
   "dependencies": {
     "@sentry/node": "^10.51.0",
