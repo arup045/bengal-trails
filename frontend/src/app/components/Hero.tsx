@@ -32,15 +32,15 @@ export function Hero() {
   return (
     <section className="relative min-h-[92vh] sm:min-h-[88vh] flex flex-col overflow-hidden">
 
-      {/* Background layers */}
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-900 to-indigo-900" />
-      <div className="absolute inset-0 bg-cover bg-center opacity-30"
-        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1742325646212-f917ba1feeaa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080')` }} />
-      {/* Subtle grain overlay */}
-      <div className="absolute inset-0 opacity-[0.03]"
-        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")' }} />
-      {/* Bottom fade to white */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/20 to-transparent" />
+      {/* Layer 1 — Hero photo: Howrah Bridge, full vivid, no purple overlay */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url('https://i1-c.pinimg.com/1200x/0b/e5/5f/0be55f42f18168dfc304f2985cf03f94.jpg')` }}
+      />
+      {/* Layer 2 — Very subtle dark scrim at top only so nav/text stays readable */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent" />
+      {/* Layer 3 — Bottom fade to white so page content blends in */}
+      <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-white via-white/30 to-transparent" />
 
       {/* Content */}
       <div className="relative flex-1 flex flex-col items-center justify-center px-5 sm:px-8 pt-28 pb-20">
