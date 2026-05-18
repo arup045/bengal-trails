@@ -1,5 +1,4 @@
 import { API_BASE } from '../utils/api';
-import { useDestination } from '../lib/queries';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';

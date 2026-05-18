@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react';
 import { optimiseImage } from '../utils/imageOptimise';
 import { ArrowRight, MapPin, Star } from 'lucide-react';
-import { useDestinations } from '../lib/queries';
+import { API_BASE } from '../utils/api';
 
 interface Place { name: string; slug: string; image_url?: string; imageUrl?: string; region?: string; rating?: number; category?: string; }
 
@@ -21,8 +22,7 @@ function PlaceCard({ place, large = false }: { place: Place; large?: boolean }) 
   const img = place.image_url || place.imageUrl || '';
   return (
     <a href={`#/explore/${place.slug}`}
-      className={`group relative overflow-hidden rounded-2xl bg-gray-100 block
-                  ${large ? 'col-span-2 row-span-2' : ''}`}
+      className={`group relative overflow-hidden rounded-2xl bg-gray-100 block ${large ? 'col-span-2 row-span-2' : ''}`}
       style={{ minHeight: large ? 340 : 160 }}>
       {img && (
         <img src={optimiseImage(img, large ? 900 : 500)} alt={place.name} loading="lazy"
@@ -39,8 +39,7 @@ function PlaceCard({ place, large = false }: { place: Place; large?: boolean }) 
             </span>
           )}
         </div>
-        <h3 className={`font-poppins font-semibold text-white leading-tight
-                        ${large ? 'text-2xl sm:text-3xl' : 'text-base'}`}>
+        <h3 className={`font-poppins font-semibold text-white leading-tight ${large ? 'text-2xl sm:text-3xl' : 'text-base'}`}>
           {place.name}
         </h3>
         {large && place.category && (
@@ -59,8 +58,19 @@ function PlaceCard({ place, large = false }: { place: Place; large?: boolean }) 
 }
 
 export function BentoGrid() {
-  const { data } = useDestinations({ featured: 'true', limit: 5 });
-  const places: Place[] = (data?.destinations?.length >= 5 ? data.destinations.slice(0, 5) : FALLBACK) as Place[];
+  // Plain useState + useEffect — no TanStack Query (it was causing React #321)
+  const [places, setPlaces] = useState<Place[]>(FALLBACK);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`${API_BASE}/destinations?featured=true&limit=5`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (alive && d?.destinations?.length >= 5) setPlaces(d.destinations.slice(0, 5));
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
 
   const [hero, ...rest] = places;
 
@@ -81,7 +91,6 @@ export function BentoGrid() {
         </a>
       </div>
 
-      {/* Bento grid: 1 large (2x2) + 4 small */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 grid-rows-auto gap-3">
         {hero && <PlaceCard place={hero} large />}
         {rest.map(p => <PlaceCard key={p.slug} place={p} />)}

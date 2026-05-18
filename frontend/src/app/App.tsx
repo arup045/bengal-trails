@@ -6,8 +6,6 @@ import { Hero } from './components/Hero';
 import { BentoGrid } from './components/BentoGrid';
 import { Features } from './components/Features';
 import { FavoritePlaces } from './components/FavoritePlaces';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './lib/queryClient';
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
 import { DestinationGridSkeleton, BlogCardSkeleton, GenericSkeleton } from './components/Skeletons';
@@ -446,7 +444,6 @@ export default function App() {
 
 
   return (
-    <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <AuthProvider>
         <div className="min-h-screen bg-white">
@@ -625,6 +622,5 @@ export default function App() {
       </div>
     </AuthProvider>
     </LanguageProvider>
-    </QueryClientProvider>
   );
 }
