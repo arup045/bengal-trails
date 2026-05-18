@@ -91,7 +91,7 @@ export function SmartSearchBar({
       const ctrl = new AbortController();
       abortRef.current = ctrl;
       try {
-        const res = await fetch(`${API_BASE}/search/suggestions?q=${encodeURIComponent(q)}&limit=10`, { signal: ctrl.signal });
+        const res = await fetch(`${API_BASE}/suggestions?query=${encodeURIComponent(q)}`, { signal: ctrl.signal });
         if (!res.ok) throw new Error('Search failed');
         const data = await res.json();
         setSuggestions(data.suggestions || []);
@@ -181,7 +181,7 @@ export function SmartSearchBar({
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKey}
           placeholder={placeholder}
-          className={`w-full ${sizeClasses.container} ${sizeClasses.input} bg-white border border-gray-200 rounded-full shadow-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all`}
+          className={`w-full ${sizeClasses.container} ${sizeClasses.input} bg-white border border-gray-200 rounded-full shadow-sm focus:outline-none focus:border-gray-300 transition-all`}
           aria-label="Search"
           aria-expanded={isOpen}
           aria-autocomplete="list"

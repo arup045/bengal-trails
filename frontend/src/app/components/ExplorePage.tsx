@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, MapPin, Star, SlidersHorizontal, X, Sparkles, Navigation, Heart, SearchX } from 'lucide-react';
 import { placesData, categories, regions } from '../data/places-full';
+import { SmartSearchBar } from './SmartSearchBar';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { toast } from 'sonner';
 import { useDebounce } from '../utils/useDebounce';
@@ -473,32 +474,31 @@ export function ExplorePage() {
             </p>
           </motion.div>
 
-          {/* Premium Glassmorphism Search Bar */}
+          {/* Smart Search Bar - connected to suggestions API */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="max-w-3xl mx-auto mb-12"
           >
-            <div className="relative backdrop-blur-md bg-white/10 rounded-full p-3 shadow-2xl border-2 border-white/30">
-              <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-white/90" />
-              <input
-                type="text"
-                placeholder="Search destinations, experiences, or activities..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key==="Enter" && setSearchQuery(searchQuery)}
-                className="w-full pl-16 pr-32 py-4 bg-transparent text-white placeholder-white/60 text-lg focus:outline-none rounded-full"
-              />
-              <button onClick={() => { if(searchQuery.trim()) window.location.hash="/explore?q="+encodeURIComponent(searchQuery.trim()); }} className="absolute right-3 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-md">Search</button>
-            {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-8 top-1/2 -translate-y-1/2 text-white/80 hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
+            <SmartSearchBar
+              size="lg"
+              showButton={true}
+              placeholder="Search destinations, experiences, activities..."
+              onSelect={(result) => {
+                if (result.type === 'query') {
+                  setSearchQuery(result.query);
+                } else {
+                  // For destination/festival/food picks, filter grid AND navigate if it has a url
+                  setSearchQuery(result.name);
+                  if ((result as any).url) {
+                    window.location.hash = ((result as any).url as string).startsWith('#')
+                      ? ((result as any).url as string).slice(1)
+                      : (result as any).url;
+                  }
+                }
+              }}
+            />
           </motion.div>
 
           {/* Premium Stats Cards */}

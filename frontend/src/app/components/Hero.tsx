@@ -66,15 +66,7 @@ export function Hero() {
                        leading-[1.1] sm:leading-[1.1]
                        max-w-3xl mb-5">
           Discover the Heart<br />
-          <span className="relative inline-block">
-            of{' '}
-            <span className="relative">
-              West Bengal
-              {/* Elegant underline accent */}
-              <span className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full
-                               bg-gradient-to-r from-amber-400 to-orange-400 opacity-80" />
-            </span>
-          </span>
+          of West Bengal
         </h1>
 
         {/* Subheading */}

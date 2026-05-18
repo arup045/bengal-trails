@@ -19,11 +19,11 @@ function HeaderSearch() {
   };
   return (
     <form onSubmit={onSubmit}
-      className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full focus-within:border-purple-300 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+      className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full focus-within:border-gray-300 transition-all">
       <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
       <input type="text" value={q} onChange={e => setQ(e.target.value)}
         placeholder="Destinations, festivals, food..."
-        className="flex-1 bg-transparent text-sm font-poppins font-medium text-gray-700 placeholder-gray-400 outline-none min-w-0" />
+        className="flex-1 bg-transparent text-sm font-poppins font-medium text-gray-700 placeholder-gray-400 outline-none ring-0 border-0 min-w-0" />
       {q && <button type="button" onClick={() => setQ('')} aria-label="Clear"><X className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 transition-colors" /></button>}
     </form>
   );

@@ -1,5 +1,9 @@
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --font-poppins: 'Poppins', system-ui, sans-serif;
+}
+
 :root {
   /* Design System Tokens */
   --font-size: 16px;
@@ -306,7 +310,7 @@ html {
 /* ── Bengal Trails Global Enhancements ─────────────────────────────── */
 
 /* Import Poppins for logo/headings */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 
 /* Smooth scrolling */
 html {
@@ -378,4 +382,13 @@ html {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* Remove default browser focus rings - handled per-component */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  outline: none;
+  box-shadow: none;
 }
