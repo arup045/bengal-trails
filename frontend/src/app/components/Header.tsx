@@ -1,7 +1,8 @@
-import { Menu, Heart, User, LogOut, Shield, Users, Search, X, MapPin, ChevronDown } from 'lucide-react';
+import { Menu, Heart, User, LogOut, Shield, Users, MapPin, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
+import { SmartSearchBar } from './SmartSearchBar';
 import { NotificationSystem } from './NotificationSystem';
 import {
   Sheet,
@@ -11,23 +12,7 @@ import {
   SheetTrigger,
 } from './ui/sheet';
 
-function HeaderSearch() {
-  const [q, setQ] = useState('');
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (q.trim()) window.location.hash = `#/explore?q=${encodeURIComponent(q.trim())}`;
-  };
-  return (
-    <form onSubmit={onSubmit}
-      className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full focus-within:border-gray-300 transition-all">
-      <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-      <input type="text" value={q} onChange={e => setQ(e.target.value)}
-        placeholder="Destinations, festivals, food..."
-        className="flex-1 bg-transparent text-sm font-poppins font-medium text-gray-700 placeholder-gray-400 outline-none ring-0 border-0 min-w-0" />
-      {q && <button type="button" onClick={() => setQ('')} aria-label="Clear"><X className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 transition-colors" /></button>}
-    </form>
-  );
-}
+
 
 interface NavItem { label: string; href: string; }
 const NAV_ITEMS: NavItem[] = [
@@ -85,7 +70,18 @@ export function Header() {
                   animate={{ opacity: 1, y: 0,  scale: 1    }}
                   exit={{    opacity: 0, y: -6, scale: 0.98 }}
                   transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}>
-                  <HeaderSearch />
+                  <SmartSearchBar
+                  size="sm"
+                  placeholder="Destinations, festivals, food..."
+                  onSelect={(result) => {
+                    if (result.type === 'query') {
+                      window.location.hash = `/explore?q=${encodeURIComponent((result as any).query)}`;
+                    } else {
+                      const url = (result as any).url as string;
+                      if (url) window.location.hash = url.startsWith('#') ? url.slice(1) : url;
+                    }
+                  }}
+                />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -185,7 +181,18 @@ export function Header() {
                   Bengal <span className="text-purple-600">Trails</span>
                 </SheetTitle>
                 <SheetDescription className="sr-only">Navigation menu</SheetDescription>
-                <div className="mt-5 mb-6"><HeaderSearch /></div>
+                <div className="mt-5 mb-6"><SmartSearchBar
+                  size="sm"
+                  placeholder="Destinations, festivals, food..."
+                  onSelect={(result) => {
+                    if (result.type === 'query') {
+                      window.location.hash = `/explore?q=${encodeURIComponent((result as any).query)}`;
+                    } else {
+                      const url = (result as any).url as string;
+                      if (url) window.location.hash = url.startsWith('#') ? url.slice(1) : url;
+                    }
+                  }}
+                /></div>
                 {user && (
                   <div className="mb-5 pb-5 border-b border-gray-100">
                     <div className="flex items-center gap-3 px-3 py-3 bg-gray-50 rounded-xl">

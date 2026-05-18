@@ -485,17 +485,13 @@ export function ExplorePage() {
               size="lg"
               showButton={true}
               placeholder="Search destinations, experiences, activities..."
+              onChange={(q) => setSearchQuery(q)}
+              onSearch={(q) => setSearchQuery(q)}
               onSelect={(result) => {
                 if (result.type === 'query') {
-                  setSearchQuery(result.query);
+                  setSearchQuery((result as any).query || '');
                 } else {
-                  // For destination/festival/food picks, filter grid AND navigate if it has a url
                   setSearchQuery(result.name);
-                  if ((result as any).url) {
-                    window.location.hash = ((result as any).url as string).startsWith('#')
-                      ? ((result as any).url as string).slice(1)
-                      : (result as any).url;
-                  }
                 }
               }}
             />
