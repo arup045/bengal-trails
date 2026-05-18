@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Shield, CheckCircle, AlertCircle, Loader2, Lock, Mail, User, Eye, EyeOff } from 'lucide-react';
@@ -27,7 +27,7 @@ export function AdminSetupPage() {
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+            'Authorization': `Bearer ${getToken() || ''}`
           }
         }
       );
@@ -67,7 +67,7 @@ export function AdminSetupPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+            'Authorization': `Bearer ${getToken() || ''}`
           },
           body: JSON.stringify({ email, password, name })
         }

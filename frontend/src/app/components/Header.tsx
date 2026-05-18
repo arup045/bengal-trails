@@ -163,7 +163,7 @@ export function Header() {
             )}
 
             {/* CTA — Plan Trip — Poppins 500 / rounded-full */}
-            <a href="#/planner"
+            <a href="#/itinerary-builder"
               className="hidden sm:inline-flex items-center gap-1.5 font-poppins text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full transition-all duration-150 hover:shadow-md hover:shadow-purple-200 whitespace-nowrap">
               <MapPin className="w-3.5 h-3.5" />
               Plan Trip

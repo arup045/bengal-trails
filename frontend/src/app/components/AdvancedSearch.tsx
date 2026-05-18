@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, DollarSign, Calendar, Users, Sparkles, X, Filter, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -87,7 +87,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onSearch }) => {
         `${API_BASE}/search/suggestions?q=${encodeURIComponent(searchQuery)}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );

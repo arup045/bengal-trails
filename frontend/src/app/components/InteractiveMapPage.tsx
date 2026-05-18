@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Navigation, X, Star, ChevronRight, Loader2 } from 'lucide-react';
-import { placesData } from '../data/places-full';
+import { API_BASE } from '../utils/api';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { getCurrentLocation, LocationCoords, formatDistance, calculateDistance } from '../utils/location';
 
@@ -15,6 +15,14 @@ interface Region {
 
 export function InteractiveMapPage() {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [places, setPlaces] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/destinations?limit=100`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.destinations?.length) setPlaces(d.destinations); })
+      .catch(() => {});
+  }, []);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
   const [loadingLocation, setLoadingLocation] = useState<boolean>(true);
@@ -51,13 +59,13 @@ export function InteractiveMapPage() {
   };
 
   const getRegionDestinations = (regionName: string) => {
-    return placesData.filter(place => place.region === regionName).slice(0, 6);
+    return places.filter((p:any) => p.region === regionName).map((p:any) => ({ ...p, title: p.name })).slice(0, 6);
   };
 
   const allDestinations = Object.keys(regions).reduce((acc, regionName) => {
     acc[regionName] = getRegionDestinations(regionName);
     return acc;
-  }, {} as Record<string, typeof placesData>);
+  }, {} as Record<string, any[]>);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -322,7 +330,7 @@ export function InteractiveMapPage() {
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">West Bengal at a Glance</h3>
           <div className="grid md:grid-cols-4 gap-6">
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">{placesData.length}</div>
+              <div className="text-4xl font-bold text-purple-600 mb-2">{places.length || '232+'}</div>
               <div className="text-gray-700">Total Destinations</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center">

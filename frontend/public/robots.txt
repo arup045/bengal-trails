@@ -3,12 +3,15 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://bengaltrails.netlify.app/sitemap.xml
+Sitemap: https://bengaltrails.vercel.app/sitemap.xml
 
 # Disallow admin and auth pages
 Disallow: /#/admin
 Disallow: /#/admin-login
+Disallow: /#/admin-setup
 Disallow: /#/signin
 Disallow: /#/forgot-password
 Disallow: /#/reset-password
 Disallow: /#/verify-email
+Disallow: /#/debug
+Disallow: /#/check

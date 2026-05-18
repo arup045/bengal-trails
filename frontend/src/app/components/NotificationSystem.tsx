@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, Heart, MessageCircle, UserPlus, Award, Calendar, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -35,7 +35,7 @@ export const NotificationSystem: React.FC = () => {
         `${API_BASE}/notifications`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -57,7 +57,7 @@ export const NotificationSystem: React.FC = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -74,7 +74,7 @@ export const NotificationSystem: React.FC = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );

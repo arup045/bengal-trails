@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { API_BASE } from '../../utils/api';
+import { API_BASE, getToken} from '../../utils/api';
 import { useState, useEffect } from 'react';
 import { Mail, Send, Users, FileText, Calendar, Download } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -28,7 +28,7 @@ export function NewsletterManagement() {
   const fetchSubscribers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/newsletter/subscribers`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -69,7 +69,7 @@ export function NewsletterManagement() {
 
     setSending(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/newsletter/send`, {
         method: 'POST',
         headers: {

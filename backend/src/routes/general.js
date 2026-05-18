@@ -274,4 +274,58 @@ router.post('/places/report', optionalAuth, async (req, res) => {
   }
 });
 
+// ── Schema setup — runs once on server startup ────────────────────────────────
+async function ensureEnquiryTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS enquiries (
+      id              SERIAL PRIMARY KEY,
+      destination_slug VARCHAR(255) NOT NULL,
+      destination_name VARCHAR(255),
+      check_in        DATE,
+      check_out       DATE,
+      guests          INTEGER DEFAULT 1,
+      name            VARCHAR(255) NOT NULL,
+      email           VARCHAR(255) NOT NULL,
+      phone           VARCHAR(50),
+      message         TEXT,
+      status          VARCHAR(50) DEFAULT 'new',
+      created_at      TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+}
+ensureEnquiryTable().catch(err => console.error('[enquiries] table init failed:', err.message));
+
 module.exports = router;
+
+// ── POST /bookings/enquiry ─────────────────────────────────────────────────────
+// Accepts an enquiry form submission, saves to DB and sends email to admin.
+router.post('/bookings/enquiry', async (req, res) => {
+  try {
+    const { destinationSlug, destinationName, checkIn, checkOut, guests,
+            name, email, phone, message } = req.body;
+    if (!destinationSlug || !name || !email)
+      return res.status(400).json({ error: 'destinationSlug, name and email are required' });
+
+    await pool.query(
+      `INSERT INTO enquiries (destination_slug, destination_name, check_in, check_out, guests, name, email, phone, message)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [destinationSlug, destinationName, checkIn || null, checkOut || null,
+       guests || 1, name, email, phone || null, message || null]
+    );
+
+    // Non-blocking email notification
+    const { sendEmail } = require('../utils/email');
+    sendEmail({
+      to: process.env.ADMIN_EMAIL || process.env.FIRST_ADMIN_EMAIL || 'admin@bengaltrails.com',
+      subject: `New Enquiry: ${destinationName} — ${name}`,
+      html: `<p><strong>${name}</strong> (${email}) has enquired about <strong>${destinationName}</strong>.</p>
+             <p>Dates: ${checkIn || '—'} → ${checkOut || '—'}, Guests: ${guests || 1}</p>
+             ${message ? `<p>Message: ${message}</p>` : ''}`,
+    }).catch(console.error);
+
+    return res.json({ success: true, message: 'Enquiry received. We will contact you within 24 hours.' });
+  } catch (err) {
+    console.error('enquiry error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});

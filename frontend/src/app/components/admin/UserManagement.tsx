@@ -1,4 +1,4 @@
-import { API_BASE } from '../../utils/api';
+import { API_BASE, getToken} from '../../utils/api';
 import { useState, useEffect } from 'react';
 import { Users, Shield, Ban, Search, Mail, Calendar, Crown, UserX, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -28,7 +28,7 @@ export function UserManagement() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -52,7 +52,7 @@ export function UserManagement() {
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin' | 'moderator') => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
         method: 'PUT',
         headers: {
@@ -78,7 +78,7 @@ export function UserManagement() {
     const newStatus = currentStatus === 'active' ? 'banned' : 'active';
     
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/users/${userId}/status`, {
         method: 'PUT',
         headers: {

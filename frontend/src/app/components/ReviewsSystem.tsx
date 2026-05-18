@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, MessageSquare, Award, TrendingUp } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
@@ -39,6 +39,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
   const [showWriteReview, setShowWriteReview] = useState(false);
   const [rating, setRating] = useState(5);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [subRatings, setSubRatings] = useState({ location: 0, food: 0, value: 0 });
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [visitDate, setVisitDate] = useState('');
@@ -57,7 +58,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
         `${API_BASE}/reviews/${destinationSlug}?sort=${sortBy}${filterRating ? `&rating=${filterRating}` : ''}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -92,7 +93,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({
             destinationSlug,
@@ -103,6 +104,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
             content,
             visitDate,
             photos,
+            subRatings,
           }),
         }
       );
@@ -139,7 +141,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({ userId: user.id }),
         }

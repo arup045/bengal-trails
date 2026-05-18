@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { API_BASE } from '../../utils/api';
+import { API_BASE, getToken} from '../../utils/api';
 import { useState, useEffect } from 'react';
 import { MapPin, Plus, Edit, Trash2, Search, X, Save } from 'lucide-react';
 import { ImageUploader } from '../ImageUploader';
@@ -57,7 +57,7 @@ export function DestinationManagement() {
     if (!confirmed) return;
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/destinations/${id}`, {
         method: 'DELETE',
         headers: {
@@ -87,7 +87,7 @@ export function DestinationManagement() {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const method = editingDestination ? 'PUT' : 'POST';
       const url = editingDestination 
         ? `${API_BASE}/admin/destinations/${editingDestination.id}`

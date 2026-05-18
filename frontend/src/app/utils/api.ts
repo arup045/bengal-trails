@@ -1,78 +1,95 @@
-// Central API helper with automatic token refresh.
-// Use authFetch(path, init) instead of raw fetch for any authenticated endpoint.
-// If the server returns 401, we silently call /auth/refresh, store the new token,
-// and retry the original request once. This eliminates the 7-day silent-logout problem.
+/**
+ * api.ts — Central API helper for Bengal Trails
+ *
+ * Security model (Phase 1 upgrade):
+ *   - Access token  → stored in MEMORY only (module variable). Never touches localStorage.
+ *                     XSS cannot steal it because there is no persistent storage.
+ *   - Refresh token → stored in httpOnly cookie by the backend.
+ *                     JS cannot read it at all. Sent automatically with credentials:'include'.
+ *
+ * On page refresh the access token is gone from memory, so on app mount AuthContext
+ * calls POST /auth/refresh (with the httpOnly cookie) to silently restore the session.
+ */
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '')
   || 'http://localhost:3000/api';
 
-export const getToken = () => localStorage.getItem('access_token');
-export const getRefreshToken = () => localStorage.getItem('refresh_token');
+// ── In-memory token store ──────────────────────────────────────────────────────
+// This is a module-level variable — lives for the lifetime of the tab.
+// Deliberately NOT exported so nothing outside this module can write to it directly.
+let _accessToken: string | null = null;
 
-export const authHeaders = () => ({
+export const getToken  = ()           => _accessToken;
+export const setToken  = (t: string | null) => { _accessToken = t; };
+export const clearToken = ()          => { _accessToken = null; };
+
+// Legacy: kept for backwards compat but now always returns null.
+// Nothing should call localStorage for tokens anymore.
+export const getRefreshToken = () => null;
+
+export const authHeaders = (): Record<string, string> => ({
   'Content-Type': 'application/json',
-  ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+  ...(_accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}),
 });
 
-// Internal: try to refresh the access token using the stored refresh token.
-// Returns the new access token on success, or null if refresh failed.
-let refreshInFlight: Promise<string | null> | null = null;
-async function tryRefresh(): Promise<string | null> {
-  // De-duplicate concurrent refresh attempts
-  if (refreshInFlight) return refreshInFlight;
-  const rt = getRefreshToken();
-  if (!rt) return null;
-  refreshInFlight = (async () => {
+// ── Silent token refresh ───────────────────────────────────────────────────────
+// Calls POST /auth/refresh. The httpOnly bt_refresh cookie is sent automatically
+// by the browser (credentials:'include'). Returns the new access token or null.
+let _refreshInFlight: Promise<string | null> | null = null;
+
+export async function tryRefresh(): Promise<string | null> {
+  // De-duplicate concurrent refresh attempts (e.g. multiple parallel 401s)
+  if (_refreshInFlight) return _refreshInFlight;
+
+  _refreshInFlight = (async () => {
     try {
       const res = await fetch(`${API_BASE}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: rt }),
+        credentials: 'include',   // ← sends the httpOnly bt_refresh cookie
       });
       if (!res.ok) return null;
       const data = await res.json();
-      const newAccess = data?.session?.accessToken || data?.session?.access_token;
-      const newRefresh = data?.session?.refreshToken || data?.session?.refresh_token;
-      if (!newAccess) return null;
-      localStorage.setItem('access_token', newAccess);
-      if (newRefresh) localStorage.setItem('refresh_token', newRefresh);
-      return newAccess;
+      const newToken = data?.session?.access_token || data?.session?.accessToken;
+      if (!newToken) return null;
+      setToken(newToken);
+      return newToken;
     } catch {
       return null;
     } finally {
-      // Allow next refresh after a tick to avoid storming
-      setTimeout(() => { refreshInFlight = null; }, 0);
+      setTimeout(() => { _refreshInFlight = null; }, 0);
     }
   })();
-  return refreshInFlight;
+
+  return _refreshInFlight;
 }
 
-// Wrap a fetch with automatic 401 → refresh → retry.
-// `path` can be absolute (`/auth/user`) or full URL; if relative, API_BASE is prepended.
+// ── authFetch — authenticated fetch with auto-retry on 401 ────────────────────
 export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const isAbsolute = /^https?:\/\//.test(path);
   const url = isAbsolute ? path : `${API_BASE}${path.startsWith('/') ? path : '/' + path}`;
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(init.headers as Record<string, string> || {}),
   };
-  const token = getToken();
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
 
-  let res = await fetch(url, { ...init, headers });
-  if (res.status !== 401) return res;
+  let res = await fetch(url, { ...init, headers, credentials: 'include' });
 
-  // Try refresh
-  const newToken = await tryRefresh();
-  if (!newToken) return res; // Refresh failed — return original 401
+  // On 401 — silently try to refresh once, then retry
+  if (res.status === 401) {
+    const newToken = await tryRefresh();
+    if (newToken) {
+      headers['Authorization'] = `Bearer ${newToken}`;
+      res = await fetch(url, { ...init, headers, credentials: 'include' });
+    }
+  }
 
-  // Retry with new token
-  headers['Authorization'] = `Bearer ${newToken}`;
-  res = await fetch(url, { ...init, headers });
   return res;
 }
 
-// Convenience wrapper that parses JSON and throws on non-2xx.
+// ── apiJson — parse JSON, throw on non-2xx ────────────────────────────────────
 export async function apiJson<T = any>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await authFetch(path, init);
   if (!res.ok) {
@@ -83,18 +100,17 @@ export async function apiJson<T = any>(path: string, init: RequestInit = {}): Pr
   return res.json();
 }
 
-
-// Upload a single image to /uploads/image. Backend uses Cloudinary.
-// Returns { url, publicId } on success. Requires CLOUDINARY_* env vars on the
-// backend (Render) — otherwise the API returns "Cloudinary not configured".
+// ── Image upload helpers ──────────────────────────────────────────────────────
 export async function uploadImage(file: File): Promise<{ url: string; publicId: string }> {
   const formData = new FormData();
   formData.append('image', file);
-  const token = getToken();
+  const headers: Record<string, string> = {};
+  if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
   const res = await fetch(`${API_BASE}/uploads/image`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers,
     body: formData,
+    credentials: 'include',
   });
   if (!res.ok) {
     let msg = `Upload failed (${res.status})`;
@@ -104,15 +120,16 @@ export async function uploadImage(file: File): Promise<{ url: string; publicId: 
   return res.json();
 }
 
-// Upload multiple images at once
 export async function uploadImages(files: File[]): Promise<Array<{ url: string; publicId: string }>> {
   const formData = new FormData();
-  files.forEach((f) => formData.append('images', f));
-  const token = getToken();
+  files.forEach(f => formData.append('images', f));
+  const headers: Record<string, string> = {};
+  if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
   const res = await fetch(`${API_BASE}/uploads/multiple`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers,
     body: formData,
+    credentials: 'include',
   });
   if (!res.ok) {
     let msg = `Upload failed (${res.status})`;

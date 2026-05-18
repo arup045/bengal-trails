@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { Camera, MapPin, Star, Heart, MessageCircle, Award, TrendingUp, Filter } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -44,7 +44,7 @@ export const UserGeneratedContent: React.FC = () => {
         `${API_BASE}/user-content?type=${filter}&sort=${sortBy}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -72,7 +72,7 @@ export const UserGeneratedContent: React.FC = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({ userId: user.id }),
         }

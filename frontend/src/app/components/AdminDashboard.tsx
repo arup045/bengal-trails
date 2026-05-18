@@ -1,17 +1,19 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Shield, Users, MapPin, Eye, Heart, LayoutDashboard, BarChart3, Mail, Settings, Activity, TrendingUp, Search, Bookmark, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { placesData } from '../data/places-full';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { AnalyticsDashboard } from './admin/AnalyticsDashboard';
+import { AdminEnquiries }     from './admin/AdminEnquiries';
+import { AdminVendors }       from './admin/AdminVendors';
+// Charts now live inside AnalyticsDashboard component
 
 export function AdminDashboard() {
   const { user, isAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics' | 'enquiries' | 'vendors'>('overview');
   const [stats, setStats] = useState({
     totalUsers: 0,
-    totalDestinations: placesData.length,
+    totalDestinations: 0,
     totalViews: 0,
     totalWishlists: 0,
     totalNewsletterSubs: 0
@@ -27,7 +29,7 @@ export function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -60,21 +62,21 @@ export function AdminDashboard() {
 
   // Chart Data
   const destinationsByRegion = [
-    { name: 'North Bengal', value: placesData.filter(p => p.region === 'North Bengal').length },
-    { name: 'South Bengal', value: placesData.filter(p => p.region === 'South Bengal').length },
-    { name: 'Central Bengal', value: placesData.filter(p => p.region === 'Central Bengal').length },
-    { name: 'Coastal Bengal', value: placesData.filter(p => p.region === 'Coastal Bengal').length },
+    { name: 'North Bengal', value: [].filter(p => p.region === 'North Bengal').length },
+    { name: 'South Bengal', value: [].filter(p => p.region === 'South Bengal').length },
+    { name: 'Central Bengal', value: [].filter(p => p.region === 'Central Bengal').length },
+    { name: 'Coastal Bengal', value: [].filter(p => p.region === 'Coastal Bengal').length },
   ];
 
   const destinationsByCategory = [
-    { name: 'Heritage', count: placesData.filter(p => p.category === 'Heritage').length },
-    { name: 'Nature', count: placesData.filter(p => p.category === 'Nature').length },
-    { name: 'Adventure', count: placesData.filter(p => p.category === 'Adventure').length },
-    { name: 'Beach', count: placesData.filter(p => p.category === 'Beach').length },
-    { name: 'Hill Station', count: placesData.filter(p => p.category === 'Hill Station').length },
-    { name: 'Wildlife', count: placesData.filter(p => p.category === 'Wildlife').length },
-    { name: 'Religious', count: placesData.filter(p => p.category === 'Religious').length },
-    { name: 'Shopping', count: placesData.filter(p => p.category === 'Shopping').length },
+    { name: 'Heritage', count: [].filter(p => p.category === 'Heritage').length },
+    { name: 'Nature', count: [].filter(p => p.category === 'Nature').length },
+    { name: 'Adventure', count: [].filter(p => p.category === 'Adventure').length },
+    { name: 'Beach', count: [].filter(p => p.category === 'Beach').length },
+    { name: 'Hill Station', count: [].filter(p => p.category === 'Hill Station').length },
+    { name: 'Wildlife', count: [].filter(p => p.category === 'Wildlife').length },
+    { name: 'Religious', count: [].filter(p => p.category === 'Religious').length },
+    { name: 'Shopping', count: [].filter(p => p.category === 'Shopping').length },
   ];
 
   const monthlyVisits = [
@@ -86,7 +88,7 @@ export function AdminDashboard() {
     { month: 'Jun 2025', visits: 3900 },
   ];
 
-  const topDestinations = placesData.slice(0, 8).map(place => ({
+  const topDestinations = [].slice(0, 8).map(place => ({
     name: place.name,
     views: Math.floor(Math.random() * 500) + 100
   }));
@@ -107,7 +109,9 @@ export function AdminDashboard() {
     { id: 'destinations', label: 'Destinations' },
     { id: 'users', label: 'Users' },
     { id: 'searches', label: 'Searches' },
-    { id: 'analytics', label: 'Analytics' },
+    { id: 'analytics',  label: 'Analytics'  },
+    { id: 'enquiries',  label: 'Enquiries'  },
+    { id: 'vendors',    label: 'Partners'   },
   ];
 
   return (
@@ -280,11 +284,11 @@ export function AdminDashboard() {
             <div className="grid grid-cols-4 gap-6 mb-8">
               <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
                 <div className="text-gray-400 text-xs uppercase mb-2">Total Destinations</div>
-                <div className="text-[#ff6b6b] text-4xl font-bold">{placesData.length}</div>
+                <div className="text-[#ff6b6b] text-4xl font-bold">{0}</div>
               </div>
               <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
                 <div className="text-gray-400 text-xs uppercase mb-2">Top Rated</div>
-                <div className="text-[#ff6b6b] text-4xl font-bold">{placesData.filter(p => p.rating >= 4.5).length}</div>
+                <div className="text-[#ff6b6b] text-4xl font-bold">{[].filter(p => p.rating >= 4.5).length}</div>
               </div>
               <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
                 <div className="text-gray-400 text-xs uppercase mb-2">Average Rating</div>
@@ -567,136 +571,21 @@ export function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'enquiries' && (
+          <div className="space-y-4">
+            <AdminEnquiries />
+          </div>
+        )}
+
+        {activeTab === 'vendors' && (
+          <div className="space-y-4">
+            <AdminVendors />
+          </div>
+        )}
+
         {activeTab === 'analytics' && (
           <div className="space-y-6">
-            <h1 className="text-white text-2xl font-bold uppercase tracking-wider mb-8">ANALYTICS</h1>
-
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-6 mb-8">
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <div className="text-gray-400 text-xs uppercase mb-2">Total Sessions</div>
-                <div className="text-[#ff6b6b] text-4xl font-bold">24.5K</div>
-              </div>
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <div className="text-gray-400 text-xs uppercase mb-2">Avg Session Time</div>
-                <div className="text-[#ff6b6b] text-4xl font-bold">8:23</div>
-              </div>
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <div className="text-gray-400 text-xs uppercase mb-2">Bounce Rate</div>
-                <div className="text-[#ff6b6b] text-4xl font-bold">32%</div>
-              </div>
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <div className="text-gray-400 text-xs uppercase mb-2">Conversion Rate</div>
-                <div className="text-[#ff6b6b] text-4xl font-bold">12.4%</div>
-              </div>
-            </div>
-
-            {/* Charts */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <h3 className="text-white text-sm uppercase mb-4">Traffic Sources</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'Direct', value: 35 },
-                        { name: 'Search', value: 28 },
-                        { name: 'Social', value: 22 },
-                        { name: 'Referral', value: 15 },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={2}
-                      dataKey="value"
-                      label
-                    >
-                      {COLORS.map((color, index) => (
-                        <Cell key={`cell-${index}`} fill={color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ fontSize: '12px' }}
-                      iconType="circle"
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <h3 className="text-white text-sm uppercase mb-4">Device Distribution</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={[
-                    { device: 'Mobile', users: 689 },
-                    { device: 'Desktop', users: 423 },
-                    { device: 'Tablet', users: 135 },
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis dataKey="device" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Bar dataKey="users" fill="#9333ea" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <h3 className="text-white text-sm uppercase mb-4">Page Views Trend</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={[
-                    { date: 'Week 1', views: 4200 },
-                    { date: 'Week 2', views: 5100 },
-                    { date: 'Week 3', views: 4800 },
-                    { date: 'Week 4', views: 6200 },
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis dataKey="date" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Area type="monotone" dataKey="views" stroke="#0891b2" fill="#0891b2" fillOpacity={0.3} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
-                <h3 className="text-white text-sm uppercase mb-4">Engagement Metrics</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={[
-                    { metric: 'Comments', value: 234 },
-                    { metric: 'Shares', value: 189 },
-                    { metric: 'Bookmarks', value: 567 },
-                    { metric: 'Wishlists', value: 892 },
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis dataKey="metric" stroke="#666" tick={{ fontSize: 10 }} />
-                    <YAxis stroke="#666" />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Line type="monotone" dataKey="value" stroke="#dc2626" strokeWidth={3} dot={{ fill: '#dc2626', r: 5 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Bengal Trails Branding */}
-            <div className="flex items-center justify-center my-8">
-              <div className="text-center">
-                <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">Bengal Trails</h1>
-              </div>
-            </div>
+            <AnalyticsDashboard />
           </div>
         )}
       </div>

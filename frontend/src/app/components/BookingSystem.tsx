@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import React, { useState } from 'react';
 import { Calendar, Users, Home, MapPin, CheckCircle, CreditCard, Shield, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -102,7 +102,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+          Authorization: `Bearer ${getToken() || ''}`,
         },
         body: JSON.stringify({ amount: Math.round(costs.total) }),
       });
@@ -155,7 +155,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify(paymentResult),
         });
@@ -173,7 +173,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({
             userId: user.id,

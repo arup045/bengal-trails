@@ -1,4 +1,4 @@
-import { API_BASE } from '../../utils/api';
+import { API_BASE, getToken} from '../../utils/api';
 import { useState } from 'react';
 import { Settings, Star, Image as ImageIcon, Bell, Save, Upload } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -29,7 +29,7 @@ export function AdminSettings() {
   });
   const handleSaveSettings = async () => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getToken();
       const response = await fetch(`${API_BASE}/admin/settings`, {
         method: 'PUT',
         headers: {

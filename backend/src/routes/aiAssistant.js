@@ -327,3 +327,73 @@ router.post('/chat', optionalAuth, async (req, res) => {
 });
 
 module.exports = router;
+
+// ── POST /ai/itinerary ─────────────────────────────────────────────────────────
+// Generates a structured day-by-day itinerary using Gemini + DB destinations.
+// Body: { days, budget, style, startCity, interests[] }
+router.post('/itinerary', optionalAuth, async (req, res) => {
+  try {
+    const { days = 5, budget = 'moderate', style = 'mixed', startCity = 'Kolkata', interests = [] } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'AI not configured' });
+
+    // Pull real destinations from DB for context
+    const { rows: dests } = await pool.query(
+      "SELECT name, slug, region, category, description, rating FROM destinations WHERE status='published' ORDER BY rating DESC NULLS LAST LIMIT 60"
+    );
+
+    const destList = dests.map(d => `- ${d.name} (${d.region}, ${d.category}, rating: ${d.rating || 'N/A'})`).join('\n');
+
+    const prompt = `You are a West Bengal travel expert. Create a ${days}-day itinerary for a traveller.
+
+Context:
+- Starting city: ${startCity}
+- Budget: ${budget} (budget=₹1-3k/day, moderate=₹3-7k/day, luxury=₹7k+/day)  
+- Travel style: ${style}
+- Interests: ${interests.length ? interests.join(', ') : 'general sightseeing'}
+
+Available destinations (use these real places from our database):
+${destList}
+
+Respond ONLY with a valid JSON object — no markdown, no code fences. Structure:
+{
+  "title": "trip title",
+  "summary": "2-sentence overview",
+  "days": [
+    {
+      "day": 1,
+      "title": "Day title",
+      "destinations": [{"name":"...","slug":"...","duration":"2 hours","tip":"insider tip"}],
+      "accommodation": "area/type suggestion",
+      "estimatedCost": "₹X,XXX",
+      "highlights": "1 sentence"
+    }
+  ],
+  "totalEstimatedCost": "₹XX,XXX",
+  "bestMonths": ["Oct","Nov","Dec"],
+  "packingTips": ["tip1","tip2","tip3"]
+}`;
+
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 } }),
+      }
+    );
+
+    const gData = await geminiRes.json();
+    const raw   = gData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+    let itinerary;
+    try { itinerary = JSON.parse(clean); }
+    catch { return res.status(500).json({ error: 'AI returned invalid format. Please try again.' }); }
+
+    return res.json({ success: true, itinerary });
+  } catch (err) {
+    console.error('itinerary error:', err);
+    return res.status(500).json({ error: 'Server error generating itinerary' });
+  }
+});

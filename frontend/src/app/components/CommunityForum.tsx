@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, ThumbsUp, Reply, Pin, Lock, TrendingUp, Clock, User, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -65,7 +65,7 @@ export const CommunityForum: React.FC = () => {
         `${API_BASE}/forum/threads?category=${selectedCategory}&sort=${sortBy}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -102,7 +102,7 @@ export const CommunityForum: React.FC = () => {
         `${API_BASE}/forum/threads/${threadId}/replies`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -145,7 +145,7 @@ export const CommunityForum: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({
             title: newThreadTitle,
@@ -188,7 +188,7 @@ export const CommunityForum: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({
             content: replyContent,

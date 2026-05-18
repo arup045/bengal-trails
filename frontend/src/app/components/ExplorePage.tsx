@@ -2,7 +2,10 @@ import { API_BASE } from '../utils/api';
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, MapPin, Star, SlidersHorizontal, X, Sparkles, Navigation, Heart, SearchX } from 'lucide-react';
-import { placesData, categories, regions } from '../data/places-full';
+// places-full is lazy-loaded as a fallback only — keeps it out of the initial bundle
+const loadStaticPlaces = () => import('../data/places-full').then(m => m.placesData);
+export const categories = ['All','Heritage','Nature','Wildlife','Hill Station','Beach','Pilgrimage','Adventure','Urban','Tea Garden'];
+export const regions    = ['All Regions','North Bengal','South Bengal','Kolkata','West Midnapore','East Midnapore','Bankura','Purulia','Birbhum','Murshidabad','Nadia','Hooghly'];
 import { SmartSearchBar } from './SmartSearchBar';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { toast } from 'sonner';
@@ -35,15 +38,33 @@ export function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch destinations from API (merge with static — API wins)
-  const [apiPlaces, setApiPlaces] = useState<any[] | null>(null);
+  const [apiPlaces,       setApiPlaces]       = useState<any[] | null>(null);
+  const [staticFallback,  setStaticFallback]  = useState<any[]>([]);
   useEffect(() => {
-    fetch(`${API_BASE}/destinations?limit=300`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => d?.destinations && setApiPlaces(d.destinations))
-      .catch(() => { /* fall back to static */ });
+    // Load static fallback lazily — won't block the initial bundle parse
+    loadStaticPlaces().then(setStaticFallback).catch(() => {});
+
+    // Fetch live data from API (paginated — all pages)
+    const loadAll = async () => {
+      try {
+        const res  = await fetch(`${API_BASE}/destinations?limit=100&page=1`);
+        if (!res.ok) return;
+        const data = await res.json();
+        let all = data.destinations || [];
+        // fetch remaining pages if needed
+        for (let p = 2; p <= (data.totalPages || 1); p++) {
+          const r2 = await fetch(`${API_BASE}/destinations?limit=100&page=${p}`);
+          if (r2.ok) { const d2 = await r2.json(); all = all.concat(d2.destinations || []); }
+        }
+        if (all.length) setApiPlaces(all);
+      } catch { /* static fallback already loaded */ }
+    };
+    loadAll();
   }, []);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  // Reset to page 1 on any filter/search change
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearchQuery, selectedCategory, selectedRegion, sortBy, priceRange]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedRegion, setSelectedRegion] = useState('All Regions');
   const [sortBy, setSortBy] = useState('popular');
@@ -163,7 +184,7 @@ export function ExplorePage() {
             ? { lat: parseFloat(p.latitude), lng: parseFloat(p.longitude) }
             : { lat: 22.5726, lng: 88.3639 },
         }))
-      : placesData;
+      : staticFallback;
 
     if (debouncedSearchQuery) {
       filtered = filtered.filter(place =>

@@ -17,8 +17,10 @@ services:
       - key: JWT_EXPIRES_IN
         value: 7d
       # ⚠️  Replace * with your actual Vercel URL for proper CORS
-      - key: FRONTEND_URL
-        value: '*'
+      # IMPORTANT: Set FRONTEND_URL to your exact Vercel URL in Render Dashboard
+      # e.g. https://bengal-trails.vercel.app
+      # - key: FRONTEND_URL
+      #   value: https://YOUR-APP.vercel.app
       - key: FIRST_ADMIN_EMAIL
         value: admin@bengaltrails.com
       - key: PORT

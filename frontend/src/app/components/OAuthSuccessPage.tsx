@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { API_BASE } from '../utils/api';
+
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -19,7 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 export function OAuthSuccessPage() {
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { refreshUser } = useAuth();
+  const { setSessionFromToken } = useAuth();
 
   useEffect(() => {
     const handleOAuth = async () => {
@@ -36,24 +36,17 @@ export function OAuthSuccessPage() {
           throw new Error('No token in URL');
         }
 
-        // Save the access token. AuthContext uses these exact keys.
-        localStorage.setItem('access_token', token);
-
-        // Verify the token works by fetching the user
-        const res = await fetch(`${API_BASE}/auth/user`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          throw new Error('Failed to verify token');
-        }
-        const data = await res.json();
-        const isAdmin = data.user?.role === 'admin';
-
-        // Refresh AuthContext so the rest of the app sees the user
-        // (refreshUser may not exist on older AuthContext versions)
-        try {
-          await refreshUser?.();
-        } catch { /* non-fatal */ }
+        // Store in memory via AuthContext (no localStorage — security upgrade).
+        // setSessionFromToken stores the token in the module-level variable in api.ts
+        // and fetches the user so AuthContext has the correct user object.
+        await setSessionFromToken(token);
+        const user = await import('../utils/api').then(m =>
+          fetch(`${m.API_BASE}/auth/user`, {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
+          }).then(r => r.ok ? r.json() : null)
+        );
+        const isAdmin = user?.user?.role === 'admin';
 
         setStatus('success');
 

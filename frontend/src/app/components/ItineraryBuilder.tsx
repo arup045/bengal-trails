@@ -1,415 +1,219 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
+import { Sparkles, MapPin, Calendar, Wallet, Loader2, Download, Share2, ChevronDown, ChevronUp, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Plus, X, MapPin, Clock, DollarSign, Download, Share2, Trash2, GripVertical } from 'lucide-react';
-import { placesData } from '../data/places-full';
+import { authFetch } from '../utils/api';
+import { toast } from 'sonner';
 
-import { API_BASE } from '../utils/api';
-import { useAuth } from '../contexts/AuthContext';
-interface ItineraryDay {
-  id: string;
-  day: number;
-  date: string;
-  activities: Activity[];
-}
+const INTERESTS = ['Heritage','Wildlife','Beaches','Trekking','Food','Festivals','Photography','Handicrafts','Tea Gardens','Temples'];
+const STYLES    = [{ v:'budget', l:'Budget', d:'₹1–3k/day' },{ v:'moderate', l:'Moderate', d:'₹3–7k/day' },{ v:'luxury', l:'Luxury', d:'₹7k+/day' }];
 
-interface Activity {
-  id: string;
-  placeSlug: string;
-  placeName: string;
-  placeImage: string;
-  startTime: string;
-  duration: string;
-  notes: string;
-  estimatedCost: number;
-}
+interface DayPlan { day: number; title: string; destinations: {name:string;slug:string;duration:string;tip:string}[]; accommodation:string; estimatedCost:string; highlights:string; }
+interface Itinerary { title:string; summary:string; days:DayPlan[]; totalEstimatedCost:string; bestMonths:string[]; packingTips:string[]; }
 
 export function ItineraryBuilder() {
-  const { user, accessToken } = useAuth();
-  const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
-  const [tripName, setTripName] = useState('My West Bengal Adventure');
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [showAddActivity, setShowAddActivity] = useState<number | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState('');
+  const [days,       setDays]       = useState(5);
+  const [budget,     setBudget]     = useState('moderate');
+  const [interests,  setInterests]  = useState<string[]>([]);
+  const [startCity,  setStartCity]  = useState('Kolkata');
+  const [loading,    setLoading]    = useState(false);
+  const [itinerary,  setItinerary]  = useState<Itinerary | null>(null);
+  const [expanded,   setExpanded]   = useState<number | null>(0);
 
-  // Initialize with 3 days
-  useEffect(() => {
-    const saved = localStorage.getItem('itinerary');
-    if (saved) {
-      setItinerary(JSON.parse(saved));
-    } else {
-      const initialDays: ItineraryDay[] = Array.from({ length: 3 }, (_, i) => ({
-        id: `day-${i + 1}`,
-        day: i + 1,
-        date: addDays(startDate, i),
-        activities: [],
-      }));
-      setItinerary(initialDays);
-    }
-  }, []);
+  const toggleInterest = (i: string) =>
+    setInterests(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
-  // Save to localStorage
-  useEffect(() => {
-    if (itinerary.length > 0) {
-      localStorage.setItem('itinerary', JSON.stringify(itinerary));
-      // Also save to backend if logged in
-      if (user && accessToken) {
-        const tripName = (itinerary[0]?.tripName) || 'My Trip';
-        fetch(`${API_BASE}/trip-plans`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ name: tripName, destinations: itinerary }),
-        }).catch(() => { /* fall back to localStorage only */ });
-      }
-    }
-  }, [itinerary]);
-
-  const addDays = (date: string, days: number) => {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result.toISOString().split('T')[0];
-  };
-
-  const addDay = () => {
-    const newDay: ItineraryDay = {
-      id: `day-${itinerary.length + 1}`,
-      day: itinerary.length + 1,
-      date: addDays(startDate, itinerary.length),
-      activities: [],
-    };
-    setItinerary([...itinerary, newDay]);
-  };
-
-  const removeDay = (dayId: string) => {
-    setItinerary(itinerary.filter(d => d.id !== dayId).map((d, i) => ({
-      ...d,
-      day: i + 1,
-      id: `day-${i + 1}`,
-    })));
-  };
-
-  const addActivity = (dayId: string, placeSlug: string) => {
-    const place = placesData.find(p => p.slug === placeSlug);
-    if (!place) return;
-
-    const newActivity: Activity = {
-      id: `activity-${Date.now()}`,
-      placeSlug: place.slug,
-      placeName: place.title,
-      placeImage: place.heroImage.url,
-      startTime: '09:00',
-      duration: '2 hours',
-      notes: '',
-      estimatedCost: parseInt(place.priceFrom?.replace(/[^0-9]/g, '') || '500'),
-    };
-
-    setItinerary(itinerary.map(day =>
-      day.id === dayId
-        ? { ...day, activities: [...day.activities, newActivity] }
-        : day
-    ));
-    setShowAddActivity(null);
-    setSelectedPlace('');
-  };
-
-  const removeActivity = (dayId: string, activityId: string) => {
-    setItinerary(itinerary.map(day =>
-      day.id === dayId
-        ? { ...day, activities: day.activities.filter(a => a.id !== activityId) }
-        : day
-    ));
-  };
-
-  const updateActivity = (dayId: string, activityId: string, updates: Partial<Activity>) => {
-    setItinerary(itinerary.map(day =>
-      day.id === dayId
-        ? {
-            ...day,
-            activities: day.activities.map(a =>
-              a.id === activityId ? { ...a, ...updates } : a
-            ),
-          }
-        : day
-    ));
-  };
-
-  const totalCost = itinerary.reduce((sum, day) =>
-    sum + day.activities.reduce((daySum, activity) => daySum + activity.estimatedCost, 0), 0
-  );
-
-  const exportToPDF = () => {
-    // Simple text export (in real app, use jsPDF library)
-    let content = `${tripName}\n\n`;
-    itinerary.forEach(day => {
-      content += `Day ${day.day} - ${day.date}\n`;
-      day.activities.forEach(activity => {
-        content += `  ${activity.startTime} - ${activity.placeName} (${activity.duration})\n`;
-        if (activity.notes) content += `    Notes: ${activity.notes}\n`;
-        content += `    Cost: ₹${activity.estimatedCost}\n`;
+  const generate = async () => {
+    setLoading(true); setItinerary(null);
+    try {
+      const res = await authFetch('/ai/itinerary', {
+        method: 'POST',
+        body: JSON.stringify({ days, budget, interests, startCity }),
       });
-      content += `\n`;
-    });
-    content += `\nTotal Estimated Cost: ₹${totalCost.toLocaleString()}`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${tripName.replace(/\s+/g, '-')}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || 'Failed to generate'); return; }
+      setItinerary(data.itinerary);
+      setExpanded(0);
+    } catch { toast.error('Network error. Please try again.'); }
+    finally { setLoading(false); }
   };
 
-  const shareItinerary = () => {
-    const text = `Check out my ${tripName}! ${itinerary.length} days exploring West Bengal.`;
-    if (navigator.share) {
-      navigator.share({ title: tripName, text });
-    } else {
-      toast.error('Sharing not supported on this browser');
-    }
+  const share = async () => {
+    const text = `Check out my ${days}-day West Bengal itinerary on Bengal Trails!\n${window.location.href}`;
+    if (navigator.share) { try { await navigator.share({ title: itinerary?.title, text }); } catch {} }
+    else { navigator.clipboard.writeText(text); toast.success('Link copied!'); }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50 pt-32 pb-20">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl p-8 shadow-lg mb-8"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex-1">
-              <input
-                type="text"
-                value={tripName}
-                onChange={(e) => setTripName(e.target.value)}
-                className="text-4xl font-bold text-gray-900 bg-transparent border-none focus:outline-none w-full"
-              />
-              <p className="text-gray-600 mt-2">Plan your perfect West Bengal journey</p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={shareItinerary}
-                className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-              >
-                <Share2 className="w-5 h-5" />
-                Share
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-orange-600 text-white rounded-full hover:shadow-lg transition-all"
-              >
-                <Download className="w-5 h-5" />
-                Export
-              </button>
+    <div className="max-w-4xl mx-auto px-5 sm:px-8 py-10">
+      {/* Header */}
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center gap-2 bg-purple-50 px-4 py-1.5 rounded-full mb-4">
+          <Sparkles className="w-4 h-4 text-purple-600" />
+          <span className="font-poppins text-sm font-medium text-purple-700">AI-powered by Gemini</span>
+        </div>
+        <h1 className="font-poppins text-3xl sm:text-4xl font-semibold text-slate-900 mb-3">
+          Build your perfect Bengal itinerary
+        </h1>
+        <p className="font-poppins text-base text-gray-500 max-w-xl mx-auto">
+          Tell us your preferences and our AI will create a personalised day-by-day plan using real destinations.
+        </p>
+      </div>
+
+      {/* Builder form */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 mb-8 shadow-sm">
+        <div className="grid sm:grid-cols-3 gap-6 mb-6">
+          {/* Duration */}
+          <div>
+            <label className="block font-poppins text-sm font-medium text-slate-700 mb-2">
+              <Calendar className="w-4 h-4 inline mr-1.5 text-purple-500" />Duration
+            </label>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setDays(d => Math.max(2, d - 1))}
+                className="w-9 h-9 rounded-full border border-gray-200 hover:border-purple-400 flex items-center justify-center text-gray-600 transition-colors">−</button>
+              <span className="font-poppins text-xl font-semibold text-slate-900 w-16 text-center">{days} days</span>
+              <button onClick={() => setDays(d => Math.min(14, d + 1))}
+                className="w-9 h-9 rounded-full border border-gray-200 hover:border-purple-400 flex items-center justify-center text-gray-600 transition-colors">+</button>
             </div>
           </div>
-
-          {/* Trip Summary */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-2xl">
-              <Calendar className="w-8 h-8 text-purple-600" />
-              <div>
-                <div className="text-sm text-gray-600">Duration</div>
-                <div className="text-2xl font-bold text-purple-600">{itinerary.length} Days</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-2xl">
-              <MapPin className="w-8 h-8 text-orange-600" />
-              <div>
-                <div className="text-sm text-gray-600">Destinations</div>
-                <div className="text-2xl font-bold text-orange-600">
-                  {new Set(itinerary.flatMap(d => d.activities.map(a => a.placeName))).size}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 bg-green-50 rounded-2xl">
-              <DollarSign className="w-8 h-8 text-green-600" />
-              <div>
-                <div className="text-sm text-gray-600">Est. Cost</div>
-                <div className="text-2xl font-bold text-green-600">₹{totalCost.toLocaleString()}</div>
-              </div>
+          {/* Budget */}
+          <div>
+            <label className="block font-poppins text-sm font-medium text-slate-700 mb-2">
+              <Wallet className="w-4 h-4 inline mr-1.5 text-purple-500" />Budget
+            </label>
+            <div className="flex flex-col gap-2">
+              {STYLES.map(s => (
+                <button key={s.v} onClick={() => setBudget(s.v)}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl border text-left transition-all
+                    ${budget === s.v ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <span className="font-poppins text-sm font-medium text-slate-900">{s.l}</span>
+                  <span className="font-poppins text-xs text-gray-400">{s.d}</span>
+                </button>
+              ))}
             </div>
           </div>
-        </motion.div>
-
-        {/* Days Timeline */}
-        <div className="space-y-6">
-          {itinerary.map((day, dayIndex) => (
-            <motion.div
-              key={day.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: dayIndex * 0.1 }}
-              className="bg-white rounded-3xl p-6 shadow-lg"
-            >
-              {/* Day Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-orange-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
-                    {day.day}
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Day {day.day}</h3>
-                    <p className="text-gray-600">{new Date(day.date).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => removeDay(day.id)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                  title="Remove day"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Activities */}
-              <div className="space-y-4 mb-4">
-                {day.activities.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>No activities planned yet</p>
-                  </div>
-                ) : (
-                  day.activities.map((activity, actIndex) => (
-                    <div
-                      key={activity.id}
-                      className="flex gap-4 p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors group"
-                    >
-                      <GripVertical className="w-5 h-5 text-gray-400 flex-shrink-0 mt-2 cursor-move" />
-                      
-                      <img
-                        src={activity.placeImage}
-                        alt={activity.placeName}
-                        className="w-20 h-20 rounded-xl object-cover"
-                      />
-                      
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h4 className="text-lg font-semibold text-gray-900">{activity.placeName}</h4>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {activity.startTime}
-                              </span>
-                              <span>• {activity.duration}</span>
-                              <span className="text-purple-600">₹{activity.estimatedCost.toLocaleString()}</span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => removeActivity(day.id, activity.id)}
-                            className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-50 rounded-full transition-all"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                        
-                        {activity.notes && (
-                          <p className="text-sm text-gray-600 mt-2 italic">{activity.notes}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Add Activity Button */}
-              {showAddActivity === dayIndex ? (
-                <div className="bg-purple-50 rounded-2xl p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3">Add Activity</h4>
-                  <select
-                    value={selectedPlace}
-                    onChange={(e) => setSelectedPlace(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border-2 border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
-                  >
-                    <option value="">Select a destination...</option>
-                    {placesData.slice(0, 50).map(place => (
-                      <option key={place.slug} value={place.slug}>
-                        {place.title} - {place.district}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => selectedPlace && addActivity(day.id, selectedPlace)}
-                      disabled={!selectedPlace}
-                      className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Add
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAddActivity(null);
-                        setSelectedPlace('');
-                      }}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowAddActivity(dayIndex)}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-dashed border-purple-300 text-purple-600 rounded-2xl hover:bg-purple-50 transition-colors"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add Activity
-                </button>
-              )}
-            </motion.div>
-          ))}
+          {/* Start city */}
+          <div>
+            <label className="block font-poppins text-sm font-medium text-slate-700 mb-2">
+              <MapPin className="w-4 h-4 inline mr-1.5 text-purple-500" />Starting from
+            </label>
+            <select value={startCity} onChange={e => setStartCity(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl font-poppins text-sm focus:outline-none focus:border-purple-400 transition-colors">
+              {['Kolkata','Siliguri','Durgapur','Asansol','Haldia'].map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
         </div>
 
-        {/* Add Day Button */}
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={addDay}
-          className="w-full mt-6 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-100 to-orange-100 text-purple-700 rounded-2xl hover:from-purple-200 hover:to-orange-200 transition-all"
-        >
-          <Plus className="w-6 h-6" />
-          Add Another Day
-        </motion.button>
+        {/* Interests */}
+        <div className="mb-6">
+          <label className="block font-poppins text-sm font-medium text-slate-700 mb-3">Interests <span className="text-gray-400 font-normal">(pick any)</span></label>
+          <div className="flex flex-wrap gap-2">
+            {INTERESTS.map(i => (
+              <button key={i} onClick={() => toggleInterest(i)}
+                className={`px-3.5 py-1.5 rounded-full font-poppins text-sm transition-all
+                  ${interests.includes(i) ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                {i}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {/* Tips */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8 bg-gradient-to-r from-purple-600 to-orange-600 rounded-3xl p-8 text-white"
-        >
-          <h3 className="text-2xl font-bold mb-4">✨ Planning Tips</h3>
-          <ul className="space-y-2">
-            <li className="flex items-start gap-2">
-              <span>•</span>
-              <span>Group nearby destinations on the same day to save travel time</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span>•</span>
-              <span>Check the best season to visit each destination</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span>•</span>
-              <span>Budget extra for meals, local transport, and shopping</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span>•</span>
-              <span>Book accommodations in advance during festival seasons</span>
-            </li>
-          </ul>
-        </motion.div>
+        <button onClick={generate} disabled={loading}
+          className="w-full py-4 bg-purple-600 hover:bg-purple-700 rounded-xl font-poppins text-base font-medium text-white transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+          {loading ? <><Loader2 className="w-5 h-5 animate-spin" />Generating your itinerary…</> : <><Sparkles className="w-5 h-5" />Generate Itinerary</>}
+        </button>
       </div>
+
+      {/* Result */}
+      <AnimatePresence>
+        {itinerary && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            {/* Summary */}
+            <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 sm:p-8 mb-4 text-white">
+              <h2 className="font-poppins text-xl sm:text-2xl font-semibold mb-2">{itinerary.title}</h2>
+              <p className="font-poppins text-white/80 text-sm leading-relaxed mb-4">{itinerary.summary}</p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-full">
+                  <Calendar className="w-3.5 h-3.5" />{days} days
+                </span>
+                <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-full">
+                  <Wallet className="w-3.5 h-3.5" />{itinerary.totalEstimatedCost}
+                </span>
+                <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-full">
+                  <Star className="w-3.5 h-3.5" />Best: {itinerary.bestMonths?.join(', ')}
+                </span>
+              </div>
+              <div className="flex gap-3 mt-5">
+                <button onClick={share}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 rounded-xl text-sm font-poppins font-medium transition-colors">
+                  <Share2 className="w-4 h-4" />Share
+                </button>
+                <button onClick={() => window.print()}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 rounded-xl text-sm font-poppins font-medium transition-colors">
+                  <Download className="w-4 h-4" />Save PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Day cards */}
+            <div className="space-y-3">
+              {itinerary.days?.map((day, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                  <button onClick={() => setExpanded(expanded === i ? null : i)}
+                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center font-poppins text-sm font-semibold text-purple-700">
+                        {day.day}
+                      </div>
+                      <div>
+                        <p className="font-poppins text-sm font-semibold text-slate-900">{day.title}</p>
+                        <p className="font-poppins text-xs text-gray-400">{day.estimatedCost}</p>
+                      </div>
+                    </div>
+                    {expanded === i ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                  </button>
+                  {expanded === i && (
+                    <div className="px-5 pb-5 border-t border-gray-100">
+                      <p className="font-poppins text-sm text-gray-500 mt-3 mb-4">{day.highlights}</p>
+                      <div className="space-y-3 mb-4">
+                        {day.destinations?.map((d, j) => (
+                          <a key={j} href={`#/explore/${d.slug}`}
+                            className="flex items-start gap-3 p-3 rounded-xl hover:bg-purple-50 transition-colors group">
+                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
+                              <MapPin className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-poppins text-sm font-semibold text-slate-900 group-hover:text-purple-700">{d.name}</p>
+                              <p className="font-poppins text-xs text-gray-400">{d.duration} · {d.tip}</p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span className="font-poppins">Stay: {day.accommodation}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Packing tips */}
+            {itinerary.packingTips?.length > 0 && (
+              <div className="mt-4 p-5 bg-amber-50 border border-amber-100 rounded-2xl">
+                <p className="font-poppins text-sm font-semibold text-amber-800 mb-2">Packing tips</p>
+                <ul className="space-y-1">
+                  {itinerary.packingTips.map((t, i) => (
+                    <li key={i} className="font-poppins text-sm text-amber-700 flex items-start gap-2">
+                      <span className="mt-1">•</span>{t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

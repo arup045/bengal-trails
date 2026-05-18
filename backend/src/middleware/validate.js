@@ -18,11 +18,29 @@ function validate(schema) {
 }
 
 // ── Schemas ────────────────────────────────────────────────────────────────────
+
+// ── HTML sanitizer ────────────────────────────────────────────────────────────
+// Strips all HTML tags from string fields so XSS payloads can't be stored in DB.
+// Applied automatically by the Zod .transform() on every string field below.
+function stripHtml(str) {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/<[^>]*>/g, '')          // strip HTML tags
+    .replace(/&[a-z]+;/gi, ' ')       // strip HTML entities (lt; gt; amp; etc.)
+    .replace(/javascript:/gi, '')     // strip JS protocol
+    .replace(/on\w+\s*=/gi, '')       // strip event handlers (onclick= etc.)
+    .trim();
+}
+
+// Reusable sanitized string builder
+const sanitizedString = (opts = {}) =>
+  z.string(opts).transform(stripHtml);
+
 const schemas = {
   signup: z.object({
     email: z.string().email().toLowerCase(),
     password: z.string().min(8).max(100).regex(/[a-zA-Z]/, 'Need a letter').regex(/[0-9]/, 'Need a number'),
-    name: z.string().min(2).max(100),
+    name: z.string().min(2).max(100).transform(stripHtml),
     consent: z.any().optional(),
   }),
 
@@ -35,7 +53,7 @@ const schemas = {
     name: z.string().min(2).max(100).optional(),
     phone: z.string().max(20).optional(),
     location: z.string().max(255).optional(),
-    bio: z.string().max(500).optional(),
+    bio: z.string().max(500).transform(stripHtml).optional(),
     avatar_url: z.string().url().optional(),
   }),
 
@@ -43,7 +61,7 @@ const schemas = {
     destinationSlug: z.string().min(1).max(255),
     rating: z.number().int().min(1).max(5),
     title: z.string().max(255).optional(),
-    content: z.string().min(10).max(2000),
+    content: z.string().min(10).max(2000).transform(stripHtml),
     visitDate: z.string().optional(),
   }),
 
@@ -66,7 +84,7 @@ const schemas = {
 
   forumThread: z.object({
     title: z.string().min(5).max(255),
-    content: z.string().min(10).max(5000),
+    content: z.string().min(10).max(5000).transform(stripHtml),
     category: z.string().max(100).optional(),
     tags: z.array(z.string().max(50)).max(10).optional(),
   }),
@@ -76,14 +94,14 @@ const schemas = {
   }),
 
   socialPost: z.object({
-    content: z.string().min(1).max(2000),
+    content: z.string().min(1).max(2000).transform(stripHtml),
     destinationSlug: z.string().max(255).optional(),
     visitDate: z.string().optional(),
     images: z.array(z.string()).max(8).optional(),
   }),
 
   comment: z.object({
-    content: z.string().min(1).max(1000),
+    content: z.string().min(1).max(1000).transform(stripHtml),
   }),
 
   forgotPassword: z.object({

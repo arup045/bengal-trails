@@ -1,4 +1,4 @@
-import { API_BASE } from '../../utils/api';
+import { API_BASE, getToken} from '../../utils/api';
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Flag, Eye, Trash2, Filter, Search } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -36,7 +36,7 @@ export const ReviewModeration: React.FC = () => {
         `${API_BASE}/admin/reviews?status=${filter}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -60,7 +60,7 @@ export const ReviewModeration: React.FC = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -82,7 +82,7 @@ export const ReviewModeration: React.FC = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -115,7 +115,7 @@ export const ReviewModeration: React.FC = () => {
         {
           method: 'DELETE',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );

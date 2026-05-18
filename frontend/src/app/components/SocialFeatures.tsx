@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, UserCheck, Share2, MessageCircle, Heart, Camera, MapPin, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -76,7 +76,7 @@ export const SocialFeatures: React.FC = () => {
         `${API_BASE}/social/${endpoint}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -98,7 +98,7 @@ export const SocialFeatures: React.FC = () => {
         `${API_BASE}/social/suggested-users`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -125,7 +125,7 @@ export const SocialFeatures: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({
             userId: user.id,
@@ -157,7 +157,7 @@ export const SocialFeatures: React.FC = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({ userId: user?.id }),
         }
@@ -178,7 +178,7 @@ export const SocialFeatures: React.FC = () => {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({ followerId: user?.id }),
         }
@@ -199,7 +199,7 @@ export const SocialFeatures: React.FC = () => {
         `${API_BASE}/social/posts/${postId}/comments`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
         }
       );
@@ -223,7 +223,7 @@ export const SocialFeatures: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
+            Authorization: `Bearer ${getToken() || ''}`,
           },
           body: JSON.stringify({
             userId: user?.id,

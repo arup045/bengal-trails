@@ -3,9 +3,13 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ChevronUp } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { Hero } from './components/Hero';
+const BentoGrid = lazy(() => import('./components/BentoGrid').then(m => ({ default: m.BentoGrid })));
 import { Features } from './components/Features';
 import { FavoritePlaces } from './components/FavoritePlaces';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import { Header } from './components/Header';
+import { MobileNav } from './components/MobileNav';
 import { DestinationGridSkeleton, BlogCardSkeleton, GenericSkeleton } from './components/Skeletons';
 import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -34,6 +38,8 @@ const WishlistPage = lazy(() => import('./components/WishlistPage').then(m => ({
 const FoodGuidePage = lazy(() => import('./components/FoodGuidePage').then(m => ({ default: m.FoodGuidePage })));
 const InteractiveMapPage = lazy(() => import('./components/InteractiveMapPage').then(m => ({ default: m.InteractiveMapPage })));
 const PhrasebookPage = lazy(() => import('./components/PhrasebookPage').then(m => ({ default: m.PhrasebookPage })));
+const PartnersDirectory = lazy(() => import('./components/PartnersDirectory').then(m => ({ default: m.PartnersDirectory })));
+const VendorOnboarding = lazy(() => import('./components/VendorOnboarding').then(m => ({ default: m.VendorOnboarding })));
 const ItineraryBuilder = lazy(() => import('./components/ItineraryBuilder').then(m => ({ default: m.ItineraryBuilder })));
 const ComparisonTool = lazy(() => import('./components/ComparisonTool').then(m => ({ default: m.ComparisonTool })));
 const FestivalCalendar = lazy(() => import('./components/FestivalCalendar').then(m => ({ default: m.FestivalCalendar })));
@@ -83,8 +89,28 @@ const PageLoader = () => (
   </div>
 );
 
+
+// ── Page title map ────────────────────────────────────────────────────────────
+const PAGE_TITLES: Partial<Record<string, string>> = {
+  home:               'Bengal Trails — Discover West Bengal',
+  explore:            'Explore Destinations — Bengal Trails',
+  festivals:          'Festivals — Bengal Trails',
+  food:               'Bengali Food Guide — Bengal Trails',
+  community:          'Community — Bengal Trails',
+  planner:            'Trip Planner — Bengal Trails',
+  'itinerary-builder':'AI Itinerary Builder — Bengal Trails',
+  'partners':         'Verified Partners — Bengal Trails',
+  'vendor-onboarding':'Become a Partner — Bengal Trails',
+  profile:            'My Profile — Bengal Trails',
+  wishlist:           'My Wishlist — Bengal Trails',
+  signin:             'Sign In — Bengal Trails',
+  map:                'Interactive Map — Bengal Trails',
+  admin:              'Admin Dashboard — Bengal Trails',
+  'not-found':        '404 Not Found — Bengal Trails',
+};
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist' | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals' | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools' | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup' | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification' | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact' | 'emergency' | 'not-found' | 'oauth-success'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist' | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals' | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools' | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup' | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification' | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact' | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder' | 'not-found' | 'oauth-success'>('home');
   const [currentSlug, setCurrentSlug] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -355,7 +381,13 @@ export default function App() {
 
     handleRouteChange();
     window.addEventListener('hashchange', handleRouteChange);
-    return () => window.removeEventListener('hashchange', handleRouteChange);
+  
+  // Update browser tab title on page change
+  useEffect(() => {
+    document.title = PAGE_TITLES[currentPage] || 'Bengal Trails';
+  }, [currentPage]);
+
+  return () => window.removeEventListener('hashchange', handleRouteChange);
   }, []);
 
   // Scroll to top button visibility
@@ -446,12 +478,14 @@ export default function App() {
         <ErrorBoundary>
           {/* Header is now universal across all pages */}
           <Header />
+      <MobileNav />
 
           <main id="main-content" role="main" tabIndex={-1} className="">
             <Suspense fallback={<PageLoader />}>
               {currentPage === 'home' && (
                 <>
                   <Hero />
+                  <Suspense fallback={<div className="max-w-7xl mx-auto px-5 py-12"><div className="h-64 bg-gray-100 rounded-2xl animate-pulse" /></div>}><BentoGrid /></Suspense>
                   <Features />
                   <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><DestinationGridSkeleton count={3} /></div>}>
                     <ToolsSection />
@@ -496,7 +530,7 @@ export default function App() {
               
               {currentPage === 'phrasebook' && <PhrasebookPage />}
               
-              {currentPage === 'itinerary' && <ItineraryBuilder />}
+              {currentPage === 'itinerary' && <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>}><ItineraryBuilder /></Suspense>}
               
               {currentPage === 'compare' && <ComparisonTool />}
               
@@ -551,6 +585,9 @@ export default function App() {
               {currentPage === 'emergency' && <EmergencyInfo />}
 
               {currentPage === 'oauth-success' && <OAuthSuccessPage />}
+              {currentPage === 'partners' && <Suspense fallback={<div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}><PartnersDirectory /></Suspense>}
+              {currentPage === 'vendor-onboarding' && <Suspense fallback={<div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}><VendorOnboarding /></Suspense>}
+              {currentPage === 'itinerary-builder' && <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>}><ItineraryBuilder /></Suspense>}
 
               {currentPage === 'not-found' && <NotFoundPage />}
             </Suspense>

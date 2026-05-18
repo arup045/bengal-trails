@@ -7,8 +7,34 @@ const pool = require('../db/pool');
 const { authenticate } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validate');
 
-const makeToken = (userId) =>
-  jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+
+// ── Token helpers ──────────────────────────────────────────────────────────────
+const ACCESS_TTL   = '15m';          // short-lived, stored in memory on client
+const REFRESH_TTL  = '30d';          // long-lived, stored in httpOnly cookie
+const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+
+function makeAccessToken(userId) {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: ACCESS_TTL });
+}
+
+function makeRefreshToken(userId) {
+  return jwt.sign({ userId, type: 'refresh' }, process.env.JWT_SECRET, { expiresIn: REFRESH_TTL });
+}
+
+function setRefreshCookie(res, token) {
+  res.cookie('bt_refresh', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/api/auth',
+    maxAge: REFRESH_COOKIE_MAX_AGE,
+  });
+}
+
+function clearRefreshCookie(res) {
+  res.clearCookie('bt_refresh', { httpOnly: true, secure: true, sameSite: 'lax', path: '/api/auth' });
+}
+
 
 const safeUser = (u) => ({
   id: u.id,
@@ -77,11 +103,13 @@ router.post('/signin', validate(schemas.signin), async (req, res) => {
 
     await pool.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
 
-    const token = makeToken(user.id);
+    const accessToken  = makeAccessToken(user.id);
+    const refreshToken = makeRefreshToken(user.id);
+    setRefreshCookie(res, refreshToken);
     return res.json({
       success: true,
       user: safeUser(user),
-      session: { access_token: token, refresh_token: token },
+      session: { access_token: accessToken },   // NO refresh_token in body — it's in the httpOnly cookie
     });
   } catch (err) {
     console.error('signin error:', err);
@@ -131,7 +159,7 @@ router.delete('/account', authenticate, async (req, res) => {
 
 // ── POST /auth/signout ─────────────────────────────────────────────────────────
 router.post('/signout', authenticate, async (req, res) => {
-  // JWT is stateless; client just drops the token. We log it here.
+  clearRefreshCookie(res);
   return res.json({ success: true });
 });
 
@@ -190,30 +218,33 @@ router.post('/reset-password', validate(schemas.resetPassword), async (req, res)
 
 
 // ── POST /auth/refresh ────────────────────────────────────────────────────────
-// Issue a new access token using the refresh token
+// Silently called on app mount to restore session from the httpOnly cookie.
+// Returns a new short-lived access token in the response body.
+// Rotates the refresh token cookie (prevents token replay attacks).
 router.post('/refresh', async (req, res) => {
   try {
-    // Accept refresh token from body OR from the httpOnly cookie (set by OAuth)
-    const refresh_token = req.body?.refresh_token || req.cookies?.bt_refresh;
-    if (!refresh_token) return res.status(400).json({ error: 'refresh_token required' });
+    // ONLY read from httpOnly cookie — never accept refresh token in body
+    const refreshToken = req.cookies?.bt_refresh;
+    if (!refreshToken) return res.status(401).json({ error: 'No refresh session' });
 
-    // Verify the refresh token (same secret, but we check a refresh_tokens table ideally)
-    const payload = jwt.verify(refresh_token, process.env.JWT_SECRET);
+    const payload = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    if (payload.type !== 'refresh') throw new Error('Not a refresh token');
+
     const { rows } = await pool.query('SELECT id, status FROM users WHERE id = $1', [payload.userId]);
-
     if (!rows.length || rows[0].status === 'suspended') {
-      return res.status(401).json({ error: 'Invalid refresh token' });
+      clearRefreshCookie(res);
+      return res.status(401).json({ error: 'Session invalid' });
     }
 
-    const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_SECRET, { expiresIn: '15m' });
-    const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    // Rotate: issue a fresh refresh token and access token
+    const newAccess  = makeAccessToken(payload.userId);
+    const newRefresh = makeRefreshToken(payload.userId);
+    setRefreshCookie(res, newRefresh);
 
-    return res.json({
-      success: true,
-      session: { access_token: newAccessToken, refresh_token: newRefreshToken }
-    });
+    return res.json({ success: true, session: { access_token: newAccess } });
   } catch {
-    return res.status(401).json({ error: 'Invalid or expired refresh token' });
+    clearRefreshCookie(res);
+    return res.status(401).json({ error: 'Session expired. Please sign in again.' });
   }
 });
 

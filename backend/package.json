@@ -12,7 +12,9 @@
     "photos": "node scripts/update-photos.js",
     "migrate:images": "node scripts/migrate-images-to-cloudinary.js",
     "embed": "node scripts/embed-content.js",
-    "start:prod": "node scripts/start-production.js"
+    "start:prod": "node scripts/start-production.js",
+    "backup": "node scripts/backup-db.js",
+    "backup:file": "node scripts/backup-db.js > backups/backup_$(date +%Y%m%d).sql"
   },
   "dependencies": {
     "@sentry/node": "^10.51.0",

@@ -1,4 +1,5 @@
 import { API_BASE } from '../utils/api';
+import { useDestination } from '../lib/queries';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
@@ -10,9 +11,11 @@ import { WeatherWidget } from './WeatherWidget';
 import { TransportGuideSection } from './TransportGuideSection';
 import { HotelsSection } from './HotelsSection';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
+import { ShareButton } from './ShareButton';
 import { PhotoGalleryLightbox } from './PhotoGalleryLightbox';
 import { ReviewsSystem } from './ReviewsSystem';
 import { BookingSystem } from './BookingSystem';
+import { BookingModal } from './BookingModal';
 import { ReportIssueButton } from './ReportIssueButton';
 
 interface PlaceDetailPageProps {
@@ -74,10 +77,32 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
           nearbyRestaurants: Array.isArray(dest.nearbyRestaurants) ? dest.nearbyRestaurants : [],
         });
       })
-      .catch(() => { /* fall back to staticPlace */ });
+      .catch(() => {
+        setIsLoading(false); /* fall back to staticPlace */ });
   }, [slug]);
   const staticPlace = placesData.find(p => p.slug === slug);
+  // Clear loading once we have either API or static data
+  if ((apiPlace || staticPlace) && isLoading) setIsLoading(false);
   const place = apiPlace || staticPlace;
+
+  // Skeleton while fetching
+  if (isLoading && !place) {
+    return (
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-24 pb-16 animate-pulse">
+        <div className="h-72 sm:h-[440px] bg-gray-200 rounded-3xl mb-8" />
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-3">
+            <div className="h-8  bg-gray-200 rounded-xl w-2/3" />
+            <div className="h-4  bg-gray-200 rounded-xl w-1/3" />
+            <div className="h-4  bg-gray-200 rounded-xl w-full mt-4" />
+            <div className="h-4  bg-gray-200 rounded-xl w-5/6" />
+            <div className="h-4  bg-gray-200 rounded-xl w-4/6" />
+          </div>
+          <div className="h-56 bg-gray-200 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   if (!place) {
     return (
@@ -555,13 +580,24 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 </div>
               </div>
 
+              <button
+                onClick={() => setShowBooking(true)}
+                className="w-full mt-5 bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition-colors font-poppins font-medium text-sm"
+              >
+                Plan Your Visit
+              </button>
               <button 
                 onClick={openGoogleMaps}
-                className="w-full mt-6 bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                className="w-full mt-2 border border-gray-200 text-gray-700 py-3 rounded-full hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-poppins text-sm"
               >
                 <Navigation className="w-5 h-5" />
                 Get Directions
               </button>
+              <ShareButton
+                title={place.title}
+                description={place.excerpt}
+                className="mt-3 w-full flex justify-center"
+              />
             </div>
 
             {/* Popular Tags */}

@@ -7,28 +7,57 @@ const { cache } = require('../utils/cache');
 // All admin routes require auth + admin role
 router.use(authenticate, requireAdmin);
 
-// ── GET /admin/stats ──────────────────────────────────────────────────────────
+// ── GET /admin/stats?range=7d|30d|90d ────────────────────────────────────────
 router.get('/stats', async (req, res) => {
   try {
-    const [usersRes, destRes, reviewsRes, bookingsRes, subsRes] = await Promise.all([
-      pool.query('SELECT COUNT(*) FROM users'),
-      pool.query("SELECT COUNT(*) FROM destinations WHERE status = 'published'"),
-      pool.query('SELECT COUNT(*) FROM reviews'),
-      pool.query('SELECT COUNT(*) FROM bookings'),
-      pool.query("SELECT COUNT(*) FROM newsletter_subscribers WHERE status = 'active'"),
+    const range = req.query.range || '30d';
+    const days  = range === '7d' ? 7 : range === '90d' ? 90 : 30;
+
+    const [totals, signupTrend, topDests, enquiryCount] = await Promise.all([
+      // Totals
+      Promise.all([
+        pool.query('SELECT COUNT(*) FROM users'),
+        pool.query("SELECT COUNT(*) FROM destinations WHERE status='published'"),
+        pool.query('SELECT COUNT(*) FROM reviews'),
+        pool.query("SELECT COUNT(*) FROM newsletter_subscribers WHERE status='active'"),
+        pool.query(`SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '${days} days'`),
+      ]),
+      // Daily signups for chart
+      pool.query(`
+        SELECT DATE(created_at) AS date, COUNT(*) AS count
+        FROM users
+        WHERE created_at >= NOW() - INTERVAL '${days} days'
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `),
+      // Top destinations by view count
+      pool.query(`
+        SELECT name, slug, view_count, rating
+        FROM destinations
+        WHERE status='published'
+        ORDER BY view_count DESC NULLS LAST
+        LIMIT 8
+      `),
+      // Enquiries
+      pool.query("SELECT COUNT(*) FROM enquiries").catch(() => ({ rows: [{ count: 0 }] })),
     ]);
+
+    const [usersRes, destRes, reviewsRes, subsRes, newUsersRes] = totals;
 
     return res.json({
       stats: {
         totalUsers:        parseInt(usersRes.rows[0].count),
         totalDestinations: parseInt(destRes.rows[0].count),
         totalReviews:      parseInt(reviewsRes.rows[0].count),
-        totalBookings:     parseInt(bookingsRes.rows[0].count),
         newsletterSubs:    parseInt(subsRes.rows[0].count),
+        newUsersInRange:   parseInt(newUsersRes.rows[0].count),
+        totalEnquiries:    parseInt(enquiryCount.rows[0].count),
       },
+      signupTrend:  signupTrend.rows.map(r => ({ date: r.date, users: parseInt(r.count) })),
+      topDestinations: topDests.rows,
     });
   } catch (err) {
-    console.error(err);
+    console.error('admin stats error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
@@ -305,3 +334,40 @@ router.post('/create-first-admin', async (req, res) => {
 });
 
 module.exports = router;
+
+// ── POST /admin/audit-log ─────────────────────────────────────────────────────
+// Internal helper — called by admin routes to log actions.
+async function writeAuditLog(adminId, action, entityType, entityId, req) {
+  pool.query(
+    `INSERT INTO audit_logs (admin_id, action, entity_type, entity_id, ip_address)
+     VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`,
+    [adminId, action, entityType, entityId, req.ip]
+  ).catch(console.error);
+}
+
+// ── GET /admin/audit-logs ─────────────────────────────────────────────────────
+router.get('/audit-logs', async (req, res) => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id           SERIAL PRIMARY KEY,
+        admin_id     INTEGER REFERENCES users(id),
+        action       VARCHAR(100) NOT NULL,
+        entity_type  VARCHAR(100),
+        entity_id    VARCHAR(100),
+        ip_address   VARCHAR(50),
+        created_at   TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    const { rows } = await pool.query(`
+      SELECT a.*, u.name AS admin_name, u.email AS admin_email
+      FROM audit_logs a
+      LEFT JOIN users u ON a.admin_id = u.id
+      ORDER BY a.created_at DESC
+      LIMIT 100
+    `);
+    return res.json({ logs: rows });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { PasswordStrength } from './PasswordStrength';
 import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, Check, Mountain, Sparkles, Users, MapPin, Heart, Camera, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -256,7 +257,6 @@ export function SignInPage() {
     setLoading(false);
     
     if (result.success) {
-      console.log('Sign up complete:', signupForm);
       setShowSuccessOverlay(true);
 
       setTimeout(() => {
@@ -684,9 +684,7 @@ export function SignInPage() {
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                           </button>
                         </div>
-                        <p className="text-gray-500 text-xs mt-1.5">
-                          8+ characters, at least 1 letter & 1 number
-                        </p>
+                        <PasswordStrength password={signupForm.password} />
                         {formErrors.password && (
                           <motion.p
                             initial={{ opacity: 0, y: -5 }}

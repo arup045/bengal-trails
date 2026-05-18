@@ -32,34 +32,47 @@ initSentry(app);
 
 // ── Security ──────────────────────────────────────────────────────────────────
 app.use(helmet({
-  // Disable CSP — this is a JSON API, not an HTML server. CSP only applies to
-  // pages with script/style/iframe contexts. Keeping all other defaults
-  // (HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, etc.)
-  contentSecurityPolicy: false,
-  // Allow cross-origin requests (frontend on different domain)
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,           // JSON API — no HTML pages to protect
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow frontend to read responses
+  hsts: {                                 // force HTTPS for 1 year in production
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  xContentTypeOptions: true,             // no MIME sniffing
+  xFrameOptions: { action: 'deny' },    // no iframing the API
 }));
 
+// Remove X-Powered-By (reveals Express version)
+app.disable('x-powered-by');
+
 // ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
-  .split(',')
-  .map((o) => o.trim());
-const allowAll = allowedOrigins.includes('*');
+const rawOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',').map(o => o.trim()).filter(Boolean);
+
+// Reject wildcard * — it cannot be used with credentials:true anyway
+// and is a security misconfiguration. Force explicit origins.
+const allowedOrigins = rawOrigins.filter(o => o !== '*');
+if (rawOrigins.includes('*')) {
+  console.warn('[CORS] FRONTEND_URL=* is unsafe. Set it to your exact Vercel URL in Render env vars.');
+}
+
+// Compiled patterns for *.vercel.app and *.netlify.app (preview deploys)
+const PREVIEW_PATTERNS = [/\.vercel\.app$/, /\.netlify\.app$/, /^http:\/\/localhost:/];
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Reflect the actual origin when wildcard is set (required when credentials: true)
-    if (!origin) return cb(null, true);
-    if (allowAll) return cb(null, origin);
+    if (!origin) return cb(null, true); // server-to-server / curl
     if (allowedOrigins.includes(origin)) return cb(null, origin);
-    // Allow any *.netlify.app and *.vercel.app preview deploys by default
-    if (/\.netlify\.app$/.test(new URL(origin).hostname)) return cb(null, origin);
-    if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, origin);
+    if (PREVIEW_PATTERNS.some(p => p.test(origin))) return cb(null, origin);
+    console.warn('[CORS] Blocked origin:', origin);
     return cb(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400, // cache preflight 24h
 }));
 
 // ── Logging ───────────────────────────────────────────────────────────────────
@@ -105,6 +118,22 @@ const signupLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Vendor application limiter — prevent spam applications
+const vendorLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,    // 1 hour
+  max:      5,                  // max 5 applications per IP per hour
+  message:  { error: 'Too many applications. Please try again later.' },
+  standardHeaders: true,
+});
+
+// Booking enquiry limiter — prevent spam enquiries
+const enquiryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,    // 15 min
+  max:      10,                 // 10 enquiries per IP per 15 min
+  message:  { error: 'Too many enquiries. Please slow down.' },
+  standardHeaders: true,
+});
+
 // Strict limiter for AI (Gemini) endpoints — expensive external API calls
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000,      // 1 minute
@@ -144,6 +173,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok', service: 'bengal-trail
 app.use('/api/suggestions', require('./routes/suggestions'));
 app.use('/api/auth/signup', signupLimiter);
 app.use('/api/auth',            authLimiter, authRoutes);
+app.use('/api/vendors',         vendorLimiter, require('./routes/vendors'));
 app.use('/api/reviews',         reviewRoutes);
 
 app.get('/api/debug-env', (req, res) => {
@@ -159,6 +189,8 @@ app.get('/api/debug-env', (req, res) => {
   });
 });
 
+// Specific stricter limiter for booking enquiries (POST only)
+app.use('/api/bookings/enquiry', enquiryLimiter);
 app.use('/api',                 searchLimiter, generalRoutes);   // bookings, newsletter, notifications, search, report
 app.use('/api/social',          socialRoutes);
 app.use('/api/forum',           forumRoutes);
@@ -193,10 +225,18 @@ app.use((err, req, res, next) => {
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 Bengal Trails API running on port ${PORT}`);
-  console.log(`   Environment : ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-  console.log(`   Health check: http://localhost:${PORT}/health\n`);
+  console.log(`\n[server] Bengal Trails API on port ${PORT}`);
+  console.log(`[server] Env: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`[server] Frontend: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+
+  // Keep-alive: ping own /health every 9 min so Render free tier never cold-starts.
+  if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
+    const url = process.env.RENDER_EXTERNAL_URL + '/health';
+    setInterval(() => {
+      fetch(url).catch(() => {});
+    }, 9 * 60 * 1000);
+    console.log('[server] Keep-alive ping active (' + url + ')');
+  }
 });
 
 module.exports = app;
