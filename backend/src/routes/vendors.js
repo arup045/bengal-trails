@@ -8,7 +8,7 @@ async function ensureTables() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS vendor_applications (
       id              SERIAL PRIMARY KEY,
-      user_id         INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      user_id         UUID    REFERENCES users(id) ON DELETE CASCADE,
       business_name   VARCHAR(255) NOT NULL,
       business_type   VARCHAR(100) NOT NULL,   -- 'tour_guide'|'hotel'|'restaurant'|'transport'
       description     TEXT,
@@ -21,7 +21,7 @@ async function ensureTables() {
       id_proof_url    VARCHAR(500),
       status          VARCHAR(50) DEFAULT 'pending',  -- pending|approved|rejected
       admin_notes     TEXT,
-      reviewed_by     INTEGER REFERENCES users(id),
+      reviewed_by     UUID    REFERENCES users(id),
       reviewed_at     TIMESTAMPTZ,
       created_at      TIMESTAMPTZ DEFAULT NOW(),
       updated_at      TIMESTAMPTZ DEFAULT NOW()

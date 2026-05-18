@@ -351,7 +351,7 @@ router.get('/audit-logs', async (req, res) => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS audit_logs (
         id           SERIAL PRIMARY KEY,
-        admin_id     INTEGER REFERENCES users(id),
+        admin_id     UUID    REFERENCES users(id),
         action       VARCHAR(100) NOT NULL,
         entity_type  VARCHAR(100),
         entity_id    VARCHAR(100),

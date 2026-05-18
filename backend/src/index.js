@@ -28,6 +28,12 @@ const wishlistRoutes    = require('./routes/wishlist');
 const recentlyViewedRoutes = require('./routes/recentlyViewed');
 
 const app = express();
+
+// Render / Vercel / Cloudflare etc. all use reverse proxies. Without this,
+// express-rate-limit sees every request as coming from the proxy's IP and
+// can't distinguish users — making rate limits useless. Setting this to 1
+// trusts ONE proxy hop (Render) without being insecure.
+app.set('trust proxy', 1);
 initSentry(app);
 
 // ── Security ──────────────────────────────────────────────────────────────────
