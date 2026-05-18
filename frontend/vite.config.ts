@@ -9,36 +9,29 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src/app'),
     },
+    // CRITICAL: Force a SINGLE React instance across all chunks.
+    // Without this, manualChunks can create duplicate React copies, causing
+    // "Invalid hook call" (React error #321) crashes at runtime.
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1000,
+    // No manualChunks — let Vite handle code splitting automatically based on
+    // dynamic imports. Manual chunks were creating empty react-core / dates
+    // chunks and causing duplicate React instances.
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React + router — loaded on every page
-          'react-core': ['react', 'react-dom'],
-          // Animation lib — used on most pages
-          'motion': ['motion'],
-          // UI component library
-          'radix': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-tooltip',
-          ],
-          // Charts — only loaded on analytics pages
-          'charts': ['recharts'],
-          // Query client
-          'query': ['@tanstack/react-query'],
-          // Date utils
-          'dates': ['date-fns'],
-          // Form validation
-          'forms': ['react-hook-form', 'zxcvbn'],
-        },
+        // Use deterministic chunk names so caching works well
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
       },
     },
+  },
+  // Force Vite to pre-bundle these deps so they all share one React copy
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query'],
   },
 });
