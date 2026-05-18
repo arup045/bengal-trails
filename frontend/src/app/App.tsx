@@ -446,6 +446,7 @@ export default function App() {
 
 
   return (
+    <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <AuthProvider>
         <div className="min-h-screen bg-white">
@@ -624,5 +625,6 @@ export default function App() {
       </div>
     </AuthProvider>
     </LanguageProvider>
+    </QueryClientProvider>
   );
 }
