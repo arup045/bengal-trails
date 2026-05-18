@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ChevronUp } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { Hero } from './components/Hero';
-const BentoGrid = lazy(() => import('./components/BentoGrid').then(m => ({ default: m.BentoGrid })));
+import { BentoGrid } from './components/BentoGrid';
 import { Features } from './components/Features';
 import { FavoritePlaces } from './components/FavoritePlaces';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -486,7 +486,7 @@ export default function App() {
               {currentPage === 'home' && (
                 <>
                   <Hero />
-                  <Suspense fallback={<div className="max-w-7xl mx-auto px-5 py-12"><div className="h-64 bg-gray-100 rounded-2xl animate-pulse" /></div>}><BentoGrid /></Suspense>
+                  <BentoGrid />
                   <Features />
                   <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><DestinationGridSkeleton count={3} /></div>}>
                     <ToolsSection />
