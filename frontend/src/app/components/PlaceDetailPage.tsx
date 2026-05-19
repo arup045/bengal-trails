@@ -28,6 +28,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  const [isLoading, setIsLoading] = useState(true);
   const [apiPlace, setApiPlace] = useState<any | null>(null);
   useEffect(() => {
     if (!slug) return;
