@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { UtensilsCrossed, MapPin, Star, Search, Heart, ChefHat, Coffee, Cake, Flame, Leaf, Clock, DollarSign, BookOpen, ArrowRight, Filter, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { UtensilsCrossed, MapPin, Star, Search, Heart, ChefHat, Coffee, Cake, Flame, Leaf, Clock, DollarSign, BookOpen, ArrowRight, X } from 'lucide-react';
 import { API_BASE } from '../utils/api';
 
 interface Dish {
@@ -15,7 +14,6 @@ interface Dish {
   priceRange?: string;
   whereToTry?: string[];
   image?: string;
-  musttry?: boolean;
 }
 
 interface FoodStreet {
@@ -36,8 +34,8 @@ const CATEGORY_META: Record<string, { label: string; icon: any; color: string; b
 };
 
 const TYPE_BADGE: Record<string, { label: string; color: string }> = {
-  veg:     { label: 'Veg',     color: 'bg-green-100 text-green-700 border-green-200' },
-  'non-veg': { label: 'Non-Veg', color: 'bg-red-100 text-red-700 border-red-200' },
+  veg:       { label: '🟢 Veg',     color: 'bg-green-100 text-green-700 border-green-200' },
+  'non-veg': { label: '🔴 Non-Veg', color: 'bg-red-100   text-red-700   border-red-200'   },
 };
 
 const SPICE_COLOR: Record<string, string> = {
@@ -48,26 +46,26 @@ const SPICE_COLOR: Record<string, string> = {
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=800&q=80';
 
 export function FoodGuidePage() {
-  const [dishes, setDishes]           = useState<Dish[]>([]);
-  const [streets, setStreets]         = useState<FoodStreet[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [selectedCat, setSelectedCat] = useState('all');
+  const [dishes,       setDishes]       = useState<Dish[]>([]);
+  const [streets,      setStreets]      = useState<FoodStreet[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [selectedCat,  setSelectedCat]  = useState('all');
   const [selectedType, setSelectedType] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [savedDishes, setSavedDishes] = useState<Set<string>>(() => {
+  const [searchQuery,  setSearchQuery]  = useState('');
+  const [savedDishes,  setSavedDishes]  = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem('savedDishes') || '[]')); } catch { return new Set(); }
   });
-  const [activeStreet, setActiveStreet] = useState<FoodStreet | null>(null);
+  const [openStreet, setOpenStreet] = useState<string | null>(null);
 
   useEffect(() => {
     const ctrl = new AbortController();
     Promise.all([
-      fetch(`${API_BASE}/bengal/food`, { signal: ctrl.signal }).then(r => r.ok ? r.json() : { food: [] }),
-      fetch(`${API_BASE}/bengal/food/streets`, { signal: ctrl.signal }).then(r => r.ok ? r.json() : { streets: [] }),
-    ]).then(([f, s]) => {
-      setDishes(f.food || []);
-      setStreets(s.streets || []);
-    }).catch(() => {}).finally(() => setLoading(false));
+      fetch(`${API_BASE}/bengal/food`,         { signal: ctrl.signal }).then(r => r.ok ? r.json() : { food: [] }),
+      fetch(`${API_BASE}/bengal/food/streets`,  { signal: ctrl.signal }).then(r => r.ok ? r.json() : { streets: [] }),
+    ])
+      .then(([f, s]) => { setDishes(f.food || []); setStreets(s.streets || []); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
     return () => ctrl.abort();
   }, []);
 
@@ -81,33 +79,31 @@ export function FoodGuidePage() {
   };
 
   const filtered = dishes.filter(d => {
-    const matchCat  = selectedCat === 'all'  || d.category === selectedCat;
-    const matchType = selectedType === 'all' || d.type === selectedType;
-    const matchSearch = !searchQuery ||
+    const matchCat    = selectedCat  === 'all' || d.category === selectedCat;
+    const matchType   = selectedType === 'all' || d.type === selectedType;
+    const matchSearch = !searchQuery  ||
       d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (d.origin || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCat && matchType && matchSearch;
   });
 
-  const categories = ['all', ...Object.keys(CATEGORY_META).filter(k => k !== 'all')];
+  const categories = ['all', 'mains', 'sweets', 'streetfood', 'snacks', 'breakfast', 'beverages'];
 
   return (
     <div className="min-h-screen bg-white pt-16">
 
-      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative bg-gradient-to-br from-amber-900 via-orange-900 to-red-900 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1400&q=60)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div className="absolute inset-0 bg-cover bg-center opacity-20"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1400&q=60)' }} />
         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/80 via-orange-900/70 to-red-900/80" />
         <div className="relative max-w-6xl mx-auto px-6 py-20">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
             <UtensilsCrossed className="w-4 h-4 text-amber-300" />
             Bengali Cuisine — A World in Every Bite
           </div>
-          <h1 className="font-poppins text-5xl sm:text-6xl font-bold mb-4 leading-tight">
-            Bengali Food Guide
-          </h1>
+          <h1 className="font-poppins text-5xl sm:text-6xl font-bold mb-4 leading-tight">Bengali Food Guide</h1>
           <p className="text-amber-200 text-lg max-w-2xl leading-relaxed mb-10">
             From the spicy streets of Kolkata to the sweet shops of North Bengal —
             explore every dish, every flavour, every story.
@@ -119,7 +115,7 @@ export function FoodGuidePage() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search dishes, sweets, street food..."
-              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-amber-300/70 font-poppins focus:outline-none focus:border-amber-300 transition-colors"
+              className="w-full pl-12 pr-10 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-amber-300/70 font-poppins focus:outline-none focus:border-amber-300 transition-colors"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-300 hover:text-white">
@@ -130,30 +126,29 @@ export function FoodGuidePage() {
         </div>
       </section>
 
-      {/* ── Quick Stats ───────────────────────────────────────────────── */}
-      <section className="bg-amber-50 border-b border-amber-100 py-6">
+      {/* ── Quick Stats ───────────────────────────────────────────── */}
+      <section className="bg-amber-50 border-b border-amber-100 py-5">
         <div className="max-w-6xl mx-auto px-6 flex gap-8 overflow-x-auto">
           {[
-            { icon: UtensilsCrossed, label: `${dishes.length || '30+'} Dishes`, color: 'text-orange-600' },
-            { icon: MapPin,          label: `${streets.length || '8'} Food Streets`, color: 'text-amber-600' },
-            { icon: Star,            label: 'GI Tag Protected', color: 'text-yellow-600' },
-            { icon: Leaf,            label: 'Veg & Non-Veg', color: 'text-green-600' },
+            { icon: UtensilsCrossed, label: `${dishes.length || '30+'} Dishes`,          color: 'text-orange-600' },
+            { icon: MapPin,          label: `${streets.length || '8'} Food Streets`,     color: 'text-amber-600'  },
+            { icon: Star,            label: 'GI Tag Protected',                           color: 'text-yellow-600' },
+            { icon: Leaf,            label: 'Veg & Non-Veg',                             color: 'text-green-600'  },
           ].map(({ icon: Icon, label, color }) => (
             <div key={label} className={`flex items-center gap-2 ${color} whitespace-nowrap font-poppins text-sm font-medium`}>
-              <Icon className="w-4 h-4" />
-              {label}
+              <Icon className="w-4 h-4" />{label}
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Category Filter ───────────────────────────────────────────── */}
+      {/* ── Category Filter ───────────────────────────────────────── */}
       <section className="sticky top-16 z-30 bg-white border-b border-gray-100 py-4 shadow-sm">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex items-center gap-3 overflow-x-auto pb-1">
             {categories.map(cat => {
-              const meta = CATEGORY_META[cat] || CATEGORY_META.all;
-              const Icon = meta.icon;
+              const meta   = CATEGORY_META[cat] || CATEGORY_META.all;
+              const Icon   = meta.icon;
               const active = selectedCat === cat;
               return (
                 <button key={cat} onClick={() => setSelectedCat(cat)}
@@ -165,7 +160,7 @@ export function FoodGuidePage() {
               );
             })}
             <div className="w-px h-6 bg-gray-200 mx-1 shrink-0" />
-            {['all', 'veg', 'non-veg'].map(type => (
+            {(['all', 'veg', 'non-veg'] as const).map(type => (
               <button key={type} onClick={() => setSelectedType(type)}
                 className={`px-3 py-2 rounded-full font-poppins text-sm font-medium whitespace-nowrap transition-all border
                   ${selectedType === type
@@ -180,7 +175,7 @@ export function FoodGuidePage() {
         </div>
       </section>
 
-      {/* ── Dishes Grid ───────────────────────────────────────────────── */}
+      {/* ── Dishes Grid ───────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-6 py-12">
         {loading ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -200,106 +195,87 @@ export function FoodGuidePage() {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-6">
-              <p className="font-poppins text-sm text-gray-500">
-                Showing <span className="font-semibold text-slate-900">{filtered.length}</span> dishes
-              </p>
-            </div>
+            <p className="font-poppins text-sm text-gray-500 mb-6">
+              Showing <span className="font-semibold text-slate-900">{filtered.length}</span> dishes
+            </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence mode="popLayout">
-                {filtered.map((dish, i) => {
-                  const catMeta = CATEGORY_META[dish.category] || CATEGORY_META.all;
-                  const typeBadge = TYPE_BADGE[dish.type || ''];
-                  const saved = savedDishes.has(dish.id);
-                  return (
-                    <motion.div key={dish.id}
-                      layout
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ delay: i * 0.04, duration: 0.3 }}
-                      className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                      {/* Image */}
-                      <div className="relative h-48 overflow-hidden bg-gray-100">
-                        <img
-                          src={dish.image || FALLBACK_IMG}
-                          alt={dish.name}
-                          loading="lazy"
-                          onError={e => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                        {/* Category badge */}
-                        <div className={`absolute top-3 left-3 flex items-center gap-1 ${catMeta.bg} ${catMeta.color} rounded-full px-2.5 py-1 text-xs font-poppins font-semibold`}>
-                          <catMeta.icon className="w-3 h-3" />
-                          {catMeta.label}
+              {filtered.map(dish => {
+                const catMeta   = CATEGORY_META[dish.category] || CATEGORY_META.all;
+                const typeBadge = TYPE_BADGE[dish.type || ''];
+                const saved     = savedDishes.has(dish.id);
+                const CatIcon   = catMeta.icon;
+                return (
+                  <div key={dish.id}
+                    className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    {/* Image */}
+                    <div className="relative h-48 overflow-hidden bg-gray-100">
+                      <img
+                        src={dish.image || FALLBACK_IMG}
+                        alt={dish.name}
+                        loading="lazy"
+                        onError={e => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                      <div className={`absolute top-3 left-3 flex items-center gap-1 ${catMeta.bg} ${catMeta.color} rounded-full px-2.5 py-1 text-xs font-poppins font-semibold`}>
+                        <CatIcon className="w-3 h-3" />{catMeta.label}
+                      </div>
+                      <button onClick={() => toggleSave(dish.id)}
+                        className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform">
+                        <Heart className={`w-4 h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
+                      </button>
+                      {typeBadge && (
+                        <div className={`absolute bottom-3 left-3 text-xs font-poppins font-semibold px-2 py-0.5 rounded-full border ${typeBadge.color}`}>
+                          {typeBadge.label}
                         </div>
-                        {/* Save button */}
-                        <button onClick={() => toggleSave(dish.id)}
-                          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform">
-                          <Heart className={`w-4 h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
-                        </button>
-                        {/* Type badge */}
-                        {typeBadge && (
-                          <div className={`absolute bottom-3 left-3 text-xs font-poppins font-semibold px-2 py-0.5 rounded-full border ${typeBadge.color}`}>
-                            {typeBadge.label}
-                          </div>
+                      )}
+                    </div>
+                    {/* Content */}
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <h3 className="font-poppins text-lg font-semibold text-slate-900 leading-tight">{dish.name}</h3>
+                          {dish.bengaliName && <p className="text-amber-600 text-sm font-medium mt-0.5">{dish.bengaliName}</p>}
+                        </div>
+                        {dish.priceRange && (
+                          <span className="font-poppins text-xs text-gray-500 whitespace-nowrap bg-gray-50 rounded-full px-2 py-0.5 shrink-0">
+                            {dish.priceRange}
+                          </span>
                         )}
                       </div>
-                      {/* Content */}
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div>
-                            <h3 className="font-poppins text-lg font-semibold text-slate-900 leading-tight">{dish.name}</h3>
-                            {dish.bengaliName && (
-                              <p className="text-amber-600 text-sm font-medium mt-0.5">{dish.bengaliName}</p>
-                            )}
-                          </div>
-                          {dish.priceRange && (
-                            <span className="font-poppins text-xs text-gray-500 whitespace-nowrap bg-gray-50 rounded-full px-2 py-0.5 shrink-0">
-                              {dish.priceRange}
-                            </span>
-                          )}
-                        </div>
-                        <p className="font-poppins text-sm text-gray-600 leading-relaxed line-clamp-2 mb-4">
-                          {dish.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {dish.origin && (
-                            <span className="inline-flex items-center gap-1 text-xs font-poppins text-gray-500 bg-gray-50 rounded-full px-2.5 py-1">
-                              <MapPin className="w-3 h-3" /> {dish.origin}
-                            </span>
-                          )}
-                          {dish.spiceLevel && (
-                            <span className={`inline-flex items-center gap-1 text-xs font-poppins ${SPICE_COLOR[dish.spiceLevel] || 'text-gray-500'} bg-gray-50 rounded-full px-2.5 py-1`}>
-                              <Flame className="w-3 h-3" /> {dish.spiceLevel}
-                            </span>
-                          )}
-                        </div>
-                        {/* Where to try */}
-                        {dish.whereToTry && dish.whereToTry.length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-gray-100">
-                            <p className="font-poppins text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Best at</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {dish.whereToTry.slice(0, 3).map(place => (
-                                <span key={place} className="text-xs font-poppins text-purple-700 bg-purple-50 rounded-full px-2.5 py-1">
-                                  {place}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
+                      <p className="font-poppins text-sm text-gray-600 leading-relaxed line-clamp-2 mb-4">{dish.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {dish.origin && (
+                          <span className="inline-flex items-center gap-1 text-xs font-poppins text-gray-500 bg-gray-50 rounded-full px-2.5 py-1">
+                            <MapPin className="w-3 h-3" />{dish.origin}
+                          </span>
+                        )}
+                        {dish.spiceLevel && (
+                          <span className={`inline-flex items-center gap-1 text-xs font-poppins ${SPICE_COLOR[dish.spiceLevel] || 'text-gray-500'} bg-gray-50 rounded-full px-2.5 py-1`}>
+                            <Flame className="w-3 h-3" />{dish.spiceLevel}
+                          </span>
                         )}
                       </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
+                      {dish.whereToTry && dish.whereToTry.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                          <p className="font-poppins text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Best at</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {dish.whereToTry.slice(0, 3).map(place => (
+                              <span key={place} className="text-xs font-poppins text-purple-700 bg-purple-50 rounded-full px-2.5 py-1">{place}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </>
         )}
       </section>
 
-      {/* ── Food Streets Section ──────────────────────────────────────── */}
+      {/* ── Food Streets ─────────────────────────────────────────── */}
       {streets.length > 0 && (
         <section className="bg-gradient-to-br from-orange-50 to-amber-50 border-t border-amber-100 py-16">
           <div className="max-w-6xl mx-auto px-6">
@@ -307,61 +283,50 @@ export function FoodGuidePage() {
               <span className="font-poppins text-sm font-semibold text-amber-600 uppercase tracking-widest">Street Food Culture</span>
               <h2 className="font-poppins text-4xl font-bold text-slate-900 mt-3">Bengal's Best Food Streets</h2>
               <p className="text-gray-500 font-poppins mt-2 max-w-lg mx-auto">
-                Where the real flavours live — down the lanes, past the chai stalls, on the corner where the crowd gathers.
+                Where the real flavours live — down the lanes, past the chai stalls.
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {streets.map((street, i) => (
-                <motion.div key={`${street.name}-${i}`}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  onClick={() => setActiveStreet(activeStreet?.name === street.name ? null : street)}
-                  className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm hover:shadow-md cursor-pointer hover:-translate-y-0.5 transition-all duration-200">
-                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
-                    <MapPin className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <h3 className="font-poppins text-base font-semibold text-slate-900 mb-1">{street.name}</h3>
-                  <p className="font-poppins text-xs text-amber-600 font-medium mb-2">{street.city}</p>
-                  <p className="font-poppins text-xs text-gray-500 line-clamp-2">{street.specialty}</p>
-                  <AnimatePresence>
-                    {activeStreet?.name === street.name && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                        <div className="mt-4 pt-4 border-t border-amber-100">
-                          <p className="font-poppins text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Must Eat</p>
-                          <div className="flex flex-wrap gap-1">
-                            {street.mustEat.map(item => (
-                              <span key={item} className="text-xs font-poppins text-orange-700 bg-orange-50 rounded-full px-2 py-0.5">{item}</span>
-                            ))}
-                          </div>
+              {streets.map((street, i) => {
+                const isOpen = openStreet === street.name;
+                return (
+                  <div key={`${street.name}-${i}`}
+                    onClick={() => setOpenStreet(isOpen ? null : street.name)}
+                    className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm hover:shadow-md cursor-pointer hover:-translate-y-0.5 transition-all duration-200">
+                    <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
+                      <MapPin className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <h3 className="font-poppins text-base font-semibold text-slate-900 mb-1">{street.name}</h3>
+                    <p className="font-poppins text-xs text-amber-600 font-medium mb-2">{street.city}</p>
+                    <p className="font-poppins text-xs text-gray-500 line-clamp-2">{street.specialty}</p>
+                    {isOpen && (
+                      <div className="mt-4 pt-4 border-t border-amber-100">
+                        <p className="font-poppins text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Must Eat</p>
+                        <div className="flex flex-wrap gap-1">
+                          {street.mustEat.map(item => (
+                            <span key={item} className="text-xs font-poppins text-orange-700 bg-orange-50 rounded-full px-2 py-0.5">{item}</span>
+                          ))}
                         </div>
-                      </motion.div>
+                      </div>
                     )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
-      {/* ── Food Culture Deep Dive ────────────────────────────────────── */}
+      {/* ── Food Culture Tips ─────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid lg:grid-cols-3 gap-6">
           {[
-            {
-              icon: BookOpen, title: 'The Bengali Thali', color: 'bg-purple-50 text-purple-600',
-              desc: 'A traditional Bengali meal is a choreography. It starts with bitter (shukto), moves through fritters (bhaja), dals, fish curries, chutneys, and ends with mishti doi. Every dish has a purpose.',
-            },
-            {
-              icon: Clock, title: 'When to Visit for Food', color: 'bg-blue-50 text-blue-600',
-              desc: 'Monsoon (June–Sept) is Ilish season — the only time to eat authentic Shorshe Ilish. Winter brings Nolen Gur (date palm jaggery) sweets. Durga Puja sees the best street food pop-ups.',
-            },
-            {
-              icon: DollarSign, title: 'Budget Eating in Bengal', color: 'bg-green-50 text-green-600',
-              desc: 'Bengal is incredibly generous to budget travelers. A full thali at a local "bhater hotel" costs ₹80-150. Street puchka is ₹20-50. Even upscale Bengali restaurants rarely exceed ₹600 per person.',
-            },
+            { icon: BookOpen, title: 'The Bengali Thali',      color: 'bg-purple-50 text-purple-600',
+              desc: 'A traditional Bengali meal starts with bitter (shukto), moves through fritters, dals, fish curries, chutneys, and ends with mishti doi. Every dish has a purpose.' },
+            { icon: Clock,    title: 'When to Visit for Food', color: 'bg-blue-50 text-blue-600',
+              desc: 'Monsoon (June–Sept) is Ilish season. Winter brings Nolen Gur (date palm jaggery) sweets. Durga Puja sees the best street food pop-ups.' },
+            { icon: DollarSign, title: 'Budget Eating in Bengal', color: 'bg-green-50 text-green-600',
+              desc: 'A full thali costs ₹80–150. Street puchka is ₹20–50. Even upscale Bengali restaurants rarely exceed ₹600 per person.' },
           ].map(({ icon: Icon, title, color, desc }) => (
             <div key={title} className="bg-gray-50 rounded-3xl p-7 border border-gray-100">
               <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center mb-5`}>
@@ -374,7 +339,7 @@ export function FoodGuidePage() {
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────────────── */}
+      {/* ── CTA ──────────────────────────────────────────────────── */}
       <section className="bg-slate-900 py-14 text-center text-white">
         <div className="max-w-2xl mx-auto px-6">
           <h2 className="font-poppins text-3xl font-bold mb-3">Ready to taste Bengal?</h2>
