@@ -379,14 +379,13 @@ export default function App() {
 
     handleRouteChange();
     window.addEventListener('hashchange', handleRouteChange);
-  
+    return () => window.removeEventListener('hashchange', handleRouteChange);
+  }, []);
+
   // Update browser tab title on page change
   useEffect(() => {
     document.title = PAGE_TITLES[currentPage] || 'Bengal Trails';
   }, [currentPage]);
-
-  return () => window.removeEventListener('hashchange', handleRouteChange);
-  }, []);
 
   // Scroll to top button visibility
   useEffect(() => {

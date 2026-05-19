@@ -22,17 +22,27 @@ function makeRefreshToken(userId) {
 }
 
 function setRefreshCookie(res, token) {
+  const isProd = process.env.NODE_ENV === 'production';
   res.cookie('bt_refresh', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    // Cross-origin: frontend (Vercel) and backend (Render) are different domains.
+    // SameSite='lax' blocks cookies on cross-site POST requests — must use 'none' in prod.
+    // SameSite='none' requires Secure:true, which we enforce above.
+    sameSite: isProd ? 'none' : 'lax',
     path: '/api/auth',
     maxAge: REFRESH_COOKIE_MAX_AGE,
   });
 }
 
 function clearRefreshCookie(res) {
-  res.clearCookie('bt_refresh', { httpOnly: true, secure: true, sameSite: 'lax', path: '/api/auth' });
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie('bt_refresh', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/api/auth',
+  });
 }
 
 
