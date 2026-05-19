@@ -13,6 +13,10 @@ router.get('/stats', async (req, res) => {
     const range = req.query.range || '30d';
     const days  = range === '7d' ? 7 : range === '90d' ? 90 : 30;
 
+    // P1-27: parameterized intervals — `make_interval` is the idiomatic
+    // Postgres way to pass interval-as-parameter. Old code interpolated
+    // ${days} which was safe by virtue of the line above clamping to
+    // 7/30/90, but the pattern is fragile (one careless edit = SQLi).
     const [totals, signupTrend, topDests, enquiryCount] = await Promise.all([
       // Totals
       Promise.all([
@@ -20,16 +24,19 @@ router.get('/stats', async (req, res) => {
         pool.query("SELECT COUNT(*) FROM destinations WHERE status='published'"),
         pool.query('SELECT COUNT(*) FROM reviews'),
         pool.query("SELECT COUNT(*) FROM newsletter_subscribers WHERE status='active'"),
-        pool.query(`SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '${days} days'`),
+        pool.query(
+          `SELECT COUNT(*) FROM users WHERE created_at >= NOW() - make_interval(days => $1)`,
+          [days]
+        ),
       ]),
       // Daily signups for chart
       pool.query(`
         SELECT DATE(created_at) AS date, COUNT(*) AS count
         FROM users
-        WHERE created_at >= NOW() - INTERVAL '${days} days'
+        WHERE created_at >= NOW() - make_interval(days => $1)
         GROUP BY DATE(created_at)
         ORDER BY date ASC
-      `),
+      `, [days]),
       // Top destinations by view count
       pool.query(`
         SELECT name, slug, view_count, rating
@@ -75,11 +82,29 @@ router.get('/users', async (req, res) => {
 });
 
 // ── PUT /admin/users/:userId/role ─────────────────────────────────────────────
+// P1-28: refuse self-modification. An admin demoting themselves (especially
+// the last admin) locks the site out of all admin functionality. Same for
+// suspending themselves. They must ask another admin.
 router.put('/users/:userId/role', async (req, res) => {
   try {
     const { role } = req.body;
     if (!['user', 'admin', 'moderator'].includes(role))
       return res.status(400).json({ error: 'Invalid role' });
+
+    if (req.params.userId === req.user.id) {
+      return res.status(400).json({ error: 'You cannot change your own role. Ask another admin.' });
+    }
+
+    // If demoting an admin, refuse if this would leave zero admins.
+    if (role !== 'admin') {
+      const target = await pool.query("SELECT role FROM users WHERE id = $1", [req.params.userId]);
+      if (target.rows[0]?.role === 'admin') {
+        const adminCount = await pool.query("SELECT COUNT(*)::int AS c FROM users WHERE role = 'admin' AND status = 'active'");
+        if ((adminCount.rows[0]?.c || 0) <= 1) {
+          return res.status(400).json({ error: 'Cannot demote the last active admin.' });
+        }
+      }
+    }
 
     const { rows } = await pool.query(
       'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, email, name, role, status',
@@ -98,6 +123,10 @@ router.put('/users/:userId/status', async (req, res) => {
     const { status } = req.body;
     if (!['active', 'inactive', 'suspended'].includes(status))
       return res.status(400).json({ error: 'Invalid status' });
+
+    if (req.params.userId === req.user.id) {
+      return res.status(400).json({ error: 'You cannot change your own status. Ask another admin.' });
+    }
 
     const { rows } = await pool.query(
       'UPDATE users SET status = $1 WHERE id = $2 RETURNING id, email, name, role, status',

@@ -425,14 +425,42 @@ async function migrate() {
     `);
 
     // ── First admin user ──────────────────────────────────────────────────────
-    const bcrypt = require('bcryptjs');
+    // SECURITY: Admin password must come from env. Never hardcode it.
+    //   - Production: FIRST_ADMIN_PASSWORD is required. Migration fails if missing.
+    //   - Development: if not set, we generate a random one and print it ONCE.
+    //     You must save it from the log — it is never written to disk.
+    // The password is NEVER printed in production logs (anyone with log access
+    // would otherwise own the admin account on a fresh deploy).
+    const bcrypt   = require('bcryptjs');
+    const crypto   = require('crypto');
+    const isProd   = process.env.NODE_ENV === 'production';
     const adminEmail = process.env.FIRST_ADMIN_EMAIL || 'admin@bengaltrails.com';
-    const adminPass  = await bcrypt.hash('Admin@12345', 10);
-    await client.query(`
+
+    let adminPlainPass = process.env.FIRST_ADMIN_PASSWORD;
+    if (!adminPlainPass) {
+      if (isProd) {
+        throw new Error(
+          'FIRST_ADMIN_PASSWORD env var is required in production. ' +
+          'Set a strong password (12+ chars) in your Render/Railway dashboard before deploying.'
+        );
+      }
+      // Dev convenience: generate a strong random password
+      adminPlainPass = crypto.randomBytes(12).toString('base64').replace(/[+/=]/g, '');
+    }
+    if (adminPlainPass.length < 12) {
+      throw new Error('FIRST_ADMIN_PASSWORD must be at least 12 characters long.');
+    }
+
+    const adminPass = await bcrypt.hash(adminPlainPass, 12); // cost 12 (was 10; P1-15)
+
+    // Check if the admin user actually got inserted (vs. already existed).
+    const adminInsert = await client.query(`
       INSERT INTO users (email, password, name, role, status)
       VALUES ($1, $2, 'Admin', 'admin', 'active')
-      ON CONFLICT (email) DO NOTHING;
+      ON CONFLICT (email) DO NOTHING
+      RETURNING id;
     `, [adminEmail, adminPass]);
+    const adminWasCreated = adminInsert.rows.length > 0;
 
     // ── Safe column additions for already-migrated databases ──────────────────
     await client.query(`
@@ -440,14 +468,111 @@ async function migrate() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS interests TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS budget    VARCHAR(50);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS trip_type VARCHAR(50);
+      -- Compliance: store when the user agreed to T&C / privacy.
+      -- Required for India DPDP Act 2023 and GDPR audit trails.
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at   TIMESTAMPTZ;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS marketing_opt_in    BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS marketing_opted_in_at TIMESTAMPTZ;
     `);
 
     // ── Extra trigram indexes (destinations only — festivals/food served from JSON) ──
     await client.query(`CREATE INDEX IF NOT EXISTS idx_destinations_name_trgm ON destinations USING GIN (name gin_trgm_ops);`);
 
+    // ── One review per user per destination (P1-23) ──────────────────────────
+    // Idempotent: only adds the constraint if it doesn't already exist.
+    // Existing duplicates (if any) will block this — admin should manually
+    // clean up duplicate reviews before re-running the migration if so.
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'reviews_user_destination_unique'
+        ) THEN
+          BEGIN
+            ALTER TABLE reviews
+              ADD CONSTRAINT reviews_user_destination_unique
+              UNIQUE (user_id, destination_slug);
+          EXCEPTION WHEN unique_violation THEN
+            RAISE NOTICE 'Could not add unique constraint on reviews — duplicates exist. Manual cleanup required.';
+          END;
+        END IF;
+      END $$;
+    `);
+
+    // ── Review helpfulness votes (P1-22) ─────────────────────────────────────
+    // Replaces the old "POST /reviews/:id/helpful increments a counter forever"
+    // pattern with a real vote table. PK enforces one vote per user per review.
+    // helpful_count on reviews becomes a derived value (recomputed on each vote).
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS review_helpful_votes (
+        review_id  UUID NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
+        user_id    UUID NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        PRIMARY KEY (review_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_review_helpful_review ON review_helpful_votes(review_id);
+      CREATE INDEX IF NOT EXISTS idx_review_helpful_user   ON review_helpful_votes(user_id);
+    `);
+
+    // ── Enquiries (P1-30) ────────────────────────────────────────────────────
+    // Was queried by admin stats and used by the booking enquiry rate limiter,
+    // but never created. Adding now so the route + admin panel actually work.
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS enquiries (
+        id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id          UUID REFERENCES users(id) ON DELETE SET NULL,
+        destination_slug VARCHAR(255),
+        destination_name VARCHAR(255),
+        name             VARCHAR(255) NOT NULL,
+        email            VARCHAR(255) NOT NULL,
+        phone            VARCHAR(50),
+        message          TEXT,
+        check_in         DATE,
+        check_out        DATE,
+        guests           INTEGER,
+        status           VARCHAR(50) DEFAULT 'new'
+                         CHECK (status IN ('new','in_progress','converted','closed','spam')),
+        created_at       TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_enquiries_status ON enquiries(status);
+      CREATE INDEX IF NOT EXISTS idx_enquiries_created_at ON enquiries(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_enquiries_email ON enquiries(email);
+    `);
+
+    // ── Newsletter double opt-in (P1-29) ─────────────────────────────────────
+    // Adds confirm_token + confirmed_at for double opt-in compliance (DPDP/GDPR).
+    // status='pending' until the user clicks the confirmation link.
+    await client.query(`
+      ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS confirm_token VARCHAR(255);
+      ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS confirmed_at  TIMESTAMPTZ;
+      -- Loosen the old status check to allow 'pending'. Drop+re-add.
+      ALTER TABLE newsletter_subscribers DROP CONSTRAINT IF EXISTS newsletter_subscribers_status_check;
+      ALTER TABLE newsletter_subscribers
+        ADD CONSTRAINT newsletter_subscribers_status_check
+        CHECK (status IN ('pending','active','unsubscribed'));
+      CREATE INDEX IF NOT EXISTS idx_newsletter_confirm_token ON newsletter_subscribers(confirm_token);
+    `);
+
     await client.query('COMMIT');
     console.log('✅ Migration complete!');
-    console.log(`👤 Admin account: ${adminEmail} / Admin@12345  ← CHANGE THIS PASSWORD!`);
+
+    // Print credentials ONLY in dev, and ONLY when the admin was actually just created.
+    // Never print the password in production — log access = admin compromise.
+    if (adminWasCreated && !isProd && !process.env.FIRST_ADMIN_PASSWORD) {
+      console.log('');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('👤 Admin account created (dev mode — random password)');
+      console.log(`   Email:    ${adminEmail}`);
+      console.log(`   Password: ${adminPlainPass}`);
+      console.log('   ⚠️  SAVE THIS PASSWORD NOW — it is not stored anywhere.');
+      console.log('   ⚠️  In production, set FIRST_ADMIN_PASSWORD env var instead.');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('');
+    } else if (adminWasCreated) {
+      console.log(`👤 Admin account created: ${adminEmail} (password from FIRST_ADMIN_PASSWORD env var)`);
+    } else {
+      console.log(`👤 Admin account already exists: ${adminEmail}`);
+    }
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('❌ Migration failed:', err);

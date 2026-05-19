@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -16,6 +16,12 @@ export default defineConfig({
   optimizeDeps: {
     include: ['motion/react', 'motion'],
   },
+  // Strip console.log + console.debug + debugger in production. Keep console.warn
+  // and console.error so Sentry's breadcrumb capture still works.
+  esbuild: mode === 'production' ? {
+    drop: ['debugger'],
+    pure: ['console.log', 'console.debug', 'console.trace', 'console.info'],
+  } : undefined,
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -23,10 +29,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-motion': ['motion/react'],
-          'vendor-react':  ['react', 'react-dom'],
+          'vendor-motion':   ['motion/react'],
+          'vendor-react':    ['react', 'react-dom'],
+          // Sanitization runs on every blog/AI render — keep it in its own chunk
+          // so it's cached separately across deploys.
+          'vendor-sanitize': ['isomorphic-dompurify'],
         },
       },
     },
   },
-});
+}));

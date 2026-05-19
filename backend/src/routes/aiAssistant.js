@@ -15,6 +15,7 @@
 // destination slugs the AI mentions actually exist.
 
 const router = require('express').Router();
+const pool = require('../db/pool');
 const { optionalAuth } = require('../middleware/auth');
 const { toolDeclarations, executeTool } = require('../services/aiTools');
 
@@ -275,11 +276,36 @@ function generateSuggestions(message, _aiText) {
 
 // ─── POST /api/ai-assistant/chat ───────────────────────────────────────────────
 
+// SECURITY (P1-26): caps to prevent cost-balloon attacks. Each Gemini call
+// is metered; unbounded input from the client lets an attacker rack up our bill.
+const MAX_MESSAGE_LEN = 2000;          // single message
+const MAX_HISTORY_MSGS = 20;           // most recent messages kept
+const MAX_HISTORY_TOTAL_CHARS = 20000; // total chars across kept history
+
 router.post('/chat', optionalAuth, async (req, res) => {
   try {
-    const { message, language = 'en', conversationHistory = [] } = req.body;
+    const { message, language = 'en', conversationHistory: rawHistory = [] } = req.body;
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'message is required' });
+    }
+    if (message.length > MAX_MESSAGE_LEN) {
+      return res.status(400).json({ error: `Message exceeds ${MAX_MESSAGE_LEN} characters` });
+    }
+
+    // Normalize + cap history. Take the most recent messages, truncate each
+    // to keep total under MAX_HISTORY_TOTAL_CHARS. Anything dropped is OK —
+    // the LLM only uses recent context anyway.
+    let conversationHistory = [];
+    if (Array.isArray(rawHistory)) {
+      let total = 0;
+      const recent = rawHistory.slice(-MAX_HISTORY_MSGS);
+      for (const m of recent) {
+        if (!m || typeof m.content !== 'string') continue;
+        const c = m.content.slice(0, MAX_MESSAGE_LEN);
+        if (total + c.length > MAX_HISTORY_TOTAL_CHARS) break;
+        total += c.length;
+        conversationHistory.push({ role: m.role === 'user' ? 'user' : 'assistant', content: c });
+      }
     }
 
     let aiResult = null;

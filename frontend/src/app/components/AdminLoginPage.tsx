@@ -147,7 +147,7 @@ export function AdminLoginPage() {
           {/* Divider */}
           <div className="mt-6 pt-6 border-t border-gray-200">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => { window.location.hash = '#/'; }}
               className="w-full text-gray-600 hover:text-gray-900 font-medium text-sm transition flex items-center justify-center"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

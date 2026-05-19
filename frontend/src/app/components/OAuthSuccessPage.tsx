@@ -36,6 +36,13 @@ export function OAuthSuccessPage() {
           throw new Error('No token in URL');
         }
 
+        // SECURITY: strip the token from the URL bar immediately so it doesn't
+        // sit in browser history / get copy-pasted / leak via screenshots or
+        // session-replay tools. Replace state silently — no navigation event.
+        try {
+          history.replaceState(null, '', '#/oauth-success');
+        } catch { /* non-fatal */ }
+
         // Store in memory via AuthContext (no localStorage — security upgrade).
         // setSessionFromToken stores the token in the module-level variable in api.ts
         // and fetches the user so AuthContext has the correct user object.

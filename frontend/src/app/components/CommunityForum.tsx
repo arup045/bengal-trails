@@ -152,7 +152,7 @@ export const CommunityForum: React.FC = () => {
             content: newThreadContent,
             category: newThreadCategory,
             authorId: user.id,
-            authorName: user.user_metadata?.name || user.email,
+            authorName: user.name || user.email,
           }),
         }
       );
@@ -193,7 +193,7 @@ export const CommunityForum: React.FC = () => {
           body: JSON.stringify({
             content: replyContent,
             authorId: user.id,
-            authorName: user.user_metadata?.name || user.email,
+            authorName: user.name || user.email,
           }),
         }
       );

@@ -106,11 +106,107 @@ const PAGE_TITLES: Partial<Record<string, string>> = {
   signin:             'Sign In — Bengal Trails',
   map:                'Interactive Map — Bengal Trails',
   admin:              'Admin Dashboard — Bengal Trails',
+  tours:              'Tour Packages — Bengal Trails',
+  blog:               'Travel Blog — Bengal Trails',
   'not-found':        '404 Not Found — Bengal Trails',
 };
 
+// ── Routing ──────────────────────────────────────────────────────────────────
+// Single source of truth for routes. Replaces the 175-line if/else ladder
+// that lived inside the routing useEffect. Adding a new page is now a
+// single line in this table.
+type RouteId =
+  | 'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist'
+  | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals'
+  | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools'
+  | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup'
+  | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification'
+  | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact'
+  | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder'
+  | 'not-found' | 'oauth-success' | 'about' | 'tours' | 'blog';
+
+interface RouteConfig { id: RouteId; title?: string; devOnly?: boolean; }
+
+const STATIC_ROUTES: Record<string, RouteConfig> = {
+  '/':                  { id: 'home',              title: 'Home' },
+  '/explore':           { id: 'explore',           title: 'Explore Destinations' },
+  '/signin':            { id: 'signin',            title: 'Sign In' },
+  '/profile':           { id: 'profile',           title: 'User Profile' },
+  '/planner':           { id: 'planner',           title: 'Trip Planner' },
+  '/wishlist':          { id: 'wishlist',          title: 'My Wishlist' },
+  '/food':              { id: 'food',              title: 'Food Guide' },
+  '/map':               { id: 'map',               title: 'Interactive Map' },
+  '/phrasebook':        { id: 'phrasebook',        title: 'Bengali Phrasebook' },
+  '/itinerary':         { id: 'itinerary',         title: 'Itinerary Builder' },
+  '/compare':           { id: 'compare',           title: 'Compare Destinations' },
+  '/festivals':         { id: 'festivals',         title: 'Festival Calendar' },
+  '/budget':            { id: 'budget',            title: 'Budget Estimator' },
+  '/advisor':           { id: 'advisor',           title: 'Travel Advisor' },
+  '/weather':           { id: 'weather',           title: 'Weather Recommendations' },
+  '/instagram-spots':   { id: 'instagram-spots',   title: 'Instagram Spots' },
+  '/food-map':          { id: 'food-map',          title: 'Food Map' },
+  '/tools':             { id: 'tools',             title: 'Tools Hub' },
+  '/admin':             { id: 'admin' },
+  '/admin-login':       { id: 'admin-login' },
+  '/admin-setup':       { id: 'admin-setup' },
+  '/forgot-password':   { id: 'forgot-password',   title: 'Forgot Password' },
+  '/reset-password':    { id: 'reset-password',    title: 'Reset Password' },
+  '/verify-email':      { id: 'verify-email',      title: 'Email Verification' },
+  '/gamification':      { id: 'gamification',      title: 'Gamification' },
+  '/social':            { id: 'social',            title: 'Social Features' },
+  '/community':         { id: 'community',         title: 'Community' },
+  '/privacy':           { id: 'privacy',           title: 'Privacy Policy' },
+  '/terms':             { id: 'terms',             title: 'Terms of Service' },
+  '/cookies':           { id: 'cookies',           title: 'Cookie Policy' },
+  '/contact':           { id: 'contact',           title: 'Contact' },
+  '/emergency':         { id: 'emergency',         title: 'Emergency Info' },
+  '/about':             { id: 'about',             title: 'About Us' },
+  '/partners':          { id: 'partners',          title: 'Verified Partners' },
+  '/vendor-onboarding': { id: 'vendor-onboarding', title: 'Become a Partner' },
+  '/itinerary-builder': { id: 'itinerary-builder', title: 'AI Itinerary Builder' },
+  // Dev-only — hidden in production builds
+  '/debug':             { id: 'debug',  devOnly: true },
+  '/check':             { id: 'check',  devOnly: true },
+  '/slugs':             { id: 'slugs',  devOnly: true },
+};
+
+/** Resolves a URL hash (without leading '#') to a route + optional slug. */
+function resolveRoute(hash: string): { id: RouteId; slug?: string; path: string; title?: string } {
+  // Supabase-style auth callback fragments
+  if (hash.includes('access_token') && hash.includes('type=signup')) {
+    return { id: 'verify-email', path: '/verify-email', title: 'Email Verification' };
+  }
+  if (hash.includes('access_token') && hash.includes('type=recovery')) {
+    return { id: 'reset-password', path: '/reset-password', title: 'Reset Password' };
+  }
+  // Dynamic routes
+  if (hash.startsWith('/explore/')) {
+    const slug = hash.replace('/explore/', '');
+    return { id: 'place', slug, path: `/explore/${slug}`, title: `Destination: ${slug}` };
+  }
+  if (hash.startsWith('/oauth-success')) {
+    return { id: 'oauth-success', path: '/oauth-success' };
+  }
+  if (hash === '/tours' || hash.startsWith('/tours/')) {
+    return { id: 'tours', path: hash, title: 'Tour Packages' };
+  }
+  if (hash === '/blog' || hash.startsWith('/blog/')) {
+    return { id: 'blog', path: hash, title: 'Travel Blog' };
+  }
+  // Static routes
+  const key = hash === '' ? '/' : hash;
+  const cfg = STATIC_ROUTES[key];
+  if (cfg) {
+    if (cfg.devOnly && !import.meta.env.DEV) {
+      return { id: 'not-found', path: key, title: '404 Not Found' };
+    }
+    return { id: cfg.id, path: key, title: cfg.title };
+  }
+  return { id: 'not-found', path: hash, title: '404 Not Found' };
+}
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist' | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals' | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools' | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup' | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification' | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact' | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder' | 'not-found' | 'oauth-success' | 'about'>('home');
+  const [currentPage, setCurrentPage] = useState<RouteId>('home');
   const [currentSlug, setCurrentSlug] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -206,184 +302,24 @@ export default function App() {
 
   const pageSEO = getPageSEO();
 
-  // Simple routing based on URL hash
+  // Hash-based routing. Resolution is table-driven (see resolveRoute above),
+  // so adding a new page is a one-liner in STATIC_ROUTES rather than another
+  // arm of an if/else ladder. The 175-line ladder this replaced had two
+  // `as any` casts (tours, blog) which silently bypassed type checking.
   useEffect(() => {
     const handleRouteChange = () => startTransition(() => {
-      const hash = window.location.hash.slice(1); // Remove #
-      
-      // Check for email verification (has access_token and type=signup)
-      if (hash.includes('access_token') && hash.includes('type=signup')) {
-        setCurrentPage('verify-email');
+      const hash = window.location.hash.slice(1);
+      const r = resolveRoute(hash);
+      setCurrentPage(r.id);
+      if (r.id === 'place' && r.slug) setCurrentSlug(r.slug);
+      // oauth-success handles its own scroll behavior; all other pages reset.
+      if (r.id !== 'oauth-success') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/verify-email', 'Email Verification');
-        return;
       }
-      
-      // Check for password reset (has access_token and type=recovery)
-      if (hash.includes('access_token') && hash.includes('type=recovery')) {
-        setCurrentPage('reset-password');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/reset-password', 'Reset Password');
-        return;
-      }
-      
-      if (hash.startsWith('/explore/')) {
-        setCurrentPage('place');
-        setCurrentSlug(hash.replace('/explore/', ''));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView(`/#${hash}`, `Destination: ${hash.replace('/explore/', '')}`);
-      } else if (hash === '/explore') {
-        setCurrentPage('explore');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/explore', 'Explore Destinations');
-      } else if (hash.startsWith('/oauth-success')) {
-        setCurrentPage('oauth-success');
-      } else if (hash === '/signin') {
-        setCurrentPage('signin');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/signin', 'Sign In');
-      } else if (hash === '/profile') {
-        setCurrentPage('profile');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/profile', 'User Profile');
-      } else if (hash === '/planner') {
-        setCurrentPage('planner');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/planner', 'Trip Planner');
-      } else if (hash === '/wishlist') {
-        setCurrentPage('wishlist');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/wishlist', 'My Wishlist');
-      } else if (hash === '/food') {
-        setCurrentPage('food');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/food', 'Food Guide');
-      } else if (hash === '/map') {
-        setCurrentPage('map');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/map', 'Interactive Map');
-      } else if (hash === '/phrasebook') {
-        setCurrentPage('phrasebook');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/phrasebook', 'Bengali Phrasebook');
-      } else if (hash === '/itinerary') {
-        setCurrentPage('itinerary');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/itinerary', 'Itinerary Builder');
-      } else if (hash === '/compare') {
-        setCurrentPage('compare');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/compare', 'Compare Destinations');
-      } else if (hash === '/festivals') {
-        setCurrentPage('festivals');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/festivals', 'Festival Calendar');
-      } else if (hash === '/budget') {
-        setCurrentPage('budget');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/budget', 'Budget Estimator');
-      } else if (hash === '/advisor') {
-        setCurrentPage('advisor');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/advisor', 'Travel Advisor');
-      } else if (hash === '/weather') {
-        setCurrentPage('weather');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/weather', 'Weather Recommendations');
-      } else if (hash === '/instagram-spots') {
-        setCurrentPage('instagram-spots');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/instagram-spots', 'Instagram Spots');
-      } else if (hash === '/food-map') {
-        setCurrentPage('food-map');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/food-map', 'Food Map');
-      } else if (hash === '/tools') {
-        setCurrentPage('tools');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/tools', 'Tools Hub');
-      } else if (import.meta.env.DEV && hash === '/debug') {
-        setCurrentPage('debug');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (import.meta.env.DEV && hash === '/check') {
-        setCurrentPage('check');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (import.meta.env.DEV && hash === '/slugs') {
-        setCurrentPage('slugs');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (hash === '/admin') {
-        setCurrentPage('admin');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (hash === '/admin-login') {
-        setCurrentPage('admin-login');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (hash === '/admin-setup') {
-        setCurrentPage('admin-setup');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (hash === '/forgot-password') {
-        setCurrentPage('forgot-password');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/forgot-password', 'Forgot Password');
-      } else if (hash === '/reset-password') {
-        setCurrentPage('reset-password');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/reset-password', 'Reset Password');
-      } else if (hash === '/verify-email') {
-        setCurrentPage('verify-email');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/verify-email', 'Email Verification');
-      } else if (hash === '/gamification') {
-        setCurrentPage('gamification');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/gamification', 'Gamification');
-      } else if (hash === '/social') {
-        setCurrentPage('social');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/social', 'Social Features');
-      } else if (hash === '/tours' || hash.startsWith('/tours/')) {
-        setCurrentPage('tours' as any);
-      } else if (hash === '/blog' || hash.startsWith('/blog/')) {
-        setCurrentPage('blog' as any);
-      } else if (hash === '/community') {
-        setCurrentPage('community');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/community', 'Community');
-      } else if (hash === '/privacy') {
-        setCurrentPage('privacy');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/privacy', 'Privacy Policy');
-      } else if (hash === '/terms') {
-        setCurrentPage('terms');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/terms', 'Terms of Service');
-      } else if (hash === '/cookies') {
-        setCurrentPage('cookies');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/cookies', 'Cookie Policy');
-      } else if (hash === '/contact') {
-        setCurrentPage('contact');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/contact', 'Contact');
-      } else if (hash === '/emergency') {
-        setCurrentPage('emergency');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/emergency', 'Emergency Info');
-      } else if (hash === '/about') {
-        setCurrentPage('about');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/about', 'About Us');
-      } else if (hash === '/itinerary-builder') {
-        setCurrentPage('itinerary-builder');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/#/itinerary-builder', 'AI Itinerary Builder');
-      } else if (hash === '' || hash === '/') {
-        setCurrentPage('home');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('/', 'Home');
-      } else {
-        setCurrentPage('not-found');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView(`/#${hash}`, '404 Not Found');
+      // GA pageview — only fire for pages with a public-facing title.
+      if (r.title) {
+        const gaPath = hash ? `/#${hash}` : '/';
+        trackPageView(gaPath, r.title);
       }
     });
 

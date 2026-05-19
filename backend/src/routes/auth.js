@@ -8,6 +8,31 @@ const { authenticate } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validate');
 
 
+// ── Password policy ────────────────────────────────────────────────────────────
+// Single source of truth for password requirements. Used at signup, reset,
+// and (when added) change-password. Previously these were inconsistent
+// (signup required 8+letter+digit, reset only required 6 chars).
+const PASSWORD_MIN = 8;
+function validatePassword(password) {
+  if (typeof password !== 'string') return 'Password is required';
+  if (password.length < PASSWORD_MIN) return `Password must be at least ${PASSWORD_MIN} characters`;
+  if (!/[a-zA-Z]/.test(password))     return 'Password must contain at least one letter';
+  if (!/[0-9]/.test(password))        return 'Password must contain at least one number';
+  return null; // ok
+}
+
+// ── Reset-token helpers ────────────────────────────────────────────────────────
+// We store ONLY the SHA-256 hash of the reset token in the DB. The raw token
+// goes in the email link. If the DB leaks, attackers can't use unexpired tokens
+// because they don't know the pre-image. Industry standard pattern.
+function hashResetToken(rawToken) {
+  return crypto.createHash('sha256').update(rawToken).digest('hex');
+}
+
+// ── Bcrypt cost ────────────────────────────────────────────────────────────────
+// 12 is the 2026 baseline (was 10 — too fast for modern GPUs).
+const BCRYPT_COST = 12;
+
 // ── Token helpers ──────────────────────────────────────────────────────────────
 const ACCESS_TTL   = '15m';          // short-lived, stored in memory on client
 const REFRESH_TTL  = '30d';          // long-lived, stored in httpOnly cookie
@@ -65,18 +90,31 @@ router.post('/signup', validate(schemas.signup), async (req, res) => {
     const { email, password, name, consent } = req.body;
     if (!email || !password || !name)
       return res.status(400).json({ error: 'email, password and name are required' });
-    const passValid = password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
-    if (!passValid)
-      return res.status(400).json({ error: 'Password must be 8+ characters with at least 1 letter and 1 number' });
+
+    const passError = validatePassword(password);
+    if (passError) return res.status(400).json({ error: passError });
 
     const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (exists.rows.length) return res.status(409).json({ error: 'Email already registered' });
 
-    const hash = await bcrypt.hash(password, 10);
+    // Compliance: signup form must indicate the user accepted the Terms.
+    // We accept either the legacy `consent.terms` OR the current frontend's
+    // `consent.acceptedTerms` (SignInPage uses the latter).
+    const termsAccepted = !!(consent && (consent.terms === true || consent.acceptedTerms === true));
+    const marketingOptIn = !!(consent && (consent.marketing === true || consent.marketingOptIn === true));
+    if (!termsAccepted) {
+      return res.status(400).json({ error: 'You must accept the Terms of Service and Privacy Policy.' });
+    }
+
+    const hash = await bcrypt.hash(password, BCRYPT_COST);
     const { rows } = await pool.query(
-      `INSERT INTO users (email, password, name, role, status)
-       VALUES ($1, $2, $3, 'user', 'active') RETURNING *`,
-      [email.toLowerCase(), hash, name]
+      `INSERT INTO users
+         (email, password, name, role, status,
+          terms_accepted_at, marketing_opt_in, marketing_opted_in_at)
+       VALUES ($1, $2, $3, 'user', 'active',
+               NOW(), $4, CASE WHEN $4 THEN NOW() ELSE NULL END)
+       RETURNING *`,
+      [email.toLowerCase(), hash, name, marketingOptIn]
     );
 
     // Initialize gamification stats row
@@ -189,16 +227,25 @@ router.post('/forgot-password', validate(schemas.forgotPassword), async (req, re
     // Always return success to prevent email enumeration
     if (!rows.length) return res.json({ success: true, message: 'If that email exists, a reset link was sent.' });
 
-    const token = crypto.randomBytes(32).toString('hex');
+    // SECURITY: rawToken goes in the email; only its SHA-256 hash is stored.
+    // If the DB leaks, attackers cannot use unexpired tokens.
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashResetToken(rawToken);
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Invalidate any previous unused tokens for this user (rate-limit at app level too).
+    await pool.query(
+      `UPDATE password_reset_tokens SET used = true WHERE user_id = $1 AND used = false`,
+      [rows[0].id]
+    );
 
     await pool.query(
       `INSERT INTO password_reset_tokens (user_id, token, expires_at)
        VALUES ($1, $2, $3)`,
-      [rows[0].id, token, expires]
+      [rows[0].id, tokenHash, expires]
     );
 
-    await sendPasswordResetEmail(email, token);
+    await sendPasswordResetEmail(email, rawToken);
 
     return res.json({ success: true, message: 'If that email exists, a reset link was sent.' });
   } catch (err) {
@@ -211,16 +258,21 @@ router.post('/reset-password', validate(schemas.resetPassword), async (req, res)
   try {
     const { token, password } = req.body;
     if (!token || !password) return res.status(400).json({ error: 'token and password required' });
-    if (password.length < 6) return res.status(400).json({ error: 'Password too short' });
 
+    // Same password policy as signup — was previously a weaker 6-char rule.
+    const passError = validatePassword(password);
+    if (passError) return res.status(400).json({ error: passError });
+
+    // Look up by HASH, not the raw token. The DB only ever sees the hash.
+    const tokenHash = hashResetToken(token);
     const { rows } = await pool.query(
       `SELECT * FROM password_reset_tokens
        WHERE token = $1 AND used = false AND expires_at > NOW()`,
-      [token]
+      [tokenHash]
     );
     if (!rows.length) return res.status(400).json({ error: 'Invalid or expired reset token' });
 
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, BCRYPT_COST);
     await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hash, rows[0].user_id]);
     await pool.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [rows[0].id]);
 
@@ -266,12 +318,21 @@ router.post('/refresh', async (req, res) => {
 
 
 // ── POST /auth/verify-email ────────────────────────────────────────────────────
-// For now, this is a no-op success since email verification is optional
-// Replace with token-based verification if needed later
+// NOT YET IMPLEMENTED. We do not currently send verification emails, so any
+// token is invalid by definition. This endpoint returns 501 to be honest with
+// the frontend rather than pretending verification succeeded for every token
+// (which was the old behaviour — a security illusion).
+//
+// To implement real verification later:
+//   1. Add `email_verified BOOLEAN DEFAULT false` to users table
+//   2. Add `email_verify_tokens (user_id, token_hash, expires_at, used)` table
+//   3. In /signup, generate a token, store its sha256 hash, email the raw token
+//   4. Here, hash incoming token, look up unused/unexpired, mark verified
 router.post('/verify-email', async (req, res) => {
-  const { token } = req.body;
-  if (!token) return res.status(400).json({ error: 'token required' });
-  return res.json({ success: true, message: 'Email verified' });
+  return res.status(501).json({
+    error: 'Email verification is not enabled on this server',
+    code: 'not_implemented',
+  });
 });
 
 module.exports = router;

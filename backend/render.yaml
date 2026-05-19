@@ -23,6 +23,10 @@ services:
       #   value: https://YOUR-APP.vercel.app
       - key: FIRST_ADMIN_EMAIL
         value: admin@bengaltrails.com
+      # ⚠️ REQUIRED: Set a strong (12+ char) password in the Render dashboard.
+      # Migration will FAIL in production if this is missing. Never commit a real value here.
+      - key: FIRST_ADMIN_PASSWORD
+        sync: false
       - key: PORT
         value: 3000
 

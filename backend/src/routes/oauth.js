@@ -15,11 +15,54 @@
 
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const pool = require('../db/pool');
+
+// ── OAuth state (CSRF) ─────────────────────────────────────────────────────────
+// We set a short-lived httpOnly cookie with a random `state` value before the
+// redirect to the IdP. The IdP echoes it back on callback and we compare.
+// Without this, a malicious site can craft a login URL that completes the
+// OAuth flow against a victim's browser and binds the attacker's identity to
+// the victim's session.
+const STATE_COOKIE = 'bt_oauth_state';
+const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function setStateCookie(res, value) {
+  res.cookie(STATE_COOKIE, value, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',          // must travel with redirect from IdP back to us
+    path: '/api/auth',
+    maxAge: STATE_TTL_MS,
+  });
+}
+
+function clearStateCookie(res) {
+  res.clearCookie(STATE_COOKIE, { path: '/api/auth' });
+}
+
+function generateState() {
+  return crypto.randomBytes(24).toString('hex');
+}
+
+function validateState(req) {
+  const fromQuery = req.query?.state;
+  const fromCookie = req.cookies?.[STATE_COOKIE];
+  if (!fromQuery || !fromCookie) return false;
+  // Constant-time compare to avoid timing oracles.
+  const a = Buffer.from(String(fromQuery));
+  const b = Buffer.from(String(fromCookie));
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-const ACCESS_TTL  = process.env.JWT_EXPIRES_IN || '7d';
+// SECURITY: Access tokens are short-lived (15 min) and stored in memory only.
+// The refresh token in the httpOnly cookie does the long-lived work.
+// Previously this was 7d, which defeated the in-memory storage design —
+// a leaked access token was valid for 7 days.
+const ACCESS_TTL  = '15m';
 const REFRESH_TTL = '30d';
 const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
 
@@ -64,9 +107,14 @@ function redirectWithError(res, code) {
  * Find existing user or create new one from an OAuth profile.
  *   - Step 1: look up by provider + provider_id
  *   - Step 2: if not found, look up by email — link to existing account
+ *     (with safeguards: Facebook doesn't always verify email, so we refuse
+ *      to attach an unverified OAuth identity onto a local-password account)
  *   - Step 3: if still not found, create a new user
+ *
+ * `emailVerified` should be true only when the IdP has actually verified the
+ * email (Google: profile.verified_email; Facebook: no signal — pass false).
  */
-async function findOrCreateOAuthUser(provider, providerId, { email, name, avatar_url }) {
+async function findOrCreateOAuthUser(provider, providerId, { email, name, avatar_url, emailVerified = false }) {
   // Step 1: existing OAuth user
   const byProvider = await pool.query(
     `SELECT * FROM users WHERE provider = $1 AND provider_id = $2 LIMIT 1`,
@@ -94,10 +142,20 @@ async function findOrCreateOAuthUser(provider, providerId, { email, name, avatar
     );
     if (byEmail.rows[0]) {
       const existing = byEmail.rows[0];
+
+      // SECURITY: refuse to silently link an unverified OAuth identity onto an
+      // existing account. If we did, an attacker who controlled a Facebook
+      // account claiming someone else's email could take over that account.
+      // The user must sign in with their original method first and link from
+      // their profile (future work). Today we just block and tell them.
+      if (!emailVerified && existing.provider === 'local') {
+        const err = new Error('account_exists_local');
+        err.code = 'account_exists_local';
+        throw err;
+      }
+
       // If existing user is 'local' (email/password), keep that but attach this provider_id
       // so next time the same OAuth login works directly.
-      // If existing user is from a DIFFERENT provider, attaching this one would
-      // overwrite the provider field — instead we leave it and log via existing record.
       const newProvider = existing.provider === 'local' ? 'local' : (existing.provider || provider);
       const newProviderId = existing.provider_id || providerId;
 
@@ -142,6 +200,10 @@ router.get('/google', (req, res) => {
     return redirectWithError(res, 'google_oauth_not_configured');
   }
 
+  // SECURITY: bind this OAuth round-trip to this browser via `state`.
+  const state = generateState();
+  setStateCookie(res, state);
+
   const callbackUrl = process.env.GOOGLE_CALLBACK_URL || `${callbackBase(req)}/api/auth/google/callback`;
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
@@ -150,6 +212,7 @@ router.get('/google', (req, res) => {
     scope: 'openid email profile',
     access_type: 'online',
     prompt: 'select_account', // forces account picker, useful for testing
+    state,
   });
   return res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 });
@@ -160,9 +223,17 @@ router.get('/google/callback', async (req, res) => {
     const { code, error } = req.query;
 
     if (error || !code) {
-      const code = error === 'access_denied' ? 'oauth_cancelled' : (error || 'no_code');
-      return redirectWithError(res, code);
+      clearStateCookie(res);
+      const errCode = error === 'access_denied' ? 'oauth_cancelled' : (error || 'no_code');
+      return redirectWithError(res, errCode);
     }
+
+    // SECURITY: reject if `state` doesn't match the cookie we set on init.
+    if (!validateState(req)) {
+      clearStateCookie(res);
+      return redirectWithError(res, 'oauth_state_mismatch');
+    }
+    clearStateCookie(res);
 
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       return redirectWithError(res, 'google_oauth_not_configured');
@@ -198,10 +269,13 @@ router.get('/google/callback', async (req, res) => {
     }
 
     // Find or create our internal user
+    // Google verifies emails — profile.verified_email is true for verified
+    // workspace + consumer accounts.
     const user = await findOrCreateOAuthUser('google', profile.id, {
       email: profile.email,
       name: profile.name,
       avatar_url: profile.picture,
+      emailVerified: profile.verified_email === true,
     });
 
     // Issue tokens — refresh as httpOnly cookie, access in URL fragment
@@ -210,6 +284,9 @@ router.get('/google/callback', async (req, res) => {
 
     return res.redirect(`${frontendUrl()}/#/oauth-success?token=${encodeURIComponent(access_token)}`);
   } catch (err) {
+    if (err && err.code === 'account_exists_local') {
+      return redirectWithError(res, 'account_exists_local');
+    }
     console.error('Google callback error:', err);
     return redirectWithError(res, 'oauth_failed');
   }
@@ -221,12 +298,17 @@ router.get('/facebook', (req, res) => {
     return redirectWithError(res, 'facebook_oauth_not_configured');
   }
 
+  // SECURITY: bind this OAuth round-trip to this browser via `state`.
+  const state = generateState();
+  setStateCookie(res, state);
+
   const callbackUrl = process.env.FACEBOOK_CALLBACK_URL || `${callbackBase(req)}/api/auth/facebook/callback`;
   const params = new URLSearchParams({
     client_id: process.env.FACEBOOK_APP_ID,
     redirect_uri: callbackUrl,
     response_type: 'code',
     scope: 'email,public_profile',
+    state,
   });
   return res.redirect(`https://www.facebook.com/v18.0/dialog/oauth?${params.toString()}`);
 });
@@ -237,9 +319,17 @@ router.get('/facebook/callback', async (req, res) => {
     const { code, error } = req.query;
 
     if (error || !code) {
+      clearStateCookie(res);
       const errorCode = error === 'access_denied' ? 'oauth_cancelled' : (error || 'no_code');
       return redirectWithError(res, errorCode);
     }
+
+    // SECURITY: reject if `state` doesn't match the cookie we set on init.
+    if (!validateState(req)) {
+      clearStateCookie(res);
+      return redirectWithError(res, 'oauth_state_mismatch');
+    }
+    clearStateCookie(res);
 
     if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
       return redirectWithError(res, 'facebook_oauth_not_configured');
@@ -270,10 +360,14 @@ router.get('/facebook/callback', async (req, res) => {
       return redirectWithError(res, 'email_not_provided');
     }
 
+    // Facebook does not expose a reliable "email verified" signal in the basic
+    // profile, so we pass false. This means an existing local account with the
+    // same email will be protected from silent takeover.
     const user = await findOrCreateOAuthUser('facebook', profile.id, {
       email: profile.email,
       name: profile.name,
       avatar_url: profile.picture?.data?.url,
+      emailVerified: false,
     });
 
     const { access_token, refresh_token } = issueTokens(user.id);
@@ -281,6 +375,9 @@ router.get('/facebook/callback', async (req, res) => {
 
     return res.redirect(`${frontendUrl()}/#/oauth-success?token=${encodeURIComponent(access_token)}`);
   } catch (err) {
+    if (err && err.code === 'account_exists_local') {
+      return redirectWithError(res, 'account_exists_local');
+    }
     console.error('Facebook callback error:', err);
     return redirectWithError(res, 'oauth_failed');
   }

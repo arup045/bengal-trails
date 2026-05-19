@@ -6,7 +6,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { AnalyticsDashboard } from './admin/AnalyticsDashboard';
 import { AdminEnquiries }     from './admin/AdminEnquiries';
 import { AdminVendors }       from './admin/AdminVendors';
-// Charts now live inside AnalyticsDashboard component
+// Charts: most chart logic now lives in AnalyticsDashboard, but the
+// Overview tab still renders inline charts in this file (lines ~175-540),
+// so we keep recharts imports here.
+import {
+  ResponsiveContainer, BarChart, Bar, LineChart, Line, AreaChart, Area,
+  PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
+} from 'recharts';
 
 export function AdminDashboard() {
   const { user, isAdmin } = useAuth();

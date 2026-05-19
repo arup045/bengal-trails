@@ -4,6 +4,14 @@ const { limiters } = require('../middleware/rateLimit');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validate');
 
+// P1-24: review moderation toggle.
+//   - Default (REVIEW_MODERATION_MODE unset or 'off') = reviews auto-publish
+//     (legacy behavior — back-compat for existing deploys).
+//   - 'pending' = reviews require admin approval before going live.
+// Admins should change this in their Render/Railway dashboard.
+const MODERATION_PENDING = process.env.REVIEW_MODERATION_MODE === 'pending';
+const NEW_REVIEW_STATUS  = MODERATION_PENDING ? 'pending' : 'published';
+
 // ── GET /reviews/:slug ─────────────────────────────────────────────────────────
 router.get('/:slug', optionalAuth, async (req, res) => {
   try {
@@ -38,6 +46,10 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 });
 
 // ── POST /reviews ─────────────────────────────────────────────────────────────
+// P1-23: a user can only have ONE review per destination. The DB constraint
+// enforces this; we translate the unique_violation (23505) into a friendly
+// 409 Conflict so the frontend can prompt the user to EDIT instead of POST
+// (an edit endpoint would be the natural follow-up — separate ticket).
 router.post('/', authenticate, validate(schemas.review), async (req, res) => {
   try {
     const { destinationSlug, rating, title, content, visitDate } = req.body;
@@ -45,37 +57,108 @@ router.post('/', authenticate, validate(schemas.review), async (req, res) => {
       return res.status(400).json({ error: 'destinationSlug, rating and content required' });
 
     const { rows } = await pool.query(
-      `INSERT INTO reviews (user_id, destination_slug, rating, title, content, visit_date)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.user.id, destinationSlug, rating, title, content, visitDate || null]
+      `INSERT INTO reviews (user_id, destination_slug, rating, title, content, visit_date, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [req.user.id, destinationSlug, rating, title, content, visitDate || null, NEW_REVIEW_STATUS]
     );
 
-    // Update destination stats
+    // Update destination stats — derive both count and average from published
+    // reviews only, so pending-moderation reviews don't pollute public ratings.
     await pool.query(`
       UPDATE destinations
-      SET review_count = review_count + 1,
-          rating = (SELECT AVG(rating)::numeric(3,2) FROM reviews WHERE destination_slug = $1 AND status = 'published')
+      SET review_count = (SELECT COUNT(*)          FROM reviews WHERE destination_slug = $1 AND status = 'published'),
+          rating       = COALESCE(
+                           (SELECT AVG(rating)::numeric(3,2) FROM reviews WHERE destination_slug = $1 AND status = 'published'),
+                           0
+                         )
       WHERE slug = $1
     `, [destinationSlug]);
 
-    return res.status(201).json({ success: true, review: rows[0] });
+    return res.status(201).json({
+      success: true,
+      review: rows[0],
+      // If moderation is on, tell the frontend so it can show the right toast
+      pendingModeration: NEW_REVIEW_STATUS === 'pending',
+    });
   } catch (err) {
+    // Postgres unique_violation — user already reviewed this destination
+    if (err && err.code === '23505') {
+      return res.status(409).json({
+        error: 'You have already reviewed this destination. Edit your existing review instead.',
+        code: 'already_reviewed',
+      });
+    }
     return res.status(500).json({ error: 'Server error' });
   }
 });
 
 // ── POST /reviews/:id/helpful ─────────────────────────────────────────────────
-router.post('/:id/helpful', optionalAuth, async (req, res) => {
+// P1-22: was previously an "increment forever" endpoint accessible to anyone.
+// Now requires auth, dedups via review_helpful_votes PK, and derives the count
+// from that table. Idempotent — calling twice from the same user is a no-op.
+router.post('/:id/helpful', authenticate, async (req, res) => {
+  const client = await pool.connect();
   try {
-    const { rows } = await pool.query(
-      `UPDATE reviews SET helpful_count = helpful_count + 1
-       WHERE id = $1 RETURNING id, helpful_count`,
+    await client.query('BEGIN');
+
+    // Verify the review exists (so we 404 instead of silently no-op'ing)
+    const reviewExists = await client.query('SELECT id FROM reviews WHERE id = $1', [req.params.id]);
+    if (!reviewExists.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Review not found' });
+    }
+
+    // Idempotent insert
+    await client.query(
+      `INSERT INTO review_helpful_votes (review_id, user_id)
+       VALUES ($1, $2)
+       ON CONFLICT (review_id, user_id) DO NOTHING`,
+      [req.params.id, req.user.id]
+    );
+
+    // Recompute the denormalized count
+    const countRes = await client.query(
+      `UPDATE reviews
+         SET helpful_count = (SELECT COUNT(*) FROM review_helpful_votes WHERE review_id = $1)
+       WHERE id = $1
+       RETURNING helpful_count`,
       [req.params.id]
     );
-    if (!rows.length) return res.status(404).json({ error: 'Review not found' });
-    return res.json({ success: true, helpful_count: rows[0].helpful_count });
+
+    await client.query('COMMIT');
+    return res.json({ success: true, helpful_count: countRes.rows[0].helpful_count });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     return res.status(500).json({ error: 'Server error' });
+  } finally {
+    client.release();
+  }
+});
+
+// ── DELETE /reviews/:id/helpful — remove your "helpful" vote ──────────────────
+// Companion to POST — lets users toggle their vote off. Idempotent.
+router.delete('/:id/helpful', authenticate, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      'DELETE FROM review_helpful_votes WHERE review_id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    const countRes = await client.query(
+      `UPDATE reviews
+         SET helpful_count = (SELECT COUNT(*) FROM review_helpful_votes WHERE review_id = $1)
+       WHERE id = $1
+       RETURNING helpful_count`,
+      [req.params.id]
+    );
+    await client.query('COMMIT');
+    return res.json({ success: true, helpful_count: countRes.rows[0]?.helpful_count || 0 });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    return res.status(500).json({ error: 'Server error' });
+  } finally {
+    client.release();
   }
 });
 // GET real average rating stats for a destination

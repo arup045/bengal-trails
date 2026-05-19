@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const crypto = require('crypto');
 const pool = require('../db/pool');
 const { limiters } = require('../middleware/rateLimit');
 const { authenticate, optionalAuth } = require('../middleware/auth');
@@ -9,25 +10,76 @@ const { validate, schemas } = require('../middleware/validate');
 // ════════════════════════════════════════
 
 // POST /bookings
+//
+// SECURITY (P0-8 + P0-9):
+//   - The booking total is computed server-side from the destination's actual
+//     price_from. The client's `total` is treated as advisory only and audited.
+//     Old code stored client-supplied total → users could book a ₹10k trip
+//     for ₹1.
+//   - The booking is inserted with status='pending' and only flips to
+//     'confirmed' after /payments/verify validates the Razorpay signature.
+//     Old code marked every booking 'confirmed' on creation → free bookings.
 router.post('/bookings', authenticate, limiters.write, validate(schemas.booking), async (req, res) => {
   try {
-    const { destinationSlug, destinationName, checkIn, checkOut, guests, rooms, accommodationType, addOns, total } = req.body;
-    const bookingId = `BKG${Date.now()}`;
+    const { destinationSlug, destinationName, checkIn, checkOut, guests, rooms, accommodationType, addOns, total: clientTotal } = req.body;
+    const safeGuests = Math.max(1, Math.min(20, guests || 1));
+    const safeRooms  = Math.max(1, Math.min(10, rooms  || 1));
+
+    // Compute nights from check-in/out (default 1 night if dates missing/invalid)
+    let nights = 1;
+    if (checkIn && checkOut) {
+      const inDate  = new Date(checkIn);
+      const outDate = new Date(checkOut);
+      if (!isNaN(inDate.getTime()) && !isNaN(outDate.getTime()) && outDate > inDate) {
+        nights = Math.max(1, Math.round((outDate - inDate) / (1000 * 60 * 60 * 24)));
+        if (nights > 60) {
+          return res.status(400).json({ error: 'Booking duration cannot exceed 60 nights' });
+        }
+      }
+    }
+
+    // Look up the canonical price from the destinations table
+    const destRes = await pool.query(
+      `SELECT price_from FROM destinations WHERE slug = $1 AND status = 'published' LIMIT 1`,
+      [destinationSlug]
+    );
+    if (!destRes.rows.length) {
+      return res.status(404).json({ error: 'Destination not found or not bookable' });
+    }
+    const priceFrom = parseInt(destRes.rows[0].price_from, 10) || 0;
+
+    // Server-authoritative minimum total. Real businesses layer in tax,
+    // accommodation upgrade, add-ons, etc. — but at minimum the booking must
+    // cost (price_from × nights × guests). We reject any client value below
+    // 70% of this floor; we use the higher of (client claim, server floor) so
+    // legitimate add-ons + tax push the total UP not down.
+    const serverFloor = priceFrom * nights * safeGuests;
+    const clientNum   = typeof clientTotal === 'number' && clientTotal >= 0 ? clientTotal : 0;
+    if (clientNum > 0 && clientNum < serverFloor * 0.7) {
+      return res.status(400).json({
+        error: 'Booking total is below the destination\'s minimum price.',
+        minTotal: serverFloor,
+      });
+    }
+    const authoritativeTotal = Math.max(serverFloor, clientNum);
+
+    // Generate a non-predictable booking ID (Date.now() alone collides under load)
+    const bookingId = `BKG${Date.now().toString(36).toUpperCase()}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
     const { rows } = await pool.query(
       `INSERT INTO bookings
          (booking_id, user_id, destination_slug, destination_name, check_in, check_out,
           guests, rooms, accommodation_type, add_ons, total, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'confirmed') RETURNING *`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'pending') RETURNING *`,
       [bookingId, req.user.id, destinationSlug, destinationName, checkIn, checkOut,
-       guests || 1, rooms || 1, accommodationType, JSON.stringify(addOns || []), total]
+       safeGuests, safeRooms, accommodationType, JSON.stringify(addOns || []), authoritativeTotal]
     );
 
-    // Create notification
+    // Create notification (now reflects pending state, not fake 'confirmed')
     await pool.query(
       `INSERT INTO notifications (user_id, type, title, message, action_url)
-       VALUES ($1, 'booking', 'Booking Confirmed!', $2, '/profile')`,
-      [req.user.id, `Your booking for ${destinationName} is confirmed. ID: ${bookingId}`]
+       VALUES ($1, 'booking', 'Booking Created', $2, '/profile')`,
+      [req.user.id, `Your booking for ${destinationName} is reserved (ID: ${bookingId}). Complete payment to confirm.`]
     );
 
     return res.status(201).json({ success: true, bookingId, booking: rows[0] });
@@ -55,19 +107,95 @@ router.get('/bookings', authenticate, async (req, res) => {
 // ════════════════════════════════════════
 
 // POST /newsletter/subscribe
+//
+// P1-29: double opt-in.
+//   1. Anyone can submit any email — we don't reveal whether it's already
+//      subscribed (no enumeration).
+//   2. We insert/update with status='pending' and a random confirm_token.
+//   3. We email the token to the user. They click the link → /newsletter/confirm
+//      flips status to 'active'.
+// Required for India DPDP Act 2023 + GDPR (Art. 7 consent records).
 router.post('/newsletter/subscribe', validate(schemas.newsletter), async (req, res) => {
   try {
     const { email, name } = req.body;
     if (!email) return res.status(400).json({ error: 'email required' });
 
+    const rawToken  = crypto.randomBytes(24).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
     await pool.query(
-      `INSERT INTO newsletter_subscribers (email, name)
-       VALUES ($1, $2)
-       ON CONFLICT (email) DO UPDATE SET status = 'active'`,
-      [email.toLowerCase(), name || null]
+      `INSERT INTO newsletter_subscribers (email, name, status, confirm_token, subscribed_at)
+       VALUES ($1, $2, 'pending', $3, NOW())
+       ON CONFLICT (email) DO UPDATE
+         SET status        = CASE
+                               WHEN newsletter_subscribers.status = 'active' THEN 'active'
+                               ELSE 'pending'
+                             END,
+             confirm_token = CASE
+                               WHEN newsletter_subscribers.status = 'active' THEN newsletter_subscribers.confirm_token
+                               ELSE EXCLUDED.confirm_token
+                             END,
+             name          = COALESCE(EXCLUDED.name, newsletter_subscribers.name)`,
+      [email.toLowerCase(), name || null, tokenHash]
     );
 
-    return res.json({ success: true, message: 'Subscribed successfully!' });
+    // Email the raw token (DB only stores its hash, same pattern as password reset).
+    try {
+      const { sendNewsletterConfirmEmail } = require('../utils/email');
+      if (typeof sendNewsletterConfirmEmail === 'function') {
+        await sendNewsletterConfirmEmail(email, rawToken, name);
+      }
+    } catch { /* non-fatal — log only */ }
+
+    // Don't reveal subscription state. Same response regardless.
+    return res.json({ success: true, message: 'Check your inbox to confirm your subscription.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /newsletter/confirm?token=<raw>
+// Flips status to 'active' after the user clicks the email link.
+router.get('/newsletter/confirm', async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid token' });
+    }
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const { rows } = await pool.query(
+      `UPDATE newsletter_subscribers
+         SET status        = 'active',
+             confirmed_at  = NOW(),
+             confirm_token = NULL
+       WHERE confirm_token = $1 AND status = 'pending'
+       RETURNING email`,
+      [tokenHash]
+    );
+
+    if (!rows.length) {
+      return res.status(400).json({ error: 'Invalid or already-used confirmation link' });
+    }
+    return res.json({ success: true, message: 'Subscription confirmed. Welcome to Bengal Trails!' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /newsletter/unsubscribe — DPDP/GDPR right to opt out.
+router.post('/newsletter/unsubscribe', validate(schemas.newsletter), async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'email required' });
+    await pool.query(
+      `UPDATE newsletter_subscribers
+         SET status = 'unsubscribed', unsubscribed_at = NOW()
+       WHERE email = $1`,
+      [email.toLowerCase()]
+    );
+    // Always return success — don't reveal whether the email was subscribed.
+    return res.json({ success: true, message: 'You have been unsubscribed.' });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
   }

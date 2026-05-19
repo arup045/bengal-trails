@@ -71,14 +71,22 @@ router.post('/verify', authenticate, async (req, res) => {
       return res.json({ success: true, dev_mode: true });
     }
 
-    // Verify HMAC signature
+    // Verify HMAC signature.
+    // SECURITY (P0-11): Razorpay docs require a CONSTANT-TIME compare.
+    // JavaScript `!==` on strings short-circuits at the first differing byte,
+    // which leaks signature bytes via response timing in a tight loop.
+    if (typeof razorpay_signature !== 'string' || !/^[a-f0-9]+$/i.test(razorpay_signature)) {
+      return res.status(400).json({ error: 'Invalid payment signature' });
+    }
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const expected = crypto
+    const expectedHex = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(body)
       .digest('hex');
 
-    if (expected !== razorpay_signature) {
+    const expectedBuf = Buffer.from(expectedHex, 'hex');
+    const sigBuf      = Buffer.from(razorpay_signature, 'hex');
+    if (expectedBuf.length !== sigBuf.length || !crypto.timingSafeEqual(expectedBuf, sigBuf)) {
       return res.status(400).json({ error: 'Invalid payment signature' });
     }
 

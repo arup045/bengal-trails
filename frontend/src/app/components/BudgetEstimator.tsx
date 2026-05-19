@@ -77,7 +77,8 @@ export function BudgetEstimator() {
     }
     setIsSaving(true);
     try {
-      const total = typeof totalBudget === 'number' ? totalBudget : 0;
+      // Use the `totals` object computed by calculateTotal() above.
+      const total = typeof totals?.total === 'number' ? totals.total : 0;
       const res = await fetch(`${API_BASE}/trip-plans`, {
         method: 'POST',
         headers: {
@@ -89,7 +90,7 @@ export function BudgetEstimator() {
           description: `${travelStyle} trip for ${travelers} people, ${days} days`,
           totalBudget: total,
           status: 'planning',
-          destinations: { travelers, days, travelStyle, breakdown: budgetBreakdown },
+          destinations: { travelers, days, travelStyle, breakdown: totals },
         }),
       });
       const data = await res.json();

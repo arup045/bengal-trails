@@ -10,7 +10,7 @@ import { SmartSearchBar } from './SmartSearchBar';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { toast } from 'sonner';
 import { useDebounce } from '../utils/useDebounce';
-import { getCurrentLocation, LocationCoords, sortByDistance, formatDistance, getLastKnownLocation } from '../utils/location';
+import { getCurrentLocation, LocationCoords, sortByDistance, formatDistance, getLastKnownLocation, calculateDistance } from '../utils/location';
 import { LoadingSkeleton, EmptyState } from './LoadingSkeleton';
 import { useWishlistSync } from '../utils/useWishlistSync';
 
@@ -63,8 +63,9 @@ export function ExplorePage() {
   }, []);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  // Reset to page 1 on any filter/search change
-  useEffect(() => { setCurrentPage(1); }, [debouncedSearchQuery, selectedCategory, selectedRegion, sortBy, priceRange]);
+  // State declarations MUST come before any effect that depends on them.
+  // Previously the "reset to page 1" effect was placed above these — block-
+  // scoped names are technically in scope but in the TDZ, which TS flags.
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedRegion, setSelectedRegion] = useState('All Regions');
   const [sortBy, setSortBy] = useState('popular');
@@ -77,6 +78,9 @@ export function ExplorePage() {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Reset to page 1 on any filter/search change
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearchQuery, selectedCategory, selectedRegion, sortBy, priceRange]);
   const ITEMS_PER_PAGE = 24;
 
   // Use wishlist hook
@@ -236,9 +240,15 @@ export function ExplorePage() {
     } else if (sortBy === 'reviews') {
       filtered = [...filtered].sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
     } else if (sortBy === 'distance' && userLocation) {
+      // Place coordinates use {lat, lng}; LocationCoords uses {latitude, longitude}.
+      // Map each place's coordinates into LocationCoords shape, then compute
+      // distance via calculateDistance (sortByDistance was being called with
+      // the wrong signature — it returns a sorted array, not a distance).
+      const toCoords = (c: { lat: number; lng: number }): LocationCoords =>
+        ({ latitude: c.lat, longitude: c.lng });
       filtered = [...filtered].sort((a, b) => {
-        const distA = sortByDistance(userLocation, a.coordinates);
-        const distB = sortByDistance(userLocation, b.coordinates);
+        const distA = calculateDistance(userLocation, toCoords(a.coordinates));
+        const distB = calculateDistance(userLocation, toCoords(b.coordinates));
         return distA - distB;
       });
     }

@@ -98,7 +98,7 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
           body: JSON.stringify({
             destinationSlug,
             userId: user.id,
-            userName: user.user_metadata?.name || user.email,
+            userName: user.name || user.email,
             rating,
             title,
             content,
@@ -450,7 +450,9 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-gray-900">{review.userName}</p>
                       {review.verified && (
-                        <Award className="w-4 h-4 text-blue-500" title="Verified Visitor" />
+                        <span title="Verified Visitor" aria-label="Verified Visitor">
+                          <Award className="w-4 h-4 text-blue-500" />
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2">

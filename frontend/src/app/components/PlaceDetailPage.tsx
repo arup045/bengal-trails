@@ -581,7 +581,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               </div>
 
               <button
-                onClick={() => setShowBooking(true)}
+                onClick={() => document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })}
                 className="w-full mt-5 bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition-colors font-poppins font-medium text-sm"
               >
                 Plan Your Visit
@@ -626,7 +626,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
         </div>
 
         {/* Booking Section */}
-        <div className="max-w-7xl mx-auto px-6 mt-12">
+        <div id="booking-section" className="max-w-7xl mx-auto px-6 mt-12 scroll-mt-20">
           <BookingSystem
             destinationSlug={place.slug}
             destinationName={place.title}

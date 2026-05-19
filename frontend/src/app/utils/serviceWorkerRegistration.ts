@@ -137,10 +137,13 @@ export async function subscribeToPushNotifications(): Promise<PushSubscription |
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
+      // TS 5.x made Uint8Array generic over its ArrayBuffer-like backing
+      // store, which made `BufferSource` reject the default Uint8Array. Cast
+      // to BufferSource is safe — the runtime object is byte-identical.
       applicationServerKey: urlBase64ToUint8Array(
         // Replace with your VAPID public key
         'YOUR_VAPID_PUBLIC_KEY'
-      )
+      ) as BufferSource,
     });
 
     console.log('Push notification subscription:', subscription);

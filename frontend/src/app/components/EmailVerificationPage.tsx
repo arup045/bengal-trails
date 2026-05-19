@@ -4,7 +4,9 @@ import { toast } from 'sonner';
 import { API_BASE } from '../utils/api';
 
 export function EmailVerificationPage() {
-  const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  // 'not-required' means: backend says verification isn't enabled. We tell
+  // the user honestly rather than faking a success.
+  const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error' | 'not-required'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -27,6 +29,13 @@ export function EmailVerificationPage() {
         });
         const data = await res.json();
 
+        // Backend now returns 501 with code='not_implemented' when verification
+        // isn't enabled. Show an honest message rather than a fake success.
+        if (res.status === 501 || data?.code === 'not_implemented') {
+          setVerificationStatus('not-required');
+          return;
+        }
+
         if (res.ok && data.success) {
           setVerificationStatus('success');
           toast.success('Email verified successfully!');
@@ -36,7 +45,6 @@ export function EmailVerificationPage() {
           setErrorMessage(data.error || 'Verification failed. The link may be invalid or expired.');
         }
       } catch (error) {
-        console.error('Verification error:', error);
         setVerificationStatus('error');
         setErrorMessage('An unexpected error occurred');
       }
@@ -44,6 +52,31 @@ export function EmailVerificationPage() {
 
     verifyEmail();
   }, []);
+
+  if (verificationStatus === 'not-required') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-orange-50 to-yellow-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
+          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Mail className="w-10 h-10 text-purple-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">No verification needed</h1>
+          <p className="text-gray-600 mb-8">
+            Bengal Trails accounts are active as soon as you sign up — you don't
+            need to verify your email to start exploring.
+          </p>
+          <div className="space-y-3">
+            <button onClick={() => window.location.hash = '#/signin'} className="w-full bg-purple-600 text-white py-3 rounded-full font-semibold hover:bg-purple-700 transition-colors">
+              Go to Sign In
+            </button>
+            <button onClick={() => window.location.hash = '#/'} className="w-full bg-gray-100 text-gray-700 py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors">
+              Go to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (verificationStatus === 'loading') {
     return (

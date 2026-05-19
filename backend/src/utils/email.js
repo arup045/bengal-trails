@@ -119,4 +119,46 @@ async function sendNewsletterEmail(subscribers, subject, body) {
   return { success: true, sent };
 }
 
-module.exports = { sendPasswordResetEmail, sendWelcomeEmail, sendNewsletterEmail };
+// P1-29: double opt-in confirmation for newsletter subscribers.
+// Called by /newsletter/subscribe. Raw token goes in the email link; DB only
+// stores its SHA-256 hash so a DB leak doesn't enable confirmation hijacking.
+async function sendNewsletterConfirmEmail(email, rawToken, name) {
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log(`[email] newsletter confirm for ${email}: ${rawToken} (no SMTP configured)`);
+    return { success: true, dev: true };
+  }
+  const link = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/#/newsletter-confirm?token=${encodeURIComponent(rawToken)}`;
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || `"Bengal Trails" <noreply@bengaltrails.com>`,
+      to: email,
+      subject: 'Confirm your Bengal Trails newsletter subscription',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f9f6f2;padding:0">
+          <div style="background:linear-gradient(135deg,#7c3aed,#9333ea);padding:24px;text-align:center">
+            <h1 style="color:#fff;margin:0;font-size:28px;letter-spacing:1px">Bengal Trails</h1>
+            <p style="color:#e9d5ff;margin:6px 0 0;font-size:13px">Discover West Bengal</p>
+          </div>
+          <div style="background:#fff;padding:32px 28px;line-height:1.6;color:#1a1a1a">
+            <p>Hi${name ? ' ' + name : ''},</p>
+            <p>Click the button below to confirm your subscription to the Bengal Trails newsletter.</p>
+            <p style="text-align:center;margin:24px 0">
+              <a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 28px;border-radius:9999px;text-decoration:none;font-weight:600">
+                Confirm subscription
+              </a>
+            </p>
+            <p style="color:#666;font-size:13px">If you didn't request this, you can ignore this email — no subscription will be created.</p>
+            <p style="color:#666;font-size:12px;word-break:break-all">Or paste this link in your browser: ${link}</p>
+          </div>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (err) {
+    console.error('newsletter confirm email failed:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+module.exports = { sendPasswordResetEmail, sendWelcomeEmail, sendNewsletterEmail, sendNewsletterConfirmEmail };

@@ -15,6 +15,12 @@ export interface Place {
   priceFrom?: string;
   rating?: number;
   reviewsCount?: number;
+  // Optional richer fields consumed by ComparisonTool / TravelAdvisor / etc.
+  // Not present on every record — components access defensively.
+  category?: string;
+  duration?: string;
+  activities?: string[];
+  highlights?: string[];
 }
 
 export const placesData: Place[] = [

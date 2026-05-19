@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Tag, Search, ArrowRight, BookOpen, TrendingUp } from 'lucide-react';
 import { API_BASE } from '../utils/api';
+import { sanitizeRichText } from '../utils/sanitize';
 
 interface Article {
   id: string;
@@ -67,7 +68,9 @@ function ArticleView({ article, onBack }: { article: Article; onBack: () => void
       </div>
       <p className="text-gray-700 leading-relaxed text-base mb-6">{article.excerpt}</p>
       {article.content ? (
-        <div className="prose prose-gray max-w-none text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: article.content }} />
+        // SECURITY: article.content comes from the API. Always sanitize before rendering.
+        // sanitizeRichText strips <script>, on* handlers, javascript: URLs, iframes, etc.
+        <div className="prose prose-gray max-w-none text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeRichText(article.content) }} />
       ) : (
         <div className="bg-purple-50 border border-purple-100 rounded-xl p-6 text-center">
           <p className="text-purple-700 font-semibold">Full article coming soon!</p>

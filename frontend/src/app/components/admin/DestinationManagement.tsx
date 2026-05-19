@@ -20,8 +20,32 @@ interface Destination {
   coordinates?: { lat: number; lng: number };
 }
 
+// Map a Place (from places-full.ts) to the local Destination shape this
+// component expects. placesData uses different field names — bridge here
+// rather than touching the data file.
+function placeToDestination(p: typeof placesData[0]): Destination {
+  const priceFromNum = parseInt((p.priceFrom || '0').replace(/[^0-9]/g, ''), 10) || 1500;
+  return {
+    id:         p.slug,
+    name:       p.title,
+    region:     p.region,
+    excerpt:    p.excerpt,
+    description: p.description || '',
+    tags:       p.tags || [],
+    pricing: {
+      budget:   priceFromNum,
+      midRange: Math.round(priceFromNum * 2.3),
+      luxury:   Math.round(priceFromNum * 5),
+    },
+    duration:   (p as any).duration || '2-3 days',
+    bestTime:   p.bestTime,
+    heroImage:  p.heroImage,
+    coordinates: p.coordinates,
+  };
+}
+
 export function DestinationManagement() {
-  const [destinations, setDestinations] = useState<Destination[]>(placesData);
+  const [destinations, setDestinations] = useState<Destination[]>(() => placesData.map(placeToDestination));
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingDestination, setEditingDestination] = useState<Destination | null>(null);

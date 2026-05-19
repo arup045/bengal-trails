@@ -8,6 +8,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { sanitizeInline } from '../utils/sanitize';
 
 interface Message {
   id: string;
@@ -51,18 +52,34 @@ function TypingIndicator() {
 }
 
 function MarkdownText({ text }: { text: string }) {
-  // Simple markdown: bold, bullets, newlines
-  const formatted = text
+  // SECURITY: `text` is AI-generated output and could contain prompt-injected
+  // HTML. We escape first, then apply our markdown-lite transforms, then
+  // sanitize through DOMPurify as a final belt-and-braces pass.
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;')
+     .replace(/</g, '&lt;')
+     .replace(/>/g, '&gt;')
+     .replace(/"/g, '&quot;')
+     .replace(/'/g, '&#39;');
+
+  const escaped = escapeHtml(text);
+  const formatted = escaped
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/^• (.+)$/gm, '<li>$1</li>')
     .split('\n')
-    .map((line, i) => {
+    .map((line) => {
       if (line.startsWith('<li>')) return line;
-      return `<p key="${i}">${line}</p>`;
+      return `<p>${line}</p>`;
     })
     .join('');
-  return <div className="prose-sm text-sm leading-relaxed space-y-1" dangerouslySetInnerHTML={{ __html: formatted }} />;
+
+  return (
+    <div
+      className="prose-sm text-sm leading-relaxed space-y-1"
+      dangerouslySetInnerHTML={{ __html: sanitizeInline(formatted) }}
+    />
+  );
 }
 
 export const AITravelAssistant: React.FC = () => {
