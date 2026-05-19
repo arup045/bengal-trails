@@ -62,6 +62,7 @@ const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage').
 const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const EmailVerificationPage = lazy(() => import('./components/EmailVerificationPage').then(m => ({ default: m.EmailVerificationPage })));
 const OAuthSuccessPage = lazy(() => import('./components/OAuthSuccessPage').then(m => ({ default: m.OAuthSuccessPage })));
+const AboutUsPage = lazy(() => import('./components/AboutUsPage').then(m => ({ default: m.AboutUsPage })));
 
 // New feature pages
 const GamificationSystem = lazy(() => import('./components/GamificationSystem').then(m => ({ default: m.GamificationSystem })));
@@ -97,6 +98,7 @@ const PAGE_TITLES: Partial<Record<string, string>> = {
   community:          'Community — Bengal Trails',
   planner:            'Trip Planner — Bengal Trails',
   'itinerary-builder':'AI Itinerary Builder — Bengal Trails',
+  'about':            'About Us — Bengal Trails',
   'partners':         'Verified Partners — Bengal Trails',
   'vendor-onboarding':'Become a Partner — Bengal Trails',
   profile:            'My Profile — Bengal Trails',
@@ -108,7 +110,7 @@ const PAGE_TITLES: Partial<Record<string, string>> = {
 };
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist' | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals' | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools' | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup' | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification' | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact' | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder' | 'not-found' | 'oauth-success'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist' | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals' | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools' | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup' | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification' | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact' | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder' | 'not-found' | 'oauth-success' | 'about'>('home');
   const [currentSlug, setCurrentSlug] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -366,6 +368,14 @@ export default function App() {
         setCurrentPage('emergency');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('/#/emergency', 'Emergency Info');
+      } else if (hash === '/about') {
+        setCurrentPage('about');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('/#/about', 'About Us');
+      } else if (hash === '/itinerary-builder') {
+        setCurrentPage('itinerary-builder');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('/#/itinerary-builder', 'AI Itinerary Builder');
       } else if (hash === '' || hash === '/') {
         setCurrentPage('home');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -585,6 +595,7 @@ export default function App() {
               {currentPage === 'partners' && <Suspense fallback={<div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}><PartnersDirectory /></Suspense>}
               {currentPage === 'vendor-onboarding' && <Suspense fallback={<div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}><VendorOnboarding /></Suspense>}
               {currentPage === 'itinerary-builder' && <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>}><ItineraryBuilder /></Suspense>}
+              {currentPage === 'about' && <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>}><AboutUsPage /></Suspense>}
 
               {currentPage === 'not-found' && <NotFoundPage />}
             </Suspense>

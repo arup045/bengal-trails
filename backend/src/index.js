@@ -65,6 +65,7 @@ if (rawOrigins.includes('*')) {
 }
 
 // Compiled patterns for *.vercel.app and *.netlify.app (preview deploys)
+// All Vercel preview URLs (e.g. bengal-trails-xxx-arup-s-projects.vercel.app) are allowed.
 const PREVIEW_PATTERNS = [/\.vercel\.app$/, /\.netlify\.app$/, /^http:\/\/localhost:/];
 
 app.use(cors({

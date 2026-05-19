@@ -1,609 +1,600 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  MapPin, 
-  Heart, 
-  Briefcase, 
-  Phone, 
-  Edit2, 
-  Save, 
-  X, 
-  Camera,
-  Globe,
-  Users,
-  Mountain,
-  Sparkles,
-  CheckCircle2,
-  Loader2,
-  LogOut
+import {
+  User, Mail, Calendar, MapPin, Heart, Phone,
+  Edit2, Save, X, Camera, Globe, Mountain, Sparkles,
+  CheckCircle2, Loader2, LogOut, Shield, Trash2,
+  Star, BookOpen, Compass, ChevronRight, Upload, AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { uploadImage } from '../utils/api';
+import { uploadImage, authFetch } from '../utils/api';
 
-interface ProfileFormData {
-  name: string;
-  email: string;
-  phone?: string;
-  location?: string;
-  country?: string;
-  bio?: string;
-  interests?: string[];
-  budget?: string;
-  tripType?: string;
+const INTEREST_OPTIONS = [
+  { value: 'Hills & Tea',        icon: Mountain,  color: 'bg-blue-50   text-blue-600   border-blue-200'   },
+  { value: 'Heritage & History', icon: BookOpen,  color: 'bg-amber-50  text-amber-600  border-amber-200'  },
+  { value: 'Festivals & Culture',icon: Sparkles,  color: 'bg-purple-50 text-purple-600 border-purple-200' },
+  { value: 'Beaches & Seasides', icon: Globe,     color: 'bg-teal-50   text-teal-600   border-teal-200'   },
+  { value: 'Wildlife & Nature',  icon: Heart,     color: 'bg-green-50  text-green-600  border-green-200'  },
+  { value: 'City & Food',        icon: Compass,   color: 'bg-orange-50 text-orange-600 border-orange-200' },
+];
+
+const BUDGET_OPTIONS = [
+  { value: 'budget',  label: 'Budget',  sub: 'Under ₹2,000/day',  color: 'bg-green-50 text-green-700 border-green-200' },
+  { value: 'mid',     label: 'Mid-range', sub: '₹2k–5k/day',    color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'premium', label: 'Premium', sub: '₹5,000+/day',      color: 'bg-purple-50 text-purple-700 border-purple-200' },
+];
+
+const TRIP_TYPES = [
+  { value: 'solo',    label: '🧍 Solo Explorer' },
+  { value: 'couple',  label: '👫 Couple Getaway' },
+  { value: 'family',  label: '👨‍👩‍👧 Family Trip' },
+  { value: 'group',   label: '👥 Group Travel' },
+];
+
+function ProfileCompletion({ user }: { user: any }) {
+  const fields = [
+    { label: 'Name',      done: !!user?.name },
+    { label: 'Phone',     done: !!user?.phone },
+    { label: 'Location',  done: !!user?.location },
+    { label: 'Bio',       done: !!user?.bio },
+    { label: 'Interests', done: (user?.interests?.length || 0) > 0 },
+    { label: 'Avatar',    done: !!user?.avatar_url },
+  ];
+  const pct = Math.round((fields.filter(f => f.done).length / fields.length) * 100);
+  if (pct === 100) return null;
+  return (
+    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl p-5 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <p className="font-poppins text-sm font-semibold text-slate-800">Complete your profile</p>
+        <span className="font-poppins text-sm font-bold text-purple-600">{pct}%</span>
+      </div>
+      <div className="w-full h-2 bg-purple-100 rounded-full overflow-hidden mb-3">
+        <div className="h-full bg-purple-600 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {fields.filter(f => !f.done).map(f => (
+          <span key={f.label} className="text-xs font-poppins text-purple-600 bg-white border border-purple-200 rounded-full px-2.5 py-1">
+            + {f.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function UserProfilePage() {
-  const { user, updateProfile, signOut, refreshUser, deleteAccount } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const { user, updateProfile, signOut, deleteAccount, refreshUser } = useAuth();
+  const [isEditing,       setIsEditing]       = useState(false);
+  const [loading,         setLoading]         = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'wishlist' | 'itineraries'>('profile');
-  
-  const [formData, setFormData] = useState<ProfileFormData>({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '',
-    location: '',
-    country: '',
-    bio: '',
-    interests: [],
-    budget: '',
-    tripType: ''
+  const [activeTab,       setActiveTab]       = useState<'profile' | 'trips' | 'settings'>('profile');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm,   setDeleteConfirm]   = useState('');
+  const [bookings,        setBookings]        = useState<any[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const [form, setForm] = useState({
+    name:      user?.name      || '',
+    phone:     user?.phone     || '',
+    location:  user?.location  || '',
+    bio:       user?.bio       || '',
+    country:   user?.country   || '',
+    interests: (user?.interests as string[]) || [],
+    budget:    user?.budget    || '',
+    tripType:  user?.tripType  || '',
   });
 
   useEffect(() => {
     if (user) {
-      setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        phone: (user as any).phone || '',
-        location: (user as any).location || '',
-        country: (user as any).country || '',
-        bio: (user as any).bio || '',
-        interests: (user as any).interests || [],
-        budget: (user as any).budget || '',
-        tripType: (user as any).tripType || ''
+      setForm({
+        name:      user.name      || '',
+        phone:     user.phone     || '',
+        location:  user.location  || '',
+        bio:       user.bio       || '',
+        country:   user.country   || '',
+        interests: (user.interests as string[]) || [],
+        budget:    user.budget    || '',
+        tripType:  user.tripType  || '',
       });
     }
   }, [user]);
 
-  const interestOptions = [
-    { label: 'Hills & Tea', icon: Mountain },
-    { label: 'Heritage & History', icon: Camera },
-    { label: 'Festivals & Culture', icon: Sparkles },
-    { label: 'Beaches & Seasides', icon: MapPin },
-    { label: 'Wildlife & Nature', icon: Heart },
-    { label: 'City & Nightlife', icon: Users },
-  ];
+  useEffect(() => {
+    if (activeTab === 'trips') {
+      setBookingsLoading(true);
+      authFetch('/bookings')
+        .then(r => r.ok ? r.json() : { bookings: [] })
+        .then(d => setBookings(d.bookings || []))
+        .catch(() => setBookings([]))
+        .finally(() => setBookingsLoading(false));
+    }
+  }, [activeTab]);
 
   const handleSave = async () => {
+    if (!form.name.trim()) { toast.error('Name is required'); return; }
     setLoading(true);
-    setSaveSuccess(false);
-
     const result = await updateProfile({
-      name: formData.name,
-      ...(formData.phone && { phone: formData.phone }),
-      ...(formData.location && { location: formData.location }),
-      ...(formData.country && { country: formData.country }),
-      ...(formData.bio && { bio: formData.bio }),
-      ...(formData.interests && { interests: formData.interests }),
-      ...(formData.budget && { budget: formData.budget }),
-      ...(formData.tripType && { tripType: formData.tripType })
+      name:      form.name,
+      phone:     form.phone,
+      location:  form.location,
+      bio:       form.bio,
+      country:   form.country,
+      interests: form.interests,
+      budget:    form.budget,
+      tripType:  form.tripType,
     } as any);
-
     setLoading(false);
-
-    if (result.success) {
-      setSaveSuccess(true);
-      setIsEditing(false);
-      await refreshUser();
-      setTimeout(() => setSaveSuccess(false), 3000);
-    }
+    if (result.success) { toast.success('Profile updated!'); setIsEditing(false); }
+    else toast.error(result.error || 'Update failed');
   };
 
-  const toggleInterest = (interest: string) => {
-    setFormData(prev => ({
-      ...prev,
-      interests: prev.interests?.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...(prev.interests || []), interest]
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return; }
+    setAvatarUploading(true);
+    try {
+      const { url } = await uploadImage(file);
+      await updateProfile({ avatar_url: url } as any);
+      await refreshUser();
+      toast.success('Avatar updated!');
+    } catch { toast.error('Upload failed'); }
+    finally { setAvatarUploading(false); }
+  };
+
+  const toggleInterest = (val: string) => {
+    setForm(f => ({
+      ...f,
+      interests: f.interests.includes(val)
+        ? f.interests.filter(i => i !== val)
+        : [...f.interests, val],
     }));
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    window.location.hash = '/';
-  };
-
-  const handleDeleteAccount = async () => {
-    const confirmText = window.prompt(
-      'This will permanently delete your account, wishlist, and itineraries. This cannot be undone.\n\nType DELETE to confirm:'
-    );
-    if (confirmText !== 'DELETE') return;
-    const result = await deleteAccount();
-    if (result.success) {
-      window.location.hash = '/';
-    } else {
-      toast.error(result.error || 'Could not delete account. Please contact support.');
-    }
+  const handleDelete = async () => {
+    if (deleteConfirm !== user?.email) { toast.error('Email does not match'); return; }
+    const r = await deleteAccount();
+    if (r.success) { window.location.hash = '#/'; toast.success('Account deleted'); }
+    else toast.error(r.error || 'Failed');
   };
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-16">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Please sign in to view your profile</h2>
-          <button
-            onClick={() => window.location.hash = '/signin'}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:shadow-lg transition-all"
-          >
+          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-10 h-10 text-purple-400" />
+          </div>
+          <h2 className="font-poppins text-xl font-semibold text-slate-900 mb-2">Sign in to view your profile</h2>
+          <a href="#/signin" className="mt-4 inline-block bg-purple-600 text-white px-6 py-3 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
             Sign In
-          </button>
+          </a>
         </div>
       </div>
     );
   }
 
+  const initials = user.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+  const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : 'Recently';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50 pt-24 pb-16">
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Success Message */}
-        <AnimatePresence>
-          {saveSuccess && (
-            <motion.div
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              className="fixed top-24 right-6 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2"
-            >
-              <CheckCircle2 className="w-5 h-5" />
-              <span>Profile updated successfully!</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <div className="min-h-screen bg-gray-50 pt-16">
 
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-xl shadow-purple-100/50 p-8 mb-6"
-        >
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Profile Picture — real avatar with upload */}
-            <div className="relative">
-              {user.avatarUrl || user.avatar_url ? (
-                <img
-                  src={user.avatarUrl || user.avatar_url}
-                  alt={user.name}
-                  className="w-32 h-32 rounded-full object-cover shadow-xl border-4 border-white"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white text-4xl font-bold shadow-xl">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-              )}
-              <label
-                className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-purple-600 hover:bg-purple-50 transition-colors cursor-pointer"
-                aria-label="Change profile photo"
-                title="Upload a new profile photo"
-              >
-                {avatarUploading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+      {/* ── Profile Header Banner ─────────────────────────────────── */}
+      <div className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+        <div className="max-w-4xl mx-auto px-6 pt-10 pb-20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white/20 shadow-2xl">
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
-                  <Camera className="w-5 h-5" />
+                  <div className="w-full h-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white font-poppins">
+                    {initials}
+                  </div>
                 )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={avatarUploading}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    if (!file.type.startsWith('image/')) {
-                      toast.error('Please choose an image file');
-                      return;
-                    }
-                    if (file.size > 5 * 1024 * 1024) {
-                      toast.error('Image must be under 5MB');
-                      return;
-                    }
-                    setAvatarUploading(true);
-                    try {
-                      const { url } = await uploadImage(file);
-                      const r = await updateProfile({ avatarUrl: url, avatar_url: url } as any);
-                      if (r?.success !== false) {
-                        await refreshUser?.();
-                        toast.success('Profile photo updated');
-                      }
-                    } catch (err: any) {
-                      toast.error(err?.message || 'Upload failed');
-                    } finally {
-                      setAvatarUploading(false);
-                      e.target.value = ''; // allow re-selecting the same file
-                    }
-                  }}
-                />
-              </label>
+              </div>
+              <button onClick={() => fileRef.current?.click()}
+                disabled={avatarUploading}
+                className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-xl shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100">
+                {avatarUploading ? <Loader2 className="w-4 h-4 text-purple-600 animate-spin" /> : <Camera className="w-4 h-4 text-purple-600" />}
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
-
-            {/* User Info */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h1>
-              <p className="text-gray-600 flex items-center gap-2 justify-center md:justify-start mb-1">
-                <Mail className="w-4 h-4" />
-                {user.email}
-              </p>
-              <p className="text-gray-500 text-sm flex items-center gap-2 justify-center md:justify-start">
-                <Calendar className="w-4 h-4" />
-                Member since {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </p>
+            {/* Info */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="font-poppins text-3xl font-bold">{user.name}</h1>
+                {user.role === 'admin' && (
+                  <span className="bg-amber-400 text-amber-900 text-xs font-poppins font-bold px-2.5 py-0.5 rounded-full">ADMIN</span>
+                )}
+              </div>
+              <p className="text-purple-300 font-poppins text-sm mt-1">{user.email}</p>
+              <div className="flex flex-wrap gap-4 mt-3">
+                {user.location && (
+                  <span className="flex items-center gap-1.5 text-purple-200 text-sm font-poppins">
+                    <MapPin className="w-3.5 h-3.5" /> {user.location}
+                  </span>
+                )}
+                <span className="flex items-center gap-1.5 text-purple-200 text-sm font-poppins">
+                  <Calendar className="w-3.5 h-3.5" /> Member since {memberSince}
+                </span>
+              </div>
+              {user.bio && <p className="text-purple-200 font-poppins text-sm mt-3 max-w-lg leading-relaxed">{user.bio}</p>}
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              {!isEditing ? (
-                <>
-                  <motion.button
-                    onClick={() => setIsEditing(true)}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    Edit Profile
-                  </motion.button>
-                  <motion.button
-                    onClick={handleSignOut}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all flex items-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </motion.button>
-                  <motion.button
-                    onClick={handleDeleteAccount}
-                    className="px-6 py-3 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-all flex items-center gap-2 border border-red-200"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    aria-label="Delete account permanently"
-                  >
-                    Delete account
-                  </motion.button>
-                </>
-              ) : (
-                <>
-                  <motion.button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                    Save Changes
-                  </motion.button>
-                  <motion.button
-                    onClick={() => setIsEditing(false)}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all flex items-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <X className="w-4 h-4" />
-                    Cancel
-                  </motion.button>
-                </>
-              )}
+            {/* Actions */}
+            <div className="flex gap-2 sm:self-start">
+              <button onClick={() => { setIsEditing(true); setActiveTab('profile'); }}
+                className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl font-poppins text-sm transition-colors">
+                <Edit2 className="w-4 h-4" /> Edit
+              </button>
+              <button onClick={signOut}
+                className="flex items-center gap-1.5 bg-white/10 hover:bg-red-500/20 border border-white/20 text-white px-4 py-2 rounded-xl font-poppins text-sm transition-colors">
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
-        </motion.div>
-
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-white rounded-2xl p-2 shadow-lg shadow-purple-100/50">
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex-1 py-3 px-6 rounded-xl transition-all duration-300 font-medium ${
-              activeTab === 'profile'
-                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Profile Details
-          </button>
-          <button
-            onClick={() => setActiveTab('wishlist')}
-            className={`flex-1 py-3 px-6 rounded-xl transition-all duration-300 font-medium ${
-              activeTab === 'wishlist'
-                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Wishlist ({user.wishlist?.length || 0})
-          </button>
-          <button
-            onClick={() => setActiveTab('itineraries')}
-            className={`flex-1 py-3 px-6 rounded-xl transition-all duration-300 font-medium ${
-              activeTab === 'itineraries'
-                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Itineraries ({user.savedItineraries?.length || 0})
-          </button>
         </div>
+      </div>
 
-        {/* Content */}
+      {/* ── Tabs ─────────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-100 sticky top-16 z-20 shadow-sm -mt-8 rounded-t-3xl">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="flex gap-1 pt-2">
+            {(['profile', 'trips', 'settings'] as const).map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                className={`px-5 py-3 font-poppins text-sm font-medium rounded-t-xl transition-colors capitalize
+                  ${activeTab === tab ? 'text-purple-600 border-b-2 border-purple-600 -mb-px' : 'text-gray-500 hover:text-gray-700'}`}>
+                {tab === 'profile' ? '👤 Profile' : tab === 'trips' ? '🗺️ My Trips' : '⚙️ Settings'}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tab Content ──────────────────────────────────────────────── */}
+      <div className="max-w-4xl mx-auto px-6 py-8">
         <AnimatePresence mode="wait">
+
+          {/* ── PROFILE TAB ─────────────────────────────────────────── */}
           {activeTab === 'profile' && (
-            <motion.div
-              key="profile"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-3xl shadow-xl shadow-purple-100/50 p-8"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
+            <motion.div key="profile" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <ProfileCompletion user={user} />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Full Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <User className="w-4 h-4 inline mr-2" />
-                    Full Name
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              {isEditing ? (
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-poppins text-xl font-semibold text-slate-900">Edit Profile</h2>
+                    <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+
+                  {/* Basic Info */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {[
+                      { key: 'name',     label: 'Full Name *',    icon: User,    placeholder: 'Your name',      type: 'text'  },
+                      { key: 'phone',    label: 'Phone Number',   icon: Phone,   placeholder: '+91 98765 43210', type: 'tel'   },
+                      { key: 'location', label: 'City / Region',  icon: MapPin,  placeholder: 'e.g. Kolkata',   type: 'text'  },
+                      { key: 'country',  label: 'Country',        icon: Globe,   placeholder: 'e.g. India',     type: 'text'  },
+                    ].map(({ key, label, icon: Icon, placeholder, type }) => (
+                      <div key={key}>
+                        <label className="font-poppins text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">{label}</label>
+                        <div className="relative">
+                          <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            type={type}
+                            value={(form as any)[key]}
+                            onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                            placeholder={placeholder}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl font-poppins text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-colors"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bio */}
+                  <div>
+                    <label className="font-poppins text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">About You</label>
+                    <textarea
+                      value={form.bio}
+                      onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+                      rows={3}
+                      maxLength={200}
+                      placeholder="Tell fellow travelers a bit about yourself..."
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl font-poppins text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 resize-none transition-colors"
                     />
-                  ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.name || 'Not set'}</p>
+                    <p className="text-xs text-gray-400 text-right mt-1">{form.bio.length}/200</p>
+                  </div>
+
+                  {/* Travel Interests */}
+                  <div>
+                    <label className="font-poppins text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 block">Travel Interests</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {INTEREST_OPTIONS.map(({ value, icon: Icon, color }) => {
+                        const active = form.interests.includes(value);
+                        return (
+                          <button key={value} type="button" onClick={() => toggleInterest(value)}
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border font-poppins text-sm transition-all
+                              ${active ? color + ' font-medium' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'}`}>
+                            <Icon className="w-4 h-4 shrink-0" />
+                            <span className="truncate">{value}</span>
+                            {active && <CheckCircle2 className="w-3.5 h-3.5 ml-auto shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Budget */}
+                  <div>
+                    <label className="font-poppins text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 block">Travel Budget</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {BUDGET_OPTIONS.map(({ value, label, sub, color }) => (
+                        <button key={value} type="button" onClick={() => setForm(f => ({ ...f, budget: value }))}
+                          className={`p-3 rounded-xl border text-left transition-all ${form.budget === value ? color + ' font-medium' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+                          <p className="font-poppins text-sm font-semibold">{label}</p>
+                          <p className="font-poppins text-xs text-gray-500 mt-0.5">{sub}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Trip Type */}
+                  <div>
+                    <label className="font-poppins text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 block">Travel Style</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {TRIP_TYPES.map(({ value, label }) => (
+                        <button key={value} type="button" onClick={() => setForm(f => ({ ...f, tripType: value }))}
+                          className={`py-2.5 px-3 rounded-xl border font-poppins text-sm transition-all text-center
+                            ${form.tripType === value ? 'bg-purple-50 text-purple-700 border-purple-200 font-medium' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'}`}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Save */}
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={handleSave} disabled={loading}
+                      className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-6 py-3 rounded-xl font-poppins text-sm font-medium transition-colors">
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      {loading ? 'Saving…' : 'Save Changes'}
+                    </button>
+                    <button onClick={() => setIsEditing(false)}
+                      className="px-6 py-3 border border-gray-200 rounded-xl font-poppins text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* VIEW MODE */
+                <div className="space-y-5">
+                  {/* Info Cards */}
+                  <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
+                    <h2 className="font-poppins text-base font-semibold text-slate-900 mb-5">Personal Information</h2>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {[
+                        { icon: User,     label: 'Name',        value: user.name },
+                        { icon: Mail,     label: 'Email',       value: user.email },
+                        { icon: Phone,    label: 'Phone',       value: user.phone     || '—' },
+                        { icon: MapPin,   label: 'Location',    value: user.location  || '—' },
+                        { icon: Globe,    label: 'Country',     value: user.country   || '—' },
+                        { icon: Calendar, label: 'Member Since',value: memberSince },
+                      ].map(({ icon: Icon, label, value }) => (
+                        <div key={label} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+                          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
+                            <Icon className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <div>
+                            <p className="font-poppins text-xs text-gray-400">{label}</p>
+                            <p className="font-poppins text-sm font-medium text-slate-800 mt-0.5">{value}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {user.bio && (
+                      <div className="mt-5 pt-5 border-t border-gray-100">
+                        <p className="font-poppins text-xs text-gray-400 mb-2">About</p>
+                        <p className="font-poppins text-sm text-gray-700 leading-relaxed">{user.bio}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Travel Preferences */}
+                  {((user.interests?.length || 0) > 0 || user.budget || user.tripType) && (
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
+                      <h2 className="font-poppins text-base font-semibold text-slate-900 mb-5">Travel Preferences</h2>
+                      {(user.interests?.length || 0) > 0 && (
+                        <div className="mb-5">
+                          <p className="font-poppins text-xs text-gray-400 mb-2">Interests</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(user.interests || []).map(interest => {
+                              const opt = INTEREST_OPTIONS.find(o => o.value === interest);
+                              const Icon = opt?.icon || Sparkles;
+                              return (
+                                <span key={interest} className={`inline-flex items-center gap-1.5 text-sm font-poppins font-medium px-3 py-1.5 rounded-full border ${opt?.color || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                  <Icon className="w-3.5 h-3.5" /> {interest}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-4">
+                        {user.budget && (
+                          <div>
+                            <p className="font-poppins text-xs text-gray-400 mb-1">Budget</p>
+                            <span className="font-poppins text-sm font-medium text-slate-800 capitalize">{user.budget}-range</span>
+                          </div>
+                        )}
+                        {user.tripType && (
+                          <div>
+                            <p className="font-poppins text-xs text-gray-400 mb-1">Travel Style</p>
+                            <span className="font-poppins text-sm font-medium text-slate-800 capitalize">{user.tripType}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
-                </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Mail className="w-4 h-4 inline mr-2" />
-                    Email Address
-                  </label>
-                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.email}</p>
-                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                  {/* Quick Actions */}
+                  <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+                    <h2 className="font-poppins text-base font-semibold text-slate-900 mb-4">Quick Actions</h2>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      {[
+                        { icon: Heart,    label: 'My Wishlist',   href: '#/wishlist',   color: 'text-rose-600  bg-rose-50'   },
+                        { icon: Compass,  label: 'Plan a Trip',   href: '#/planner',    color: 'text-purple-600 bg-purple-50' },
+                        { icon: Star,     label: 'My Reviews',    href: '#/profile',    color: 'text-amber-600 bg-amber-50'  },
+                      ].map(({ icon: Icon, label, href, color }) => (
+                        <a key={label} href={href} className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors group">
+                          <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center shrink-0`}>
+                            <Icon className="w-4.5 h-4.5" />
+                          </div>
+                          <span className="font-poppins text-sm font-medium text-slate-700">{label}</span>
+                          <ChevronRight className="w-4 h-4 text-gray-400 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+              )}
+            </motion.div>
+          )}
 
-                {/* Phone */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Phone className="w-4 h-4 inline mr-2" />
-                    Phone Number
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+91 98765 43210"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    />
-                  ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.phone || 'Not set'}</p>
-                  )}
-                </div>
-
-                {/* Location */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <MapPin className="w-4 h-4 inline mr-2" />
-                    City
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      placeholder="Kolkata"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    />
-                  ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.location || 'Not set'}</p>
-                  )}
-                </div>
-
-                {/* Country */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Globe className="w-4 h-4 inline mr-2" />
-                    Country
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      placeholder="India"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    />
-                  ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.country || 'Not set'}</p>
-                  )}
-                </div>
-
-                {/* Trip Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Users className="w-4 h-4 inline mr-2" />
-                    Travel Style
-                  </label>
-                  {isEditing ? (
-                    <select
-                      value={formData.tripType}
-                      onChange={(e) => setFormData({ ...formData, tripType: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    >
-                      <option value="">Select...</option>
-                      <option value="Solo">Solo Traveler</option>
-                      <option value="Family">Family Trips</option>
-                      <option value="Friends">With Friends</option>
-                      <option value="Couple">Couple Travel</option>
-                    </select>
-                  ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.tripType || 'Not set'}</p>
-                  )}
-                </div>
-
-                {/* Budget */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Briefcase className="w-4 h-4 inline mr-2" />
-                    Budget Preference
-                  </label>
-                  {isEditing ? (
-                    <select
-                      value={formData.budget}
-                      onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    >
-                      <option value="">Select...</option>
-                      <option value="Budget">Budget</option>
-                      <option value="Mid-range">Mid-range</option>
-                      <option value="Premium">Premium</option>
-                    </select>
-                  ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.budget || 'Not set'}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  About Me
-                </label>
-                {isEditing ? (
-                  <textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    placeholder="Tell us about yourself and your travel experiences..."
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
-                  />
+          {/* ── TRIPS TAB ───────────────────────────────────────────── */}
+          {activeTab === 'trips' && (
+            <motion.div key="trips" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
+                <h2 className="font-poppins text-xl font-semibold text-slate-900 mb-6">My Bookings & Trips</h2>
+                {bookingsLoading ? (
+                  <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-purple-400 animate-spin" /></div>
+                ) : bookings.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Compass className="w-8 h-8 text-purple-300" />
+                    </div>
+                    <p className="font-poppins text-gray-500 mb-4">No trips booked yet</p>
+                    <a href="#/explore" className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
+                      Explore Destinations
+                    </a>
+                  </div>
                 ) : (
-                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{formData.bio || 'Not set'}</p>
+                  <div className="space-y-4">
+                    {bookings.map((b: any) => (
+                      <div key={b.id} className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-gray-50">
+                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
+                          <MapPin className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-poppins font-semibold text-slate-900 text-sm">{b.destinationName || b.destination_name || 'Destination'}</p>
+                          <p className="font-poppins text-xs text-gray-500 mt-0.5">
+                            {b.checkIn || b.check_in} · {b.guests || 1} guest(s)
+                          </p>
+                        </div>
+                        <span className={`font-poppins text-xs font-semibold px-2.5 py-1 rounded-full ${
+                          b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                          b.status === 'pending'   ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-600'}`}>
+                          {b.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
+            </motion.div>
+          )}
 
-              {/* Travel Interests */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  <Heart className="w-4 h-4 inline mr-2" />
-                  Travel Interests
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {interestOptions.map((interest) => {
-                    const Icon = interest.icon;
-                    const isSelected = formData.interests?.includes(interest.label);
-                    return (
-                      <button
-                        key={interest.label}
-                        type="button"
-                        onClick={() => isEditing && toggleInterest(interest.label)}
-                        disabled={!isEditing}
-                        className={`p-4 rounded-xl border transition-all ${
-                          isSelected
-                            ? 'bg-gradient-to-r from-purple-600 to-purple-700 border-purple-500 text-white shadow-md'
-                            : 'bg-gray-50 border-gray-200 text-gray-700'
-                        } ${isEditing ? 'cursor-pointer hover:shadow-lg' : 'cursor-default'}`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Icon className="w-5 h-5" />
-                          <span className="text-sm font-medium">{interest.label}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
+          {/* ── SETTINGS TAB ────────────────────────────────────────── */}
+          {activeTab === 'settings' && (
+            <motion.div key="settings" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div className="space-y-5">
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
+                  <h2 className="font-poppins text-xl font-semibold text-slate-900 mb-5">Account Settings</h2>
+                  <div className="space-y-3">
+                    <a href="#/forgot-password"
+                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group">
+                      <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                        <Shield className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-poppins text-sm font-semibold text-slate-900">Change Password</p>
+                        <p className="font-poppins text-xs text-gray-500 mt-0.5">Update your account password</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                    <button onClick={signOut}
+                      className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group">
+                      <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shrink-0">
+                        <LogOut className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-poppins text-sm font-semibold text-slate-900">Sign Out</p>
+                        <p className="font-poppins text-xs text-gray-500 mt-0.5">Sign out of your account</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="bg-white rounded-3xl border border-red-100 shadow-sm p-7">
+                  <h2 className="font-poppins text-base font-semibold text-red-700 mb-2 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" /> Danger Zone
+                  </h2>
+                  <p className="font-poppins text-sm text-gray-500 mb-5">
+                    Deleting your account is permanent and cannot be undone. All your data, bookings, and reviews will be removed.
+                  </p>
+                  <button onClick={() => setShowDeleteModal(true)}
+                    className="flex items-center gap-2 border border-red-200 text-red-600 hover:bg-red-50 px-5 py-2.5 rounded-xl font-poppins text-sm font-medium transition-colors">
+                    <Trash2 className="w-4 h-4" /> Delete Account
+                  </button>
                 </div>
               </div>
-            </motion.div>
-          )}
-
-          {activeTab === 'wishlist' && (
-            <motion.div
-              key="wishlist"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-3xl shadow-xl shadow-purple-100/50 p-8"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">My Wishlist</h2>
-              {user.wishlist && user.wishlist.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {user.wishlist.map((item: any, index: number) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <p className="text-gray-900">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">Your wishlist is empty</p>
-                  <button
-                    onClick={() => window.location.hash = '/explore'}
-                    className="mt-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:shadow-lg transition-all"
-                  >
-                    Explore Destinations
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {activeTab === 'itineraries' && (
-            <motion.div
-              key="itineraries"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-3xl shadow-xl shadow-purple-100/50 p-8"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Saved Itineraries</h2>
-              {user.savedItineraries && user.savedItineraries.length > 0 ? (
-                <div className="space-y-4">
-                  {user.savedItineraries.map((itinerary: any, index: number) => (
-                    <div key={index} className="p-6 bg-gray-50 rounded-xl border border-gray-200">
-                      <h3 className="font-semibold text-gray-900 mb-2">{itinerary.name || `Itinerary ${index + 1}`}</h3>
-                      <p className="text-gray-600 text-sm">{itinerary.description || 'No description'}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No saved itineraries yet</p>
-                  <button
-                    onClick={() => window.location.hash = '/trip-planner'}
-                    className="mt-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:shadow-lg transition-all"
-                  >
-                    Plan a Trip
-                  </button>
-                </div>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── Delete Account Modal ─────────────────────────────────────── */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+              <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <AlertTriangle className="w-7 h-7 text-red-600" />
+              </div>
+              <h3 className="font-poppins text-xl font-bold text-slate-900 text-center mb-2">Delete Account?</h3>
+              <p className="font-poppins text-sm text-gray-500 text-center mb-6 leading-relaxed">
+                This is permanent. Type your email <strong className="text-slate-700">{user.email}</strong> to confirm.
+              </p>
+              <input
+                value={deleteConfirm}
+                onChange={e => setDeleteConfirm(e.target.value)}
+                placeholder={user.email}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-poppins text-sm focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 mb-4 transition-colors"
+              />
+              <div className="flex gap-3">
+                <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm(''); }}
+                  className="flex-1 py-3 border border-gray-200 rounded-xl font-poppins text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleDelete} disabled={deleteConfirm !== user.email}
+                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white rounded-xl font-poppins text-sm font-medium transition-colors">
+                  Delete Forever
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

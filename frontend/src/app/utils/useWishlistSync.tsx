@@ -19,119 +19,64 @@ export function useWishlistSync() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Load wishlist on mount
-  useEffect(() => {
-    loadWishlist();
-  }, [user]);
+  useEffect(() => { loadWishlist(); }, [user]);
+
+  const authHeaders = () => ({
+    'Content-Type': 'application/json',
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  });
 
   const loadWishlist = async () => {
     setIsLoading(true);
-    
     if (user && accessToken) {
-      // User is logged in - fetch from database
       try {
-        const response = await fetch(
-          `${API_BASE}/wishlist`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setWishlist(data.wishlist || []);
-          
-          // Also update localStorage
-          localStorage.setItem('wishlist', JSON.stringify(data.wishlist || []));
-        } else {
-          // Fallback to localStorage
-          loadFromLocalStorage();
+        const res = await fetch(`${API_BASE}/wishlist`, { headers: authHeaders() });
+        if (res.ok) {
+          const data = await res.json();
+          // Backend returns [{ slug, added_at }] - merge with localStorage for full item data
+          const slugRows: { slug: string }[] = data.wishlist || [];
+          const localRaw = localStorage.getItem('wishlist');
+          const localItems: WishlistItem[] = localRaw ? JSON.parse(localRaw) : [];
+          // Map slugs back to full items using local cache
+          const merged = slugRows.map(r => {
+            const local = localItems.find(l => l.slug === r.slug);
+            return local || { slug: r.slug, title: r.slug, category: '', region: '', image: '', description: '' };
+          });
+          setWishlist(merged);
+          localStorage.setItem('wishlist', JSON.stringify(merged));
+          setIsLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('Error loading wishlist from database:', error);
-        loadFromLocalStorage();
-      }
-    } else {
-      // Not logged in - use localStorage
-      loadFromLocalStorage();
+      } catch { /* fall through to localStorage */ }
     }
-    
+    loadFromLocalStorage();
     setIsLoading(false);
   };
 
   const loadFromLocalStorage = () => {
     const saved = localStorage.getItem('wishlist');
-    if (saved) {
-      setWishlist(JSON.parse(saved));
-    }
-  };
-
-  const syncToDatabase = async (localWishlist: WishlistItem[]) => {
-    if (!user || !accessToken) return;
-
-    setIsSyncing(true);
-    
-    try {
-      const response = await fetch(
-        `${API_BASE}/wishlist/sync`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ localWishlist }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setWishlist(data.wishlist);
-        localStorage.setItem('wishlist', JSON.stringify(data.wishlist));
-      }
-    } catch (error) {
-      console.error('Error syncing wishlist:', error);
-    } finally {
-      setIsSyncing(false);
-    }
+    if (saved) setWishlist(JSON.parse(saved));
   };
 
   const addToWishlist = async (place: WishlistItem) => {
-    const newItem = {
-      ...place,
-      addedAt: new Date().toISOString()
-    };
-
+    const newItem = { ...place, addedAt: new Date().toISOString() };
     if (user && accessToken) {
-      // Add to database
       try {
-        const response = await fetch(
-          `${API_BASE}/wishlist`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({ place: newItem }),
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setWishlist(data.wishlist);
-          localStorage.setItem('wishlist', JSON.stringify(data.wishlist));
+        // Backend expects { slug }
+        const res = await fetch(`${API_BASE}/wishlist`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ slug: place.slug }),
+        });
+        if (res.ok) {
+          const updated = [...wishlist.filter(i => i.slug !== place.slug), newItem];
+          setWishlist(updated);
+          localStorage.setItem('wishlist', JSON.stringify(updated));
           return true;
         }
-      } catch (error) {
-        console.error('Error adding to wishlist:', error);
-      }
+      } catch { /* fall through */ }
     }
-    
-    // Fallback to localStorage
-    const updated = [...wishlist, newItem];
+    const updated = [...wishlist.filter(i => i.slug !== place.slug), newItem];
     setWishlist(updated);
     localStorage.setItem('wishlist', JSON.stringify(updated));
     return true;
@@ -139,31 +84,20 @@ export function useWishlistSync() {
 
   const removeFromWishlist = async (slug: string) => {
     if (user && accessToken) {
-      // Remove from database
       try {
-        const response = await fetch(
-          `${API_BASE}/wishlist/${slug}`,
-          {
-            method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setWishlist(data.wishlist);
-          localStorage.setItem('wishlist', JSON.stringify(data.wishlist));
+        const res = await fetch(`${API_BASE}/wishlist/${slug}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        if (res.ok) {
+          const updated = wishlist.filter(i => i.slug !== slug);
+          setWishlist(updated);
+          localStorage.setItem('wishlist', JSON.stringify(updated));
           return true;
         }
-      } catch (error) {
-        console.error('Error removing from wishlist:', error);
-      }
+      } catch { /* fall through */ }
     }
-    
-    // Fallback to localStorage
-    const updated = wishlist.filter(item => item.slug !== slug);
+    const updated = wishlist.filter(i => i.slug !== slug);
     setWishlist(updated);
     localStorage.setItem('wishlist', JSON.stringify(updated));
     return true;
@@ -171,47 +105,53 @@ export function useWishlistSync() {
 
   const clearWishlist = async () => {
     if (user && accessToken) {
-      // Clear in database
       try {
-        const response = await fetch(
-          `${API_BASE}/wishlist`,
-          {
-            method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        if (response.ok) {
+        // Backend DELETE /wishlist (clear all) - added in wishlist.js fix
+        const res = await fetch(`${API_BASE}/wishlist`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        if (res.ok) {
           setWishlist([]);
           localStorage.setItem('wishlist', JSON.stringify([]));
           return true;
         }
-      } catch (error) {
-        console.error('Error clearing wishlist:', error);
-      }
+      } catch { /* fall through */ }
     }
-    
-    // Fallback to localStorage
     setWishlist([]);
     localStorage.setItem('wishlist', JSON.stringify([]));
     return true;
   };
 
-  const isInWishlist = (slug: string) => {
-    return wishlist.some(item => item.slug === slug);
+  const syncToDatabase = async (localWishlist: WishlistItem[]) => {
+    if (!user || !accessToken) return;
+    setIsSyncing(true);
+    try {
+      // Backend expects { slugs: string[] }
+      const res = await fetch(`${API_BASE}/wishlist/sync`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ slugs: localWishlist.map(i => i.slug) }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // data.wishlist = [{ slug, added_at }]
+        const slugRows: { slug: string }[] = data.wishlist || [];
+        const merged = slugRows.map(r => {
+          const local = localWishlist.find(l => l.slug === r.slug);
+          return local || { slug: r.slug, title: r.slug, category: '', region: '', image: '', description: '' };
+        });
+        setWishlist(merged);
+        localStorage.setItem('wishlist', JSON.stringify(merged));
+      }
+    } catch { /* ignore */ } finally { setIsSyncing(false); }
   };
 
   return {
-    wishlist,
-    isLoading,
-    isSyncing,
-    addToWishlist,
-    removeFromWishlist,
-    clearWishlist,
-    isInWishlist,
+    wishlist, isLoading, isSyncing,
+    addToWishlist, removeFromWishlist, clearWishlist,
+    isInWishlist: (slug: string) => wishlist.some(i => i.slug === slug),
     syncToDatabase,
-    refreshWishlist: loadWishlist
+    refreshWishlist: loadWishlist,
   };
 }

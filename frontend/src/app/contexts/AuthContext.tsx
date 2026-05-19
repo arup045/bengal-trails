@@ -13,6 +13,10 @@ interface User {
   phone?: string;
   location?: string;
   bio?: string;
+  country?: string;
+  interests?: string[];
+  budget?: string;
+  tripType?: string;
 }
 
 interface AuthContextType {
@@ -46,6 +50,10 @@ const safeUser = (u: any): User => ({
   phone:            u.phone,
   location:         u.location,
   bio:              u.bio,
+  country:          u.country,
+  interests:        u.interests ? (typeof u.interests === 'string' ? JSON.parse(u.interests) : u.interests) : [],
+  budget:           u.budget,
+  tripType:         u.trip_type || u.tripType,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {

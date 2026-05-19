@@ -1,530 +1,389 @@
-import { useState } from 'react';
-import { motion } from 'motion/react';
-import { UtensilsCrossed, MapPin, Star, Filter, Search, Heart, ChefHat, Coffee, Cake } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { UtensilsCrossed, MapPin, Star, Search, Heart, ChefHat, Coffee, Cake, Flame, Leaf, Clock, DollarSign, BookOpen, ArrowRight, Filter, X } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
-interface FoodItem {
+interface Dish {
+  id: string;
   name: string;
+  bengaliName?: string;
   description: string;
-  region: string;
-  type: 'veg' | 'non-veg' | 'sweet' | 'street';
-  image: string;
-  price: string;
-  rating: number;
-  specialty: string;
+  category: string;
+  type?: string;
+  origin?: string;
+  spiceLevel?: string;
+  priceRange?: string;
+  whereToTry?: string[];
+  image?: string;
+  musttry?: boolean;
 }
 
-interface Restaurant {
+interface FoodStreet {
   name: string;
-  cuisine: string;
-  location: string;
-  region: string;
-  rating: number;
-  image: string;
-  priceRange: string;
-  speciality: string;
-  mustTry: string[];
+  city: string;
+  specialty: string;
+  mustEat: string[];
 }
+
+const CATEGORY_META: Record<string, { label: string; icon: any; color: string; bg: string }> = {
+  all:        { label: 'All',         icon: UtensilsCrossed, color: 'text-purple-600', bg: 'bg-purple-50' },
+  mains:      { label: 'Main Course', icon: ChefHat,         color: 'text-orange-600', bg: 'bg-orange-50' },
+  sweets:     { label: 'Sweets',      icon: Cake,            color: 'text-pink-600',   bg: 'bg-pink-50'   },
+  streetfood: { label: 'Street Food', icon: MapPin,          color: 'text-yellow-600', bg: 'bg-yellow-50' },
+  snacks:     { label: 'Snacks',      icon: Coffee,          color: 'text-amber-600',  bg: 'bg-amber-50'  },
+  breakfast:  { label: 'Breakfast',   icon: Clock,           color: 'text-blue-600',   bg: 'bg-blue-50'   },
+  beverages:  { label: 'Drinks',      icon: Coffee,          color: 'text-teal-600',   bg: 'bg-teal-50'   },
+};
+
+const TYPE_BADGE: Record<string, { label: string; color: string }> = {
+  veg:     { label: 'Veg',     color: 'bg-green-100 text-green-700 border-green-200' },
+  'non-veg': { label: 'Non-Veg', color: 'bg-red-100 text-red-700 border-red-200' },
+};
+
+const SPICE_COLOR: Record<string, string> = {
+  mild: 'text-green-500', medium: 'text-amber-500',
+  'medium-hot': 'text-orange-500', hot: 'text-red-500',
+};
+
+const FALLBACK_IMG = 'https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=800&q=80';
 
 export function FoodGuidePage() {
-  const [selectedRegion, setSelectedRegion] = useState('All Regions');
+  const [dishes, setDishes]           = useState<Dish[]>([]);
+  const [streets, setStreets]         = useState<FoodStreet[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [selectedCat, setSelectedCat] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [savedDishes, setSavedDishes] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('savedDishes') || '[]')); } catch { return new Set(); }
+  });
+  const [activeStreet, setActiveStreet] = useState<FoodStreet | null>(null);
 
-  const regions = [
-    'All Regions',
-    'Kolkata',
-    'North Bengal',
-    'South Bengal',
-    'Coastal Bengal'
-  ];
+  useEffect(() => {
+    const ctrl = new AbortController();
+    Promise.all([
+      fetch(`${API_BASE}/bengal/food`, { signal: ctrl.signal }).then(r => r.ok ? r.json() : { food: [] }),
+      fetch(`${API_BASE}/bengal/food/streets`, { signal: ctrl.signal }).then(r => r.ok ? r.json() : { streets: [] }),
+    ]).then(([f, s]) => {
+      setDishes(f.food || []);
+      setStreets(s.streets || []);
+    }).catch(() => {}).finally(() => setLoading(false));
+    return () => ctrl.abort();
+  }, []);
 
-  const foodTypes = [
-    { value: 'all', label: 'All Food', icon: UtensilsCrossed },
-    { value: 'veg', label: 'Vegetarian', icon: Coffee },
-    { value: 'non-veg', label: 'Non-Veg', icon: ChefHat },
-    { value: 'sweet', label: 'Sweets', icon: Cake },
-    { value: 'street', label: 'Street Food', icon: Coffee }
-  ];
+  const toggleSave = (id: string) => {
+    setSavedDishes(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      localStorage.setItem('savedDishes', JSON.stringify([...next]));
+      return next;
+    });
+  };
 
-  const famousDishes: FoodItem[] = [
-    {
-      name: 'Rosogolla',
-      description: 'Soft, spongy cheese balls soaked in sugar syrup - the iconic Bengali sweet',
-      region: 'Kolkata',
-      type: 'sweet',
-      image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800',
-      price: '₹20-50 per piece',
-      rating: 4.9,
-      specialty: 'Must-try Bengali dessert'
-    },
-    {
-      name: 'Macher Jhol',
-      description: 'Traditional Bengali fish curry cooked with potatoes and aromatic spices',
-      region: 'All Regions',
-      type: 'non-veg',
-      image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800',
-      price: '₹150-300',
-      rating: 4.8,
-      specialty: 'Authentic Bengali cuisine'
-    },
-    {
-      name: 'Kathi Roll',
-      description: 'Crispy paratha wrap filled with spiced chicken, egg, or paneer',
-      region: 'Kolkata',
-      type: 'street',
-      image: 'https://images.unsplash.com/photo-1626074353765-517a0ae74e5e?w=800',
-      price: '₹50-150',
-      rating: 4.7,
-      specialty: 'Street food icon'
-    },
-    {
-      name: 'Sandesh',
-      description: 'Delicate sweet made from fresh cottage cheese with various flavors',
-      region: 'Kolkata',
-      type: 'sweet',
-      image: 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=800',
-      price: '₹30-100 per piece',
-      rating: 4.8,
-      specialty: 'Premium Bengali sweet'
-    },
-    {
-      name: 'Ilish Mach',
-      description: 'Hilsa fish cooked in mustard gravy - the pride of Bengali cuisine',
-      region: 'All Regions',
-      type: 'non-veg',
-      image: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=800',
-      price: '₹400-800',
-      rating: 4.9,
-      specialty: 'King of Bengali fish'
-    },
-    {
-      name: 'Puchka (Pani Puri)',
-      description: 'Crispy hollow puris filled with spicy tamarind water',
-      region: 'All Regions',
-      type: 'street',
-      image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800',
-      price: '₹20-40 for 6 pieces',
-      rating: 4.7,
-      specialty: 'Popular street snack'
-    },
-    {
-      name: 'Mishti Doi',
-      description: 'Sweet yogurt with caramelized flavor - a Bengali favorite dessert',
-      region: 'All Regions',
-      type: 'sweet',
-      image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800',
-      price: '₹30-80',
-      rating: 4.6,
-      specialty: 'Traditional dessert'
-    },
-    {
-      name: 'Kosha Mangsho',
-      description: 'Slow-cooked mutton curry with rich, thick gravy and aromatic spices',
-      region: 'All Regions',
-      type: 'non-veg',
-      image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800',
-      price: '₹250-500',
-      rating: 4.8,
-      specialty: 'Special occasion dish'
-    },
-    {
-      name: 'Shukto',
-      description: 'Mixed vegetable dish with a unique bitter-sweet taste',
-      region: 'All Regions',
-      type: 'veg',
-      image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800',
-      price: '₹80-150',
-      rating: 4.5,
-      specialty: 'Traditional Bengali vegetarian'
-    },
-    {
-      name: 'Luchi & Alur Dom',
-      description: 'Fluffy fried bread served with spicy potato curry',
-      region: 'All Regions',
-      type: 'veg',
-      image: 'https://images.unsplash.com/photo-1589301773859-34462fc0190c?w=800',
-      price: '₹60-120',
-      rating: 4.7,
-      specialty: 'Breakfast favorite'
-    },
-    {
-      name: 'Chingri Malai Curry',
-      description: 'Prawns cooked in rich coconut milk gravy',
-      region: 'Coastal Bengal',
-      type: 'non-veg',
-      image: 'https://images.unsplash.com/photo-1633504581786-316c8002b1b2?w=800',
-      price: '₹300-600',
-      rating: 4.9,
-      specialty: 'Coastal delicacy'
-    },
-    {
-      name: 'Jhal Muri',
-      description: 'Spicy puffed rice snack with vegetables and mustard oil',
-      region: 'All Regions',
-      type: 'street',
-      image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800',
-      price: '₹20-40',
-      rating: 4.6,
-      specialty: 'Evening snack'
-    }
-  ];
-
-  const topRestaurants: Restaurant[] = [
-    {
-      name: 'Oh! Calcutta',
-      cuisine: 'Bengali Fine Dining',
-      location: 'Elgin Road, Kolkata',
-      region: 'Kolkata',
-      rating: 4.5,
-      image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800',
-      priceRange: '₹800-1,500 for two',
-      speciality: 'Authentic Bengali cuisine with modern presentation',
-      mustTry: ['Ilish Paturi', 'Kosha Mangsho', 'Bhetki Paturi']
-    },
-    {
-      name: 'Peter Cat',
-      cuisine: 'Continental & Indian',
-      location: 'Park Street, Kolkata',
-      region: 'Kolkata',
-      rating: 4.6,
-      image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800',
-      priceRange: '₹600-1,200 for two',
-      speciality: 'Famous for Chelo Kebab since 1975',
-      mustTry: ['Chelo Kebab', 'Prawn Cocktail', 'Fish Fry']
-    },
-    {
-      name: 'Kewpies Kitchen',
-      cuisine: 'Home-style Bengali',
-      location: 'Elgin Lane, Kolkata',
-      region: 'Kolkata',
-      rating: 4.7,
-      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800',
-      priceRange: '₹500-900 for two',
-      speciality: 'Authentic home-cooked Bengali meals',
-      mustTry: ['Shorshe Ilish', 'Chingri Malai', 'Mishti Doi']
-    },
-    {
-      name: 'Bhojohori Manna',
-      cuisine: 'Traditional Bengali',
-      location: 'Multiple locations',
-      region: 'Kolkata',
-      rating: 4.4,
-      image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800',
-      priceRange: '₹400-700 for two',
-      speciality: 'Village-style Bengali cuisine',
-      mustTry: ['Macher Jhol', 'Dhokar Dalna', 'Posto Bata']
-    },
-    {
-      name: 'Glenary\'s',
-      cuisine: 'Bakery & Continental',
-      location: 'Darjeeling',
-      region: 'North Bengal',
-      rating: 4.5,
-      image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800',
-      priceRange: '₹500-1,000 for two',
-      speciality: 'Colonial-era bakery and restaurant',
-      mustTry: ['English Breakfast', 'Pastries', 'Hot Chocolate']
-    },
-    {
-      name: 'Arsalan',
-      cuisine: 'Mughlai & Biryani',
-      location: 'Park Circus, Kolkata',
-      region: 'Kolkata',
-      rating: 4.6,
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800',
-      priceRange: '₹400-800 for two',
-      speciality: 'Legendary Kolkata Biryani',
-      mustTry: ['Mutton Biryani', 'Rezala', 'Chaap']
-    }
-  ];
-
-  const filteredDishes = famousDishes.filter(dish => {
-    const matchesRegion = selectedRegion === 'All Regions' || dish.region === selectedRegion || dish.region === 'All Regions';
-    const matchesType = selectedType === 'all' || dish.type === selectedType;
-    const matchesSearch = dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          dish.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesRegion && matchesType && matchesSearch;
+  const filtered = dishes.filter(d => {
+    const matchCat  = selectedCat === 'all'  || d.category === selectedCat;
+    const matchType = selectedType === 'all' || d.type === selectedType;
+    const matchSearch = !searchQuery ||
+      d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (d.origin || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCat && matchType && matchSearch;
   });
 
-  const filteredRestaurants = topRestaurants.filter(restaurant => {
-    const matchesRegion = selectedRegion === 'All Regions' || restaurant.region === selectedRegion;
-    const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesRegion && matchesSearch;
-  });
+  const categories = ['all', ...Object.keys(CATEGORY_META).filter(k => k !== 'all')];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 pt-32 pb-20">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-purple-100 rounded-full px-6 py-3 mb-4">
-            <UtensilsCrossed className="w-5 h-5 text-purple-600" />
-            <span className="text-purple-600 font-semibold">Culinary Journey</span>
+    <div className="min-h-screen bg-white pt-16">
+
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="relative bg-gradient-to-br from-amber-900 via-orange-900 to-red-900 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-20"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1400&q=60)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-900/80 via-orange-900/70 to-red-900/80" />
+        <div className="relative max-w-6xl mx-auto px-6 py-20">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+            <UtensilsCrossed className="w-4 h-4 text-amber-300" />
+            Bengali Cuisine — A World in Every Bite
           </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-            West Bengal Food Guide
+          <h1 className="font-poppins text-5xl sm:text-6xl font-bold mb-4 leading-tight">
+            Bengali Food Guide
           </h1>
-          
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover the rich culinary heritage of Bengal - from iconic sweets to aromatic fish curries, 
-            street food delights to fine dining experiences
+          <p className="text-amber-200 text-lg max-w-2xl leading-relaxed mb-10">
+            From the spicy streets of Kolkata to the sweet shops of North Bengal —
+            explore every dish, every flavour, every story.
           </p>
-        </motion.div>
-
-        {/* Search & Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-2xl shadow-lg p-6 mb-12"
-        >
-          <div className="grid md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search dishes or restaurants..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            {/* Region Filter */}
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
-                value={selectedRegion}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
-              >
-                {regions.map(region => (
-                  <option key={region} value={region}>{region}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Food Type Filter */}
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
-              >
-                {foodTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Food Type Tabs */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="flex gap-3 mb-12 overflow-x-auto pb-2 scrollbar-hide"
-        >
-          {foodTypes.map((type) => {
-            const Icon = type.icon;
-            return (
-              <button
-                key={type.value}
-                onClick={() => setSelectedType(type.value)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full whitespace-nowrap transition-all ${
-                  selectedType === type.value
-                    ? 'bg-purple-600 text-white shadow-lg'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 shadow'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                {type.label}
+          {/* Search */}
+          <div className="relative max-w-xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-300" />
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search dishes, sweets, street food..."
+              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-amber-300/70 font-poppins focus:outline-none focus:border-amber-300 transition-colors"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-300 hover:text-white">
+                <X className="w-4 h-4" />
               </button>
-            );
-          })}
-        </motion.div>
+            )}
+          </div>
+        </div>
+      </section>
 
-        {/* Famous Dishes Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mb-16"
-        >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-            <ChefHat className="w-8 h-8 text-purple-600" />
-            Famous Bengali Dishes
-          </h2>
+      {/* ── Quick Stats ───────────────────────────────────────────────── */}
+      <section className="bg-amber-50 border-b border-amber-100 py-6">
+        <div className="max-w-6xl mx-auto px-6 flex gap-8 overflow-x-auto">
+          {[
+            { icon: UtensilsCrossed, label: `${dishes.length || '30+'} Dishes`, color: 'text-orange-600' },
+            { icon: MapPin,          label: `${streets.length || '8'} Food Streets`, color: 'text-amber-600' },
+            { icon: Star,            label: 'GI Tag Protected', color: 'text-yellow-600' },
+            { icon: Leaf,            label: 'Veg & Non-Veg', color: 'text-green-600' },
+          ].map(({ icon: Icon, label, color }) => (
+            <div key={label} className={`flex items-center gap-2 ${color} whitespace-nowrap font-poppins text-sm font-medium`}>
+              <Icon className="w-4 h-4" />
+              {label}
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredDishes.map((dish, index) => (
-              <motion.div
-                key={dish.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group"
-              >
-                <div className="relative h-64 overflow-hidden">
-                  <ImageWithFallback
-                    src={dish.image}
-                    alt={dish.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  
-                  {/* Type Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      dish.type === 'veg' ? 'bg-green-100 text-green-700' :
-                      dish.type === 'non-veg' ? 'bg-red-100 text-red-700' :
-                      dish.type === 'sweet' ? 'bg-pink-100 text-pink-700' :
-                      'bg-orange-100 text-orange-700'
-                    }`}>
-                      {dish.type === 'veg' ? '🥬 Veg' :
-                       dish.type === 'non-veg' ? '🍗 Non-Veg' :
-                       dish.type === 'sweet' ? '🍰 Sweet' :
-                       '🍜 Street Food'}
-                    </span>
-                  </div>
-
-                  {/* Rating */}
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm font-semibold">{dish.rating}</span>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{dish.name}</h3>
-                  
-                  <p className="text-gray-600 mb-3 line-clamp-2">{dish.description}</p>
-                  
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                    <MapPin className="w-4 h-4" />
-                    <span>{dish.region}</span>
-                  </div>
-
-                  <div className="bg-purple-50 rounded-xl p-3 mb-3">
-                    <p className="text-sm text-purple-600 font-semibold">{dish.specialty}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-purple-600">{dish.price}</span>
-                  </div>
-                </div>
-              </motion.div>
+      {/* ── Category Filter ───────────────────────────────────────────── */}
+      <section className="sticky top-16 z-30 bg-white border-b border-gray-100 py-4 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
+            {categories.map(cat => {
+              const meta = CATEGORY_META[cat] || CATEGORY_META.all;
+              const Icon = meta.icon;
+              const active = selectedCat === cat;
+              return (
+                <button key={cat} onClick={() => setSelectedCat(cat)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-poppins text-sm font-medium whitespace-nowrap transition-all border
+                    ${active ? `${meta.bg} ${meta.color} border-current` : 'bg-gray-50 text-gray-500 border-transparent hover:bg-gray-100'}`}>
+                  <Icon className="w-4 h-4" />
+                  {meta.label}
+                </button>
+              );
+            })}
+            <div className="w-px h-6 bg-gray-200 mx-1 shrink-0" />
+            {['all', 'veg', 'non-veg'].map(type => (
+              <button key={type} onClick={() => setSelectedType(type)}
+                className={`px-3 py-2 rounded-full font-poppins text-sm font-medium whitespace-nowrap transition-all border
+                  ${selectedType === type
+                    ? type === 'veg' ? 'bg-green-100 text-green-700 border-green-200'
+                      : type === 'non-veg' ? 'bg-red-100 text-red-700 border-red-200'
+                      : 'bg-slate-900 text-white border-transparent'
+                    : 'bg-gray-50 text-gray-500 border-transparent hover:bg-gray-100'}`}>
+                {type === 'all' ? 'All Types' : type === 'veg' ? '🟢 Veg' : '🔴 Non-Veg'}
+              </button>
             ))}
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* Top Restaurants Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-            <Coffee className="w-8 h-8 text-purple-600" />
-            Top Restaurants
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {filteredRestaurants.map((restaurant, index) => (
-              <motion.div
-                key={restaurant.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all"
-              >
-                <div className="flex gap-6 p-6">
-                  <div className="w-48 h-48 flex-shrink-0 rounded-xl overflow-hidden">
-                    <ImageWithFallback
-                      src={restaurant.image}
-                      alt={restaurant.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-2xl font-bold text-gray-900">{restaurant.name}</h3>
-                      <div className="flex items-center gap-1 bg-green-50 px-3 py-1 rounded-full">
-                        <Star className="w-4 h-4 text-green-600 fill-green-600" />
-                        <span className="text-sm font-semibold text-green-600">{restaurant.rating}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-purple-600 font-semibold mb-2">{restaurant.cuisine}</p>
-                    
-                    <div className="flex items-center gap-2 text-gray-500 mb-3">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm">{restaurant.location}</span>
-                    </div>
-
-                    <p className="text-gray-600 mb-4">{restaurant.speciality}</p>
-
-                    <div className="mb-4">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">Must Try:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {restaurant.mustTry.map(item => (
-                          <span key={item} className="px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-xs">
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <span className="text-lg font-bold text-purple-600">{restaurant.priceRange}</span>
-                      <button className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors text-sm">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+      {/* ── Dishes Grid ───────────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        {loading ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-gray-100 rounded-3xl h-72 animate-pulse" />
             ))}
           </div>
-        </motion.div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-24">
+            <div className="text-6xl mb-4">🍽️</div>
+            <h3 className="font-poppins text-xl font-semibold text-slate-900 mb-2">No dishes found</h3>
+            <p className="text-gray-500 font-poppins text-sm">Try adjusting your filters</p>
+            <button onClick={() => { setSelectedCat('all'); setSelectedType('all'); setSearchQuery(''); }}
+              className="mt-4 px-4 py-2 bg-amber-100 text-amber-700 rounded-full font-poppins text-sm font-medium hover:bg-amber-200 transition-colors">
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <p className="font-poppins text-sm text-gray-500">
+                Showing <span className="font-semibold text-slate-900">{filtered.length}</span> dishes
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <AnimatePresence mode="popLayout">
+                {filtered.map((dish, i) => {
+                  const catMeta = CATEGORY_META[dish.category] || CATEGORY_META.all;
+                  const typeBadge = TYPE_BADGE[dish.type || ''];
+                  const saved = savedDishes.has(dish.id);
+                  return (
+                    <motion.div key={dish.id}
+                      layout
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ delay: i * 0.04, duration: 0.3 }}
+                      className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                      {/* Image */}
+                      <div className="relative h-48 overflow-hidden bg-gray-100">
+                        <img
+                          src={dish.image || FALLBACK_IMG}
+                          alt={dish.name}
+                          loading="lazy"
+                          onError={e => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                        {/* Category badge */}
+                        <div className={`absolute top-3 left-3 flex items-center gap-1 ${catMeta.bg} ${catMeta.color} rounded-full px-2.5 py-1 text-xs font-poppins font-semibold`}>
+                          <catMeta.icon className="w-3 h-3" />
+                          {catMeta.label}
+                        </div>
+                        {/* Save button */}
+                        <button onClick={() => toggleSave(dish.id)}
+                          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform">
+                          <Heart className={`w-4 h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
+                        </button>
+                        {/* Type badge */}
+                        {typeBadge && (
+                          <div className={`absolute bottom-3 left-3 text-xs font-poppins font-semibold px-2 py-0.5 rounded-full border ${typeBadge.color}`}>
+                            {typeBadge.label}
+                          </div>
+                        )}
+                      </div>
+                      {/* Content */}
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <h3 className="font-poppins text-lg font-semibold text-slate-900 leading-tight">{dish.name}</h3>
+                            {dish.bengaliName && (
+                              <p className="text-amber-600 text-sm font-medium mt-0.5">{dish.bengaliName}</p>
+                            )}
+                          </div>
+                          {dish.priceRange && (
+                            <span className="font-poppins text-xs text-gray-500 whitespace-nowrap bg-gray-50 rounded-full px-2 py-0.5 shrink-0">
+                              {dish.priceRange}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-poppins text-sm text-gray-600 leading-relaxed line-clamp-2 mb-4">
+                          {dish.description}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {dish.origin && (
+                            <span className="inline-flex items-center gap-1 text-xs font-poppins text-gray-500 bg-gray-50 rounded-full px-2.5 py-1">
+                              <MapPin className="w-3 h-3" /> {dish.origin}
+                            </span>
+                          )}
+                          {dish.spiceLevel && (
+                            <span className={`inline-flex items-center gap-1 text-xs font-poppins ${SPICE_COLOR[dish.spiceLevel] || 'text-gray-500'} bg-gray-50 rounded-full px-2.5 py-1`}>
+                              <Flame className="w-3 h-3" /> {dish.spiceLevel}
+                            </span>
+                          )}
+                        </div>
+                        {/* Where to try */}
+                        {dish.whereToTry && dish.whereToTry.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-gray-100">
+                            <p className="font-poppins text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Best at</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {dish.whereToTry.slice(0, 3).map(place => (
+                                <span key={place} className="text-xs font-poppins text-purple-700 bg-purple-50 rounded-full px-2.5 py-1">
+                                  {place}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </>
+        )}
+      </section>
 
-        {/* Fun Facts Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="mt-16 bg-gradient-to-r from-orange-100 via-purple-100 to-pink-100 rounded-2xl p-8"
-        >
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">🍴 Bengali Food Facts</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center">
-              <div className="text-4xl mb-3">🍬</div>
-              <h4 className="font-bold text-gray-900 mb-2">Rosogolla Origin</h4>
-              <p className="text-sm text-gray-600">Invented in 1868 by Nobin Chandra Das in Kolkata</p>
+      {/* ── Food Streets Section ──────────────────────────────────────── */}
+      {streets.length > 0 && (
+        <section className="bg-gradient-to-br from-orange-50 to-amber-50 border-t border-amber-100 py-16">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <span className="font-poppins text-sm font-semibold text-amber-600 uppercase tracking-widest">Street Food Culture</span>
+              <h2 className="font-poppins text-4xl font-bold text-slate-900 mt-3">Bengal's Best Food Streets</h2>
+              <p className="text-gray-500 font-poppins mt-2 max-w-lg mx-auto">
+                Where the real flavours live — down the lanes, past the chai stalls, on the corner where the crowd gathers.
+              </p>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center">
-              <div className="text-4xl mb-3">🐟</div>
-              <h4 className="font-bold text-gray-900 mb-2">Fish Love</h4>
-              <p className="text-sm text-gray-600">Bengalis consume the highest amount of fish per capita in India</p>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center">
-              <div className="text-4xl mb-3">🌶️</div>
-              <h4 className="font-bold text-gray-900 mb-2">Panch Phoron</h4>
-              <p className="text-sm text-gray-600">The unique five-spice blend is the soul of Bengali cooking</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {streets.map((street, i) => (
+                <motion.div key={`${street.name}-${i}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  onClick={() => setActiveStreet(activeStreet?.name === street.name ? null : street)}
+                  className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm hover:shadow-md cursor-pointer hover:-translate-y-0.5 transition-all duration-200">
+                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
+                    <MapPin className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <h3 className="font-poppins text-base font-semibold text-slate-900 mb-1">{street.name}</h3>
+                  <p className="font-poppins text-xs text-amber-600 font-medium mb-2">{street.city}</p>
+                  <p className="font-poppins text-xs text-gray-500 line-clamp-2">{street.specialty}</p>
+                  <AnimatePresence>
+                    {activeStreet?.name === street.name && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                        <div className="mt-4 pt-4 border-t border-amber-100">
+                          <p className="font-poppins text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Must Eat</p>
+                          <div className="flex flex-wrap gap-1">
+                            {street.mustEat.map(item => (
+                              <span key={item} className="text-xs font-poppins text-orange-700 bg-orange-50 rounded-full px-2 py-0.5">{item}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
             </div>
           </div>
-        </motion.div>
-      </div>
+        </section>
+      )}
+
+      {/* ── Food Culture Deep Dive ────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {[
+            {
+              icon: BookOpen, title: 'The Bengali Thali', color: 'bg-purple-50 text-purple-600',
+              desc: 'A traditional Bengali meal is a choreography. It starts with bitter (shukto), moves through fritters (bhaja), dals, fish curries, chutneys, and ends with mishti doi. Every dish has a purpose.',
+            },
+            {
+              icon: Clock, title: 'When to Visit for Food', color: 'bg-blue-50 text-blue-600',
+              desc: 'Monsoon (June–Sept) is Ilish season — the only time to eat authentic Shorshe Ilish. Winter brings Nolen Gur (date palm jaggery) sweets. Durga Puja sees the best street food pop-ups.',
+            },
+            {
+              icon: DollarSign, title: 'Budget Eating in Bengal', color: 'bg-green-50 text-green-600',
+              desc: 'Bengal is incredibly generous to budget travelers. A full thali at a local "bhater hotel" costs ₹80-150. Street puchka is ₹20-50. Even upscale Bengali restaurants rarely exceed ₹600 per person.',
+            },
+          ].map(({ icon: Icon, title, color, desc }) => (
+            <div key={title} className="bg-gray-50 rounded-3xl p-7 border border-gray-100">
+              <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center mb-5`}>
+                <Icon className="w-6 h-6" />
+              </div>
+              <h3 className="font-poppins text-lg font-semibold text-slate-900 mb-3">{title}</h3>
+              <p className="font-poppins text-sm text-gray-600 leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────────────────────────── */}
+      <section className="bg-slate-900 py-14 text-center text-white">
+        <div className="max-w-2xl mx-auto px-6">
+          <h2 className="font-poppins text-3xl font-bold mb-3">Ready to taste Bengal?</h2>
+          <p className="text-gray-400 font-poppins text-sm mb-8">Plan your trip around Bengal's best food experiences.</p>
+          <a href="#/planner" className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white px-8 py-4 rounded-full font-poppins font-semibold transition-colors">
+            Plan a Food Trip <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
+      </section>
     </div>
   );
 }

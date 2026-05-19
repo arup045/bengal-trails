@@ -66,6 +66,17 @@ router.post('/sync', async (req, res) => {
   }
 });
 
+// ── DELETE /wishlist ──────────────────────────────────────────────────────────
+// Clear ALL wishlist items for the user
+router.delete('/', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM wishlists WHERE user_id = $1', [req.user.id]);
+    return res.json({ success: true, wishlist: [] });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ── DELETE /wishlist/:slug ────────────────────────────────────────────────────
 router.delete('/:slug', async (req, res) => {
   try {

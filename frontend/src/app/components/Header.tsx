@@ -20,7 +20,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Explore',   href: '#/explore'   },
   { label: 'Festivals', href: '#/festivals' },
   { label: 'Food',      href: '#/food'      },
-  { label: 'Community', href: '#/community' },
+  { label: 'About Us',  href: '#/about'     },
 ];
 
 export function Header() {
@@ -139,7 +139,7 @@ export function Header() {
                         { href: '#/profile',   icon: <User  className="w-4 h-4" />,  label: 'My Profile' },
                         { href: '#/wishlist',  icon: <Heart className="w-4 h-4" />,  label: 'Wishlist'   },
                         { href: '#/planner',   icon: <MapPin className="w-4 h-4" />, label: 'Plan a Trip'},
-                        { href: '#/community', icon: <Users className="w-4 h-4" />,  label: 'Community'  },
+                        { href: '#/about',     icon: <Users className="w-4 h-4" />,  label: 'About Us'   },
                       ].map(item => (
                         <a key={item.label} href={item.href} onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 font-poppins text-sm font-medium text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
@@ -163,7 +163,7 @@ export function Header() {
             )}
 
             {/* CTA — Plan Trip — Poppins 500 / rounded-full */}
-            <a href="#/itinerary-builder"
+            <a href="#/planner"
               className="hidden sm:inline-flex items-center gap-1.5 font-poppins text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full transition-all duration-150 hover:shadow-md hover:shadow-purple-200 whitespace-nowrap">
               <MapPin className="w-3.5 h-3.5" />
               Plan Trip

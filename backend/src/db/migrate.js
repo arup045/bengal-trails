@@ -24,6 +24,10 @@ async function migrate() {
         phone       VARCHAR(20),
         location    VARCHAR(255),
         bio         TEXT,
+        country     VARCHAR(100),
+        interests   TEXT,
+        budget      VARCHAR(50),
+        trip_type   VARCHAR(50),
         provider    VARCHAR(50)  DEFAULT 'local',        -- local | google | facebook
         provider_id VARCHAR(255),
         created_at  TIMESTAMPTZ  DEFAULT NOW(),
@@ -429,6 +433,14 @@ async function migrate() {
       VALUES ($1, $2, 'Admin', 'admin', 'active')
       ON CONFLICT (email) DO NOTHING;
     `, [adminEmail, adminPass]);
+
+    // ── Safe column additions for already-migrated databases ──────────────────
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS country   VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS interests TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS budget    VARCHAR(50);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS trip_type VARCHAR(50);
+    `);
 
     // ── Extra trigram indexes (destinations only — festivals/food served from JSON) ──
     await client.query(`CREATE INDEX IF NOT EXISTS idx_destinations_name_trgm ON destinations USING GIN (name gin_trgm_ops);`);

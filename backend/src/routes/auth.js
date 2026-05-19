@@ -140,16 +140,22 @@ router.get('/user', authenticate, async (req, res) => {
 // ── PUT /auth/profile ──────────────────────────────────────────────────────────
 router.put('/profile', authenticate, validate(schemas.profile), async (req, res) => {
   try {
-    const { name, phone, location, bio, avatar_url } = req.body;
+    const { name, phone, location, bio, avatar_url, country, interests, budget, trip_type } = req.body;
     const { rows } = await pool.query(
       `UPDATE users SET
          name       = COALESCE($1, name),
          phone      = COALESCE($2, phone),
          location   = COALESCE($3, location),
          bio        = COALESCE($4, bio),
-         avatar_url = COALESCE($5, avatar_url)
-       WHERE id = $6 RETURNING *`,
-      [name, phone, location, bio, avatar_url, req.user.id]
+         avatar_url = COALESCE($5, avatar_url),
+         country    = COALESCE($6, country),
+         interests  = COALESCE($7, interests),
+         budget     = COALESCE($8, budget),
+         trip_type  = COALESCE($9, trip_type)
+       WHERE id = $10 RETURNING *`,
+      [name, phone, location, bio, avatar_url, country,
+       interests ? JSON.stringify(interests) : null,
+       budget, trip_type, req.user.id]
     );
     return res.json({ success: true, user: safeUser(rows[0]) });
   } catch (err) {
