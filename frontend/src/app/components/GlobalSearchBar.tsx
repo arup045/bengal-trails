@@ -76,7 +76,7 @@ export function GlobalSearchBar({
       return;
     }
     setLoading(true);
-    fetch(`${API_BASE}/api/suggestions?query=${encodeURIComponent(debouncedQ)}`)
+    fetch(`${API_BASE}/suggestions?query=${encodeURIComponent(debouncedQ)}`)
       .then(r => r.json())
       .then(data => setSuggestions(data.suggestions || []))
       .catch(() => setSuggestions([]))

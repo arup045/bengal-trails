@@ -35,8 +35,8 @@ const BCRYPT_COST = 12;
 
 // ── Token helpers ──────────────────────────────────────────────────────────────
 const ACCESS_TTL   = '15m';          // short-lived, stored in memory on client
-const REFRESH_TTL  = '30d';          // long-lived, stored in httpOnly cookie
-const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+const REFRESH_TTL  = '365d';         // long-lived; stored in localStorage AND httpOnly cookie
+const REFRESH_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 1000;
 
 function makeAccessToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: ACCESS_TTL });
@@ -157,7 +157,9 @@ router.post('/signin', validate(schemas.signin), async (req, res) => {
     return res.json({
       success: true,
       user: safeUser(user),
-      session: { access_token: accessToken },   // NO refresh_token in body — it's in the httpOnly cookie
+      // refresh_token is also returned in body for cross-domain SPAs where browsers
+      // block third-party cookies (Safari ITP, Firefox ETP, Chrome incognito).
+      session: { access_token: accessToken, refresh_token: refreshToken },
     });
   } catch (err) {
     console.error('signin error:', err);
@@ -291,8 +293,10 @@ router.post('/reset-password', validate(schemas.resetPassword), async (req, res)
 // Rotates the refresh token cookie (prevents token replay attacks).
 router.post('/refresh', async (req, res) => {
   try {
-    // ONLY read from httpOnly cookie — never accept refresh token in body
-    const refreshToken = req.cookies?.bt_refresh;
+    // Accept refresh token from EITHER the httpOnly cookie OR the request body.
+    // localStorage-based refresh is required for cross-domain SPAs where browsers
+    // block third-party cookies. The cookie path is kept as defense-in-depth.
+    const refreshToken = req.cookies?.bt_refresh || req.body?.refresh_token;
     if (!refreshToken) return res.status(401).json({ error: 'No refresh session' });
 
     const payload = jwt.verify(refreshToken, process.env.JWT_SECRET);
@@ -309,7 +313,10 @@ router.post('/refresh', async (req, res) => {
     const newRefresh = makeRefreshToken(payload.userId);
     setRefreshCookie(res, newRefresh);
 
-    return res.json({ success: true, session: { access_token: newAccess } });
+    return res.json({
+      success: true,
+      session: { access_token: newAccess, refresh_token: newRefresh },
+    });
   } catch {
     clearRefreshCookie(res);
     return res.status(401).json({ error: 'Session expired. Please sign in again.' });

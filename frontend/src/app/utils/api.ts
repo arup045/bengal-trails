@@ -1,31 +1,45 @@
 /**
  * api.ts — Central API helper for Bengal Trails
  *
- * Security model (Phase 1 upgrade):
+ * Security model:
  *   - Access token  → stored in MEMORY only (module variable). Never touches localStorage.
- *                     XSS cannot steal it because there is no persistent storage.
- *   - Refresh token → stored in httpOnly cookie by the backend.
- *                     JS cannot read it at all. Sent automatically with credentials:'include'.
+ *                     XSS cannot steal it because it isn't persisted across reloads.
+ *   - Refresh token → stored in BOTH httpOnly cookie AND localStorage.
+ *                     Cookie is used when first-party (subdomain setup).
+ *                     localStorage is used when third-party cookies are blocked
+ *                     (Vercel ↔ Render cross-domain — the common case).
+ *                     This is the standard pattern for cross-domain SPAs.
  *
  * On page refresh the access token is gone from memory, so on app mount AuthContext
- * calls POST /auth/refresh (with the httpOnly cookie) to silently restore the session.
+ * calls POST /auth/refresh with the refresh token to silently restore the session.
  */
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '')
   || 'http://localhost:3000/api';
 
-// ── In-memory token store ──────────────────────────────────────────────────────
-// This is a module-level variable — lives for the lifetime of the tab.
-// Deliberately NOT exported so nothing outside this module can write to it directly.
+const REFRESH_TOKEN_KEY = 'bt_refresh_token';
+
+// ── In-memory access token ────────────────────────────────────────────────────
 let _accessToken: string | null = null;
 
-export const getToken  = ()           => _accessToken;
-export const setToken  = (t: string | null) => { _accessToken = t; };
-export const clearToken = ()          => { _accessToken = null; };
+export const getToken   = ()                  => _accessToken;
+export const setToken   = (t: string | null)  => { _accessToken = t; };
+export const clearToken = ()                  => { _accessToken = null; };
 
-// Legacy: kept for backwards compat but now always returns null.
-// Nothing should call localStorage for tokens anymore.
-export const getRefreshToken = () => null;
+// ── localStorage refresh token ────────────────────────────────────────────────
+// The refresh token allows getting a new access token without re-login.
+// Stored in localStorage because cross-domain cookies (Vercel→Render) are blocked
+// by modern browsers (Safari ITP, Firefox ETP, Chrome incognito).
+export const getRefreshToken   = (): string | null => {
+  try { return localStorage.getItem(REFRESH_TOKEN_KEY); } catch { return null; }
+};
+export const setRefreshToken   = (t: string | null) => {
+  try {
+    if (t) localStorage.setItem(REFRESH_TOKEN_KEY, t);
+    else   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  } catch { /* localStorage unavailable */ }
+};
+export const clearRefreshToken = () => setRefreshToken(null);
 
 export const authHeaders = (): Record<string, string> => ({
   'Content-Type': 'application/json',
@@ -33,8 +47,9 @@ export const authHeaders = (): Record<string, string> => ({
 });
 
 // ── Silent token refresh ───────────────────────────────────────────────────────
-// Calls POST /auth/refresh. The httpOnly bt_refresh cookie is sent automatically
-// by the browser (credentials:'include'). Returns the new access token or null.
+// Sends the refresh token from localStorage in the body (works cross-domain).
+// Also sends the httpOnly cookie via credentials:'include' (works same-domain).
+// Backend accepts either source. Returns the new access token or null.
 let _refreshInFlight: Promise<string | null> | null = null;
 
 export async function tryRefresh(): Promise<string | null> {
@@ -43,17 +58,26 @@ export async function tryRefresh(): Promise<string | null> {
 
   _refreshInFlight = (async () => {
     try {
+      const storedRefresh = getRefreshToken();
       const res = await fetch(`${API_BASE}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',   // ← sends the httpOnly bt_refresh cookie
+        credentials: 'include',   // ← sends httpOnly cookie if browser allows
+        body: JSON.stringify(storedRefresh ? { refresh_token: storedRefresh } : {}),
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        // Refresh failed — clear stale token so we don't keep retrying
+        clearRefreshToken();
+        return null;
+      }
       const data = await res.json();
-      const newToken = data?.session?.access_token || data?.session?.accessToken;
-      if (!newToken) return null;
-      setToken(newToken);
-      return newToken;
+      const newAccess  = data?.session?.access_token  || data?.session?.accessToken;
+      const newRefresh = data?.session?.refresh_token || data?.session?.refreshToken;
+      if (!newAccess) return null;
+      setToken(newAccess);
+      // Backend rotates the refresh token on every use — store the new one
+      if (newRefresh) setRefreshToken(newRefresh);
+      return newAccess;
     } catch {
       return null;
     } finally {

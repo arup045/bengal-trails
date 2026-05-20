@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { API_BASE, authFetch, setToken, clearToken, tryRefresh } from '../utils/api';
+import { API_BASE, authFetch, setToken, clearToken, tryRefresh, setRefreshToken, clearRefreshToken } from '../utils/api';
 
 interface User {
   id: string;
@@ -103,9 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error || 'Sign in failed' };
 
-      const token = data.session?.access_token || data.session?.accessToken;
+      const token        = data.session?.access_token  || data.session?.accessToken;
+      const refreshToken = data.session?.refresh_token || data.session?.refreshToken;
       setToken(token);
       setAccessToken(token);
+      // Persist refresh token to survive page reloads / browser restarts
+      if (refreshToken) setRefreshToken(refreshToken);
       setUser(safeUser(data.user));
       return { success: true, user: safeUser(data.user) };
     } catch {
@@ -166,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authFetch('/auth/signout', { method: 'POST' });
     } catch { /* ignore — cookie cleared server-side */ } finally {
       clearToken();
+      clearRefreshToken();    // ← clear persisted refresh token
       setAccessToken(null);
       setUser(null);
       // Clean up any leftover legacy localStorage keys
@@ -195,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return { success: false, error: data.error || 'Delete failed' };
       clearToken();
+      clearRefreshToken();
       setAccessToken(null);
       setUser(null);
       return { success: true };

@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-
-const API_BASE =
-  (import.meta as any).env?.VITE_API_BASE ||
-  (typeof window !== 'undefined' && (window as any).__BENGAL_TRAILS_API_BASE__) ||
-  'http://localhost:3000/api';
+import { API_BASE } from '../utils/api';
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   try {

@@ -6,7 +6,7 @@ import { MapPin, Star, Users, Calendar, ChevronRight, Navigation, Share2, Facebo
 import { placesData } from '../data/places-full';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { buildSrcSet, DEFAULT_SIZES } from '../utils/responsiveImage';
-import { WeatherWidget } from './WeatherWidget';
+import { LiveWeather } from './LiveWeather';
 import { TransportGuideSection } from './TransportGuideSection';
 import { HotelsSection } from './HotelsSection';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
@@ -546,10 +546,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Weather Widget */}
-            <WeatherWidget 
-              destination={place.title}
-              region={place.region}
+            {/* Live Weather Widget — real data from Open-Meteo */}
+            <LiveWeather
+              lat={place.coordinates.lat}
+              lon={place.coordinates.lng}
+              cityName={place.title}
               bestTime={place.bestTime}
             />
 
