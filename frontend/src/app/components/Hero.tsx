@@ -1,6 +1,7 @@
 import { TrendingUp, Camera, Utensils, Car, Mountain, Star, ArrowRight } from 'lucide-react';
 import { memo, useState } from 'react';
 import { SmartSearchBar } from './SmartSearchBar';
+import { useSiteContent } from '../utils/useSiteContent';
 
 // ─── Trending chip ─────────────────────────────────────────────────────────────
 const TrendingChip = memo(({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) => (
@@ -22,6 +23,8 @@ TrendingChip.displayName = 'TrendingChip';
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 export function Hero() {
   const [tab, setTab] = useState<'destinations' | 'festivals' | 'food'>('destinations');
+  const { content } = useSiteContent();
+  const hero = content.hero;
 
   const tabHints: Record<typeof tab, string> = {
     destinations: 'Darjeeling, Sundarbans, Bishnupur...',
@@ -29,13 +32,17 @@ export function Hero() {
     food:         'Macher Jhol, Mishti Doi, Roshogolla...',
   };
 
+  const [titleLine1, titleLine2] = hero.title.includes('\n')
+    ? hero.title.split('\n')
+    : [hero.title, ''];
+
   return (
     <section className="relative min-h-[92vh] sm:min-h-[88vh] flex flex-col overflow-hidden">
 
-      {/* Layer 1 — Hero photo: Howrah Bridge, full vivid, no purple overlay */}
+      {/* Layer 1 — Hero photo from CMS */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('https://i1-c.pinimg.com/1200x/0b/e5/5f/0be55f42f18168dfc304f2985cf03f94.jpg')` }}
+        style={{ backgroundImage: `url('${hero.backgroundImage}')` }}
       />
       {/* Layer 2 — Very subtle dark scrim at top only so nav/text stays readable */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent" />
@@ -49,31 +56,22 @@ export function Hero() {
         <div className="flex items-center gap-2.5 mb-8">
           <div className="w-8 h-px bg-white/40" />
           <span className="font-poppins text-xs font-medium text-white/60 uppercase tracking-[0.2em]">
-            West Bengal, India
+            {hero.badgeText}
           </span>
           <div className="w-8 h-px bg-white/40" />
         </div>
 
-        {/* HERO HEADLINE
-            Spec:
-              - font-medium (500) — editorial, not heavy
-              - text-5xl / text-6xl on desktop
-              - leading-[1.1] — tight but connected, not disconnected
-              - font-poppins
-        */}
         <h1 className="font-poppins font-medium text-white text-center
                        text-5xl sm:text-6xl lg:text-[64px]
                        leading-[1.1] sm:leading-[1.1]
                        max-w-3xl mb-5">
-          Discover the Heart<br />
-          of West Bengal
+          {titleLine1}{titleLine2 && <><br />{titleLine2}</>}
         </h1>
 
         {/* Subheading */}
         <p className="font-poppins text-base sm:text-lg font-normal text-white/60
                       max-w-lg text-center leading-relaxed mb-10">
-          232+ destinations, 100 festivals, authentic Bengali food and curated journeys —
-          all in one place, always free.
+          {hero.subtitle}
         </p>
 
         {/* Search tabs + bar */}

@@ -190,7 +190,7 @@ export function SmartSearchBar({
             placeholder={placeholder}
             autoComplete="off"
             spellCheck={false}
-            className={`w-full ${sz.wrap} ${sz.input} bg-white border border-gray-200 rounded-full shadow-sm outline-none focus:border-gray-300 transition-colors`}
+            className={`w-full ${sz.wrap} ${sz.input} bg-white border border-gray-200 rounded-full shadow-sm outline-none focus:border-gray-300 transition-colors text-gray-900 placeholder:text-gray-400`}
             aria-label="Search"
             aria-expanded={showDropdown}
             aria-autocomplete="list"

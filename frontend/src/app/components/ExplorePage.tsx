@@ -512,20 +512,22 @@ export function ExplorePage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="max-w-3xl mx-auto mb-12"
           >
-            <SmartSearchBar
-              size="lg"
-              showButton={true}
-              placeholder="Search destinations, experiences, activities..."
-              onChange={(q) => setSearchQuery(q)}
-              onSearch={(q) => setSearchQuery(q)}
-              onSelect={(result) => {
-                if (result.type === 'query') {
-                  setSearchQuery((result as any).query || '');
-                } else {
-                  setSearchQuery(result.name);
-                }
-              }}
-            />
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-2 border border-white/20 shadow-2xl">
+              <SmartSearchBar
+                size="lg"
+                showButton={true}
+                placeholder="Search destinations, experiences, activities..."
+                onChange={(q) => setSearchQuery(q)}
+                onSearch={(q) => setSearchQuery(q)}
+                onSelect={(result) => {
+                  if (result.type === 'query') {
+                    setSearchQuery((result as any).query || '');
+                  } else {
+                    setSearchQuery(result.name);
+                  }
+                }}
+              />
+            </div>
           </motion.div>
 
           {/* Premium Stats Cards */}
@@ -600,7 +602,7 @@ export function ExplorePage() {
               >
                 <div className="grid md:grid-cols-3 gap-4 pt-4 border-t mt-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">Region</label>
+                    <label className="block text-sm text-gray-600 mb-2 font-poppins">Region</label>
                     <select
                       value={selectedRegion}
                       onChange={(e) => setSelectedRegion(e.target.value)}
@@ -613,7 +615,7 @@ export function ExplorePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">Sort By</label>
+                    <label className="block text-sm text-gray-600 mb-2 font-poppins">Sort By</label>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
@@ -628,7 +630,7 @@ export function ExplorePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">Price Range</label>
+                    <label className="block text-sm text-gray-600 mb-2 font-poppins">Price Range</label>
                     <select
                       value={priceRange}
                       onChange={(e) => setPriceRange(e.target.value)}
@@ -754,8 +756,8 @@ export function ExplorePage() {
                     </button>
 
                     <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-2xl text-white mb-1">{place.title}</h3>
-                      <p className="text-purple-200 text-sm">{place.district}</p>
+                      <h3 className="text-2xl text-white mb-1 font-poppins font-semibold">{place.title}</h3>
+                      <p className="text-purple-200 text-sm font-poppins">{place.district}</p>
                     </div>
                   </div>
 

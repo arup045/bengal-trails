@@ -362,8 +362,6 @@ router.post('/create-first-admin', async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // ── POST /admin/audit-log ─────────────────────────────────────────────────────
 // Internal helper — called by admin routes to log actions.
 async function writeAuditLog(adminId, action, entityType, entityId, req) {
@@ -400,3 +398,5 @@ router.get('/audit-logs', async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 });
+
+module.exports = router;

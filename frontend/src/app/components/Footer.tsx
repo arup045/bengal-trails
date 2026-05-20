@@ -357,8 +357,6 @@ export function Footer() {
             <a href="#/terms" className="text-orange-200 hover:text-white transition-colors">Terms of Service</a>
             <span className="text-orange-500/50">•</span>
             <a href="#/cookies" className="text-orange-200 hover:text-white transition-colors">Cookie Policy</a>
-            <span className="text-orange-500/50">•</span>
-            <a href="/sitemap.xml" className="text-orange-200 hover:text-white transition-colors">Sitemap</a>
           </motion.div>
         </div>
       </div>

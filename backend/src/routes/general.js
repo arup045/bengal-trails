@@ -423,8 +423,6 @@ async function ensureEnquiryTable() {
 }
 ensureEnquiryTable().catch(err => console.error('[enquiries] table init failed:', err.message));
 
-module.exports = router;
-
 // ── POST /bookings/enquiry ─────────────────────────────────────────────────────
 // Accepts an enquiry form submission, saves to DB and sends email to admin.
 router.post('/bookings/enquiry', async (req, res) => {
@@ -457,3 +455,23 @@ router.post('/bookings/enquiry', async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 });
+
+// ── GET /site-settings — Public endpoint (non-sensitive CMS content) ──────────
+router.get('/site-settings', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT key, value FROM site_settings
+       WHERE key IN ('hero','announcement','featured_destinations','food_section','seo')`
+    );
+    const settings = {};
+    rows.forEach(r => {
+      try { settings[r.key] = typeof r.value === 'string' ? JSON.parse(r.value) : r.value; }
+      catch { settings[r.key] = r.value; }
+    });
+    return res.json({ settings });
+  } catch (err) {
+    return res.json({ settings: {} });
+  }
+});
+
+module.exports = router;

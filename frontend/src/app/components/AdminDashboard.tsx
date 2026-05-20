@@ -1,11 +1,12 @@
 import { API_BASE, getToken} from '../utils/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Shield, Users, MapPin, Eye, Heart, LayoutDashboard, BarChart3, Mail, Settings, Activity, TrendingUp, Search, Bookmark, Star } from 'lucide-react';
+import { Shield, Users, MapPin, Eye, Heart, LayoutDashboard, BarChart3, Mail, Settings, Activity, TrendingUp, Search, Bookmark, Star, FileEdit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AnalyticsDashboard } from './admin/AnalyticsDashboard';
 import { AdminEnquiries }     from './admin/AdminEnquiries';
 import { AdminVendors }       from './admin/AdminVendors';
+import { ContentManagement }  from './admin/ContentManagement';
 // Charts: most chart logic now lives in AnalyticsDashboard, but the
 // Overview tab still renders inline charts in this file (lines ~175-540),
 // so we keep recharts imports here.
@@ -16,7 +17,7 @@ import {
 
 export function AdminDashboard() {
   const { user, isAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics' | 'enquiries' | 'vendors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics' | 'enquiries' | 'vendors' | 'content'>('overview');
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalDestinations: 0,
@@ -111,13 +112,14 @@ export function AdminDashboard() {
   const COLORS = ['#9333ea', '#dc2626', '#ea580c', '#0891b2'];
 
   const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'destinations', label: 'Destinations' },
-    { id: 'users', label: 'Users' },
-    { id: 'searches', label: 'Searches' },
-    { id: 'analytics',  label: 'Analytics'  },
-    { id: 'enquiries',  label: 'Enquiries'  },
-    { id: 'vendors',    label: 'Partners'   },
+    { id: 'overview',      label: 'Overview',     icon: LayoutDashboard },
+    { id: 'content',       label: 'Content',      icon: FileEdit        },
+    { id: 'destinations',  label: 'Destinations', icon: MapPin          },
+    { id: 'users',         label: 'Users',        icon: Users           },
+    { id: 'searches',      label: 'Searches',     icon: Search          },
+    { id: 'analytics',     label: 'Analytics',    icon: BarChart3       },
+    { id: 'enquiries',     label: 'Enquiries',    icon: Mail            },
+    { id: 'vendors',       label: 'Partners',     icon: Star            },
   ];
 
   return (
@@ -134,20 +136,24 @@ export function AdminDashboard() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-2">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`w-full px-4 py-3 rounded-lg text-left font-semibold transition-all ${
-                activeTab === tab.id
-                  ? 'bg-[#8B0000] text-white'
-                  : 'bg-transparent text-white/80 hover:bg-white/10'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <nav className="flex-1 space-y-1">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`w-full px-3 py-2.5 rounded-lg text-left font-poppins font-medium text-sm flex items-center gap-2.5 transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                {tab.label}
+              </button>
+            );
+          })}
         </nav>
       </div>
 
@@ -574,6 +580,12 @@ export function AdminDashboard() {
                 <h1 className="text-white font-['Poppins'] font-extrabold text-6xl mb-2">Bengal Trails</h1>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'content' && (
+          <div className="space-y-4">
+            <ContentManagement />
           </div>
         )}
 

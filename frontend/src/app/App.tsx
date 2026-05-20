@@ -7,6 +7,7 @@ import { BentoGrid } from './components/BentoGrid';
 import { Features } from './components/Features';
 import { FavoritePlaces } from './components/FavoritePlaces';
 import { Header } from './components/Header';
+import { AnnouncementBar } from './components/AnnouncementBar';
 import { MobileNav } from './components/MobileNav';
 import { DestinationGridSkeleton, BlogCardSkeleton, GenericSkeleton } from './components/Skeletons';
 import { Footer } from './components/Footer';
@@ -419,6 +420,7 @@ export default function App() {
           />
 
         <ErrorBoundary>
+          <AnnouncementBar />
           {/* Header is now universal across all pages */}
           <Header />
       <MobileNav />
