@@ -178,4 +178,93 @@ router.get('/stats/:slug', async (req, res) => {
     res.status(500).json({ error: 'Failed' });
   }
 });
+// ── PUT /reviews/:id — edit your own review ───────────────────────────────────
+// Only the original author can edit. Triggers a recompute of destination stats.
+router.put('/:id', authenticate, async (req, res) => {
+  try {
+    const { rating, title, content, visitDate } = req.body;
+    if (!rating || !content) return res.status(400).json({ error: 'rating and content required' });
+    if (rating < 1 || rating > 5) return res.status(400).json({ error: 'rating must be 1-5' });
+
+    // Verify ownership before updating
+    const existing = await pool.query('SELECT user_id, destination_slug FROM reviews WHERE id = $1', [req.params.id]);
+    if (!existing.rows.length) return res.status(404).json({ error: 'Review not found' });
+    if (existing.rows[0].user_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'You can only edit your own reviews' });
+    }
+
+    const slug = existing.rows[0].destination_slug;
+
+    const { rows } = await pool.query(
+      `UPDATE reviews
+       SET rating = $1, title = $2, content = $3, visit_date = $4, updated_at = NOW()
+       WHERE id = $5 RETURNING *`,
+      [rating, title, content, visitDate || null, req.params.id]
+    );
+
+    // Recompute destination stats since rating may have changed
+    await pool.query(`
+      UPDATE destinations
+      SET review_count = (SELECT COUNT(*)            FROM reviews WHERE destination_slug = $1 AND status = 'published'),
+          rating       = COALESCE(
+                           (SELECT AVG(rating)::numeric(3,2) FROM reviews WHERE destination_slug = $1 AND status = 'published'),
+                           0
+                         )
+      WHERE slug = $1
+    `, [slug]);
+
+    return res.json({ success: true, review: rows[0] });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── DELETE /reviews/:id — delete your own review ──────────────────────────────
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const existing = await pool.query('SELECT user_id, destination_slug FROM reviews WHERE id = $1', [req.params.id]);
+    if (!existing.rows.length) return res.status(404).json({ error: 'Review not found' });
+    if (existing.rows[0].user_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'You can only delete your own reviews' });
+    }
+
+    const slug = existing.rows[0].destination_slug;
+    await pool.query('DELETE FROM reviews WHERE id = $1', [req.params.id]);
+
+    // Recompute destination stats
+    await pool.query(`
+      UPDATE destinations
+      SET review_count = (SELECT COUNT(*)            FROM reviews WHERE destination_slug = $1 AND status = 'published'),
+          rating       = COALESCE(
+                           (SELECT AVG(rating)::numeric(3,2) FROM reviews WHERE destination_slug = $1 AND status = 'published'),
+                           0
+                         )
+      WHERE slug = $1
+    `, [slug]);
+
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── GET /reviews/user/me — current user's review history ──────────────────────
+// Returns all reviews the logged-in user has written, with the destination's
+// title/image so the frontend can render a clickable list in the user profile.
+router.get('/user/me', authenticate, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT r.*, d.title AS destination_title, d.hero_image_url AS destination_image
+         FROM reviews r
+         LEFT JOIN destinations d ON d.slug = r.destination_slug
+        WHERE r.user_id = $1
+        ORDER BY r.created_at DESC`,
+      [req.user.id]
+    );
+    return res.json({ reviews: rows });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

@@ -40,26 +40,32 @@ export function ExplorePage() {
   // Fetch destinations from API (merge with static — API wins)
   const [apiPlaces,       setApiPlaces]       = useState<any[] | null>(null);
   const [staticFallback,  setStaticFallback]  = useState<any[]>([]);
+  // Fetch live data from API (paginated — all pages)
+  const loadAll = async () => {
+    try {
+      const res  = await fetch(`${API_BASE}/destinations?limit=100&page=1`);
+      if (!res.ok) return;
+      const data = await res.json();
+      let all = data.destinations || [];
+      for (let p = 2; p <= (data.totalPages || 1); p++) {
+        const r2 = await fetch(`${API_BASE}/destinations?limit=100&page=${p}`);
+        if (r2.ok) { const d2 = await r2.json(); all = all.concat(d2.destinations || []); }
+      }
+      if (all.length) setApiPlaces(all);
+    } catch { /* static fallback already loaded */ }
+  };
+
   useEffect(() => {
     // Load static fallback lazily — won't block the initial bundle parse
     loadStaticPlaces().then(setStaticFallback).catch(() => {});
-
-    // Fetch live data from API (paginated — all pages)
-    const loadAll = async () => {
-      try {
-        const res  = await fetch(`${API_BASE}/destinations?limit=100&page=1`);
-        if (!res.ok) return;
-        const data = await res.json();
-        let all = data.destinations || [];
-        // fetch remaining pages if needed
-        for (let p = 2; p <= (data.totalPages || 1); p++) {
-          const r2 = await fetch(`${API_BASE}/destinations?limit=100&page=${p}`);
-          if (r2.ok) { const d2 = await r2.json(); all = all.concat(d2.destinations || []); }
-        }
-        if (all.length) setApiPlaces(all);
-      } catch { /* static fallback already loaded */ }
-    };
     loadAll();
+  }, []);
+
+  // When a review is posted/edited/deleted anywhere, refresh card rating + counts
+  useEffect(() => {
+    const handler = () => loadAll();
+    window.addEventListener('bt:review-changed', handler);
+    return () => window.removeEventListener('bt:review-changed', handler);
   }, []);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -694,105 +700,106 @@ export function ExplorePage() {
             </button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPlaces.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((place, index) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPlaces.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((place, index) => {
+              const hasReviews = (place.reviewsCount || 0) > 0 && (place.rating || 0) > 0;
+              return (
               <motion.div
                 key={place.slug}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                transition={{ duration: 0.35, delay: index * 0.04 }}
+                className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 <a href={`#/explore/${place.slug}`} className="block">
-                  <div className="relative h-64 overflow-hidden">
+                  {/* ── Image ──────────────────────────────────────────────── */}
+                  <div className="relative h-56 overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={place.heroImage.url}
                       alt={place.heroImage.alt}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
+                    {/* Region badge */}
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-poppins font-medium text-slate-700 flex items-center gap-1">
                         <MapPin className="w-3 h-3 text-purple-600" />
                         {place.region}
                       </span>
                     </div>
 
-                    {/* Wishlist Button */}
+                    {/* Wishlist */}
                     <button
                       onClick={(e) => toggleWishlist(e, place)}
-                      className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-lg hover:scale-110 transition-all z-10"
-                      title={isInWishlist(place.slug) ? "Remove from Wishlist" : "Add to Wishlist"}
+                      className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm w-9 h-9 rounded-full shadow-sm flex items-center justify-center hover:scale-110 transition-transform z-10"
+                      title={isInWishlist(place.slug) ? 'Remove from Wishlist' : 'Add to Wishlist'}
                     >
-                      <Heart 
-                        className={`w-5 h-5 transition-all ${
-                          isInWishlist(place.slug) 
-                            ? 'text-red-500 fill-red-500' 
-                            : 'text-gray-600 hover:text-red-500'
-                        }`} 
-                      />
+                      <Heart className={`w-4 h-4 transition-all ${isInWishlist(place.slug) ? 'text-red-500 fill-red-500' : 'text-gray-600'}`} />
                     </button>
 
-                    {place.rating && (
-                      <div className="absolute top-4 right-16 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm">{place.rating}</span>
+                    {/* Rating pill — only if real reviews exist */}
+                    {hasReviews && (
+                      <div className="absolute top-3 right-14 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs font-poppins font-semibold text-slate-800">{Number(place.rating).toFixed(1)}</span>
                       </div>
                     )}
 
-                    {/* Get Directions Button */}
+                    {/* Title & district overlay */}
+                    <div className="absolute bottom-3 left-4 right-4">
+                      <h3 className="font-poppins text-xl text-white font-semibold leading-tight">{place.title}</h3>
+                      <p className="font-poppins text-purple-200 text-xs mt-0.5">{place.district}</p>
+                    </div>
+
+                    {/* Directions FAB */}
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         const { lat, lng } = place.coordinates;
-                        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${encodeURIComponent(place.title)}`;
-                        window.open(mapsUrl, '_blank');
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${encodeURIComponent(place.title)}`, '_blank');
                       }}
-                      className="absolute bottom-20 right-4 bg-purple-600 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-purple-700 hover:scale-110 shadow-xl z-10"
+                      className="absolute bottom-3 right-3 bg-purple-600 text-white w-9 h-9 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-purple-700 shadow-lg z-10 flex items-center justify-center"
                       title="Get Directions"
                     >
-                      <Navigation className="w-5 h-5" />
+                      <Navigation className="w-4 h-4" />
                     </button>
-
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-2xl text-white mb-1 font-poppins font-semibold">{place.title}</h3>
-                      <p className="text-purple-200 text-sm font-poppins">{place.district}</p>
-                    </div>
                   </div>
 
-                  <div className="p-6">
-                    <p className="text-gray-600 mb-4 line-clamp-2">{place.excerpt}</p>
+                  {/* ── Content ────────────────────────────────────────────── */}
+                  <div className="p-5">
+                    <p className="font-poppins text-sm text-gray-600 leading-relaxed line-clamp-2 mb-4">{place.excerpt}</p>
 
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
                       {place.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-xs"
-                        >
+                        <span key={tag} className="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-[11px] font-poppins font-medium">
                           {tag}
                         </span>
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div>
-                        <div className="text-sm text-gray-500">Starting from</div>
-                        <div className="text-lg text-purple-600">{place.priceFrom || 'Free'}</div>
+                    {/* Bottom bar: best time + reviews count */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-1.5 text-xs font-poppins text-gray-500">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                        <span>Best: <span className="text-slate-700 font-medium">{place.bestTime}</span></span>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {place.reviewsCount && `${place.reviewsCount.toLocaleString()} reviews`}
+                      <div className="text-xs font-poppins">
+                        {hasReviews ? (
+                          <span className="text-slate-500">
+                            <span className="font-semibold text-slate-700">{place.reviewsCount?.toLocaleString()}</span> reviews
+                          </span>
+                        ) : (
+                          <span className="text-purple-600 font-medium">Be the first to review</span>
+                        )}
                       </div>
-                    </div>
-
-                    <div className="mt-3 text-sm text-gray-500 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      Best: {place.bestTime}
                     </div>
                   </div>
                 </a>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
         {/* Pagination Controls */}

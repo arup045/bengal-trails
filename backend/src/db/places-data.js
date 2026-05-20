@@ -13,8 +13,8 @@ module.exports = [
     "nearbyHotels": ["Mayfair Darjeeling","Windamere Hotel","Glenburn Tea Estate"],
     "nearbyRestaurants": ["Glenary's","Kunga Restaurant","Sonam's Kitchen"],
     "priceFrom": "₹2,500",
-    "rating": 4.8,
-    "reviewsCount": 1247
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kalimpong",
@@ -30,8 +30,8 @@ module.exports = [
     "nearbyHotels": ["Hotel De' Pearl","Green Hill Hotel","Kalimpong Hill Resort"],
     "nearbyRestaurants": ["The Cuisinet Restaurant","Tibetan Kitchen","Cafe Kalimpong"],
     "priceFrom": "₹1,800",
-    "rating": 4.6,
-    "reviewsCount": 823
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kurseong",
@@ -47,8 +47,8 @@ module.exports = [
     "nearbyHotels": ["Sinclairs Retreat Kurseong","Hotel Mount Resort","Tea Bungalow Homestay"],
     "nearbyRestaurants": ["Sweets & Savories","Glenary's Kurseong","Local Tea Stall"],
     "priceFrom": "₹1,500",
-    "rating": 4.4,
-    "reviewsCount": 567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Mirik",
@@ -64,8 +64,8 @@ module.exports = [
     "nearbyHotels": ["The Elgin Mirik","Mirik Valley Resort","Lakeside Homestay"],
     "nearbyRestaurants": ["Lakeshore Cafe","Mirik Restaurants","Local Fish Grill"],
     "priceFrom": "₹1,600",
-    "rating": 4.5,
-    "reviewsCount": 689
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Sundarbans National Park",
@@ -81,8 +81,8 @@ module.exports = [
     "nearbyHotels": ["Sundarban Tiger Camp","Sundarban Resort","Eco Lodge Sundarbans"],
     "nearbyRestaurants": ["Local Fish Canteen","Resort Dining Hall"],
     "priceFrom": "₹3,500",
-    "rating": 4.7,
-    "reviewsCount": 1134
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Shantiniketan",
@@ -98,8 +98,8 @@ module.exports = [
     "nearbyHotels": ["Tagore Inn Shantiniketan","Visva Bharati Guest House","Heritage Homestay"],
     "nearbyRestaurants": ["Amar Kutir Cafe","Local Eatery Shantiniketan","Poush Mela Stalls"],
     "priceFrom": "₹1,200",
-    "rating": 4.6,
-    "reviewsCount": 945
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Bishnupur",
@@ -115,8 +115,8 @@ module.exports = [
     "nearbyHotels": ["Bishnupur Heritage Hotel","Terracotta Retreat","Local Guest House"],
     "nearbyRestaurants": ["Traditional Bengali Kitchen","Terracotta Cafe","Local Sweets Shop"],
     "priceFrom": "₹1,000",
-    "rating": 4.5,
-    "reviewsCount": 678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Digha",
@@ -132,8 +132,8 @@ module.exports = [
     "nearbyHotels": ["Hotel Sonar Bangla Digha","Digha Sea Beach Resort","Budget Beach Hotel"],
     "nearbyRestaurants": ["Seafood Shack Digha","Local Fish Market Stalls"],
     "priceFrom": "₹1,500",
-    "rating": 4.3,
-    "reviewsCount": 1567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Mandarmani",
@@ -149,8 +149,8 @@ module.exports = [
     "nearbyHotels": ["Mandarmani Beach Resort","Windflower Resort Mandarmani","Budget Resort"],
     "nearbyRestaurants": ["Beachfront Cafe","Seafood Plaza Mandarmani"],
     "priceFrom": "₹2,000",
-    "rating": 4.4,
-    "reviewsCount": 1245
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Howrah & Hooghly Riverfront",
@@ -166,8 +166,8 @@ module.exports = [
     "nearbyHotels": ["Ramada by Wyndham Howrah","Hotel Hindusthan International","Peerless Inn"],
     "nearbyRestaurants": ["Riverfront Cafe","Park Street eateries","Local Bengali Cuisine"],
     "priceFrom": "₹800",
-    "rating": 4.7,
-    "reviewsCount": 2134
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Victoria Memorial",
@@ -183,8 +183,8 @@ module.exports = [
     "nearbyHotels": ["The Oberoi Grand","Taj Bengal","ITC Sonar"],
     "nearbyRestaurants": ["Peter Cat","6 Ballygunge Place","Bhojohori Manna"],
     "priceFrom": "₹200",
-    "rating": 4.8,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kumartuli",
@@ -200,8 +200,8 @@ module.exports = [
     "nearbyHotels": ["Local Heritage Guesthouses","Boutique Kolkata Stays"],
     "nearbyRestaurants": ["Street Food Stalls","Local Bengali Cafes"],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Park Street",
@@ -217,8 +217,8 @@ module.exports = [
     "nearbyHotels": ["The Park Kolkata","Taj Bengal","Peerless Inn"],
     "nearbyRestaurants": ["Peter Cat","Flurys","Barbecue Nation"],
     "priceFrom": "₹500",
-    "rating": 4.7,
-    "reviewsCount": 2345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Dakshineswar Kali Temple",
@@ -234,8 +234,8 @@ module.exports = [
     "nearbyHotels": ["Local Guesthouses Howrah","Riverfront Lodges"],
     "nearbyRestaurants": ["Temple Prasad Stalls","Nearby Bengali Eateries"],
     "priceFrom": "Free",
-    "rating": 4.8,
-    "reviewsCount": 4567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Gorumara National Park",
@@ -251,8 +251,8 @@ module.exports = [
     "nearbyHotels": ["Gorumara Forest Lodge","Jungle Retreat Dooars","Eco Resort Gorumara"],
     "nearbyRestaurants": ["Lodge Dining Hall","Local Eateries"],
     "priceFrom": "₹2,800",
-    "rating": 4.7,
-    "reviewsCount": 1456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Jaldapara National Park",
@@ -268,8 +268,8 @@ module.exports = [
     "nearbyHotels": ["Jaldapara Safari Lodge","Forest Guest House","Eco Campsites"],
     "nearbyRestaurants": ["Camp Dining","Local Snacks"],
     "priceFrom": "₹2,500",
-    "rating": 4.6,
-    "reviewsCount": 1123
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Murshidabad",
@@ -285,8 +285,8 @@ module.exports = [
     "nearbyHotels": ["Heritage Rest House Murshidabad","Nawabi Guest House"],
     "nearbyRestaurants": ["Local Mughlai Eateries","Riverfront Cafes"],
     "priceFrom": "₹1,500",
-    "rating": 4.5,
-    "reviewsCount": 934
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Cooch Behar",
@@ -302,8 +302,8 @@ module.exports = [
     "nearbyHotels": ["Cooch Behar Heritage Hotel","Palace Guest House"],
     "nearbyRestaurants": ["Local Bengali Cafes","Heritage Dining"],
     "priceFrom": "₹1,200",
-    "rating": 4.4,
-    "reviewsCount": 678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Purulia",
@@ -319,8 +319,8 @@ module.exports = [
     "nearbyHotels": ["Local Homestays Purulia","Heritage Guest Houses"],
     "nearbyRestaurants": ["Village Eateries","Tribal Food Stalls"],
     "priceFrom": "₹1,000",
-    "rating": 4.3,
-    "reviewsCount": 567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Raiganj Bird Sanctuary",
@@ -336,8 +336,8 @@ module.exports = [
     "nearbyHotels": ["Raiganj Guest House","Birdwatcher Lodge"],
     "nearbyRestaurants": ["Local Cafes","Simple Eateries"],
     "priceFrom": "₹500",
-    "rating": 4.5,
-    "reviewsCount": 456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Taki",
@@ -353,8 +353,8 @@ module.exports = [
     "nearbyHotels": ["Riverside Guesthouses Taki","Local Lodges"],
     "nearbyRestaurants": ["Riverfront Fish Stalls","Local Bengali Eateries"],
     "priceFrom": "₹800",
-    "rating": 4.2,
-    "reviewsCount": 345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Bakkhali & Fraserganj",
@@ -370,8 +370,8 @@ module.exports = [
     "nearbyHotels": ["Bakkhali Beach Resort","Fraser Lodge"],
     "nearbyRestaurants": ["Beach Shacks","Lodge Dining"],
     "priceFrom": "₹1,200",
-    "rating": 4.3,
-    "reviewsCount": 567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Tajpur",
@@ -387,8 +387,8 @@ module.exports = [
     "nearbyHotels": ["Tajpur Sands Resort","Local Beach Lodges"],
     "nearbyRestaurants": ["Seafood Shacks","Cafe Tajpur"],
     "priceFrom": "₹1,500",
-    "rating": 4.4,
-    "reviewsCount": 678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Bankura",
@@ -404,8 +404,8 @@ module.exports = [
     "nearbyHotels": ["Local Heritage Lodges","Artisan Homestays"],
     "nearbyRestaurants": ["Village Eateries","Local Sweet Shops"],
     "priceFrom": "₹900",
-    "rating": 4.3,
-    "reviewsCount": 456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Howrah Bridge",
@@ -421,8 +421,8 @@ module.exports = [
     "nearbyHotels": ["Howrah River View Guest House","City Hotels Howrah"],
     "nearbyRestaurants": ["Local Dhaba","Riverfront Cafes"],
     "priceFrom": "Free",
-    "rating": 4.8,
-    "reviewsCount": 2890
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Hazarduari Palace",
@@ -438,8 +438,8 @@ module.exports = [
     "nearbyHotels": ["Nawabi Heritage Hotel","Riverfront Guesthouse"],
     "nearbyRestaurants": ["Local Mughlai Restaurants","Heritage Cafe"],
     "priceFrom": "₹500",
-    "rating": 4.6,
-    "reviewsCount": 1234
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Poush Mela Shantiniketan",
@@ -455,8 +455,8 @@ module.exports = [
     "nearbyHotels": ["Poush Mela Guest Lodges","Tagore Guest House"],
     "nearbyRestaurants": ["Festival Stalls","Local Cafes"],
     "priceFrom": "₹200",
-    "rating": 4.7,
-    "reviewsCount": 1567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Siliguri",
@@ -472,8 +472,8 @@ module.exports = [
     "nearbyHotels": ["Hotel Tathagata Siliguri","Central Hotels Siliguri"],
     "nearbyRestaurants": ["Local Eateries","Chinese Cuisine Hubs"],
     "priceFrom": "₹1,000",
-    "rating": 4.2,
-    "reviewsCount": 1890
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Chandannagar",
@@ -489,8 +489,8 @@ module.exports = [
     "nearbyHotels": ["Chandannagar Heritage Guest House","River View Lodges"],
     "nearbyRestaurants": ["French Cafe","Local Bengali Restaurants"],
     "priceFrom": "₹1,000",
-    "rating": 4.4,
-    "reviewsCount": 789
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Torsa Falls",
@@ -506,8 +506,8 @@ module.exports = [
     "nearbyHotels": ["Dooars Eco Camp","Forest Homestay"],
     "nearbyRestaurants": ["Camp Kitchen","Local Eateries"],
     "priceFrom": "₹1,500",
-    "rating": 4.5,
-    "reviewsCount": 567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Eco Park",
@@ -523,8 +523,8 @@ module.exports = [
     "nearbyHotels": ["New Town Hotels","Salt Lake Resorts"],
     "nearbyRestaurants": ["Park Cafeteria","New Town Eateries"],
     "priceFrom": "₹50",
-    "rating": 4.6,
-    "reviewsCount": 2345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Botanical Gardens Shibpur",
@@ -540,8 +540,8 @@ module.exports = [
     "nearbyHotels": ["Howrah Hotels","Shibpur Guest Houses"],
     "nearbyRestaurants": ["Garden Cafe","Riverfront Eateries"],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 1876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Maidan Kolkata",
@@ -557,8 +557,8 @@ module.exports = [
     "nearbyHotels": ["Central Kolkata Hotels","Park Street Hotels"],
     "nearbyRestaurants": ["Esplanade Eateries","Maidan Street Food"],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Central Park Salt Lake",
@@ -574,8 +574,8 @@ module.exports = [
     "nearbyHotels": ["Salt Lake Hotels","Business Hotels"],
     "nearbyRestaurants": ["City Centre Restaurants","Lake Side Cafes"],
     "priceFrom": "Free",
-    "rating": 4.4,
-    "reviewsCount": 1567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Rabindra Sarobar",
@@ -591,8 +591,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Ballygunge Stays"],
     "nearbyRestaurants": ["Gariahat Restaurants","Lake Area Cafes"],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 2134
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Subhas Sarobar",
@@ -608,8 +608,8 @@ module.exports = [
     "nearbyHotels": ["East Kolkata Hotels","Guest Houses"],
     "nearbyRestaurants": ["Local Eateries","Tea Stalls"],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Indian Museum Kolkata",
@@ -625,8 +625,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Esplanade Hotels"],
     "nearbyRestaurants": ["Park Street Dining","Museum Cafe"],
     "priceFrom": "₹50",
-    "rating": 4.5,
-    "reviewsCount": 2987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Marble Palace Kolkata",
@@ -642,8 +642,8 @@ module.exports = [
     "nearbyHotels": ["North Kolkata Heritage Stays","Guest Houses"],
     "nearbyRestaurants": ["Local Bengali Cafes","Heritage Dining"],
     "priceFrom": "Free",
-    "rating": 4.7,
-    "reviewsCount": 1234
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "College Street Book Market",
@@ -659,8 +659,8 @@ module.exports = [
     "nearbyHotels": ["North Kolkata Hotels","Student Hostels"],
     "nearbyRestaurants": ["Indian Coffee House","College Street Cafes"],
     "priceFrom": "Free",
-    "rating": 4.8,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Prinsep Ghat",
@@ -676,8 +676,8 @@ module.exports = [
     "nearbyHotels": ["Riverside Hotels","Central Kolkata Hotels"],
     "nearbyRestaurants": ["Riverfront Cafes","Street Food Stalls"],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 2345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Science City Kolkata",
@@ -693,8 +693,8 @@ module.exports = [
     "nearbyHotels": ["Eastern Metropolitan Bypass Hotels"],
     "nearbyRestaurants": ["Science City Food Court","Nearby Eateries"],
     "priceFrom": "₹60",
-    "rating": 4.4,
-    "reviewsCount": 4567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kalighat Kali Temple",
@@ -710,8 +710,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Kalighat Guest Houses"],
     "nearbyRestaurants": ["Temple Prasad Stalls","Local Bengali Food"],
     "priceFrom": "Free",
-    "rating": 4.7,
-    "reviewsCount": 5678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Birla Temple Ballygunge",
@@ -727,8 +727,8 @@ module.exports = [
     "nearbyHotels": ["Ballygunge Hotels","South Kolkata Stays"],
     "nearbyRestaurants": ["Ballygunge Restaurants","Temple Area Cafes"],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 1876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Belur Math",
@@ -744,8 +744,8 @@ module.exports = [
     "nearbyHotels": ["Howrah Riverside Hotels","Belur Guest Houses"],
     "nearbyRestaurants": ["Math Canteen","Riverside Eateries"],
     "priceFrom": "Free",
-    "rating": 4.8,
-    "reviewsCount": 3987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "New Market Kolkata",
@@ -761,8 +761,8 @@ module.exports = [
     "nearbyHotels": ["Esplanade Hotels","Central Kolkata Hotels"],
     "nearbyRestaurants": ["Nahoum's Bakery","New Market Food Stalls"],
     "priceFrom": "Free",
-    "rating": 4.4,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Gariahat Market",
@@ -778,8 +778,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Gariahat Lodges"],
     "nearbyRestaurants": ["Gariahat Street Food","Local Eateries"],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 2876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Flurys Cafe Park Street",
@@ -795,8 +795,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","The Oberoi Grand"],
     "nearbyRestaurants": ["Park Street Restaurants","Nearby Cafes"],
     "priceFrom": "₹300",
-    "rating": 4.6,
-    "reviewsCount": 4567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kolkata Street Food",
@@ -812,8 +812,8 @@ module.exports = [
     "nearbyHotels": ["City Center Hotels"],
     "nearbyRestaurants": ["Nizam's","Anadi Cabin","Street Stalls"],
     "priceFrom": "₹20",
-    "rating": 4.9,
-    "reviewsCount": 8976
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Eden Gardens",
@@ -829,8 +829,8 @@ module.exports = [
     "nearbyHotels": ["Maidan Area Hotels","Central Kolkata Hotels"],
     "nearbyRestaurants": ["Stadium Food Stalls","Nearby Eateries"],
     "priceFrom": "₹100",
-    "rating": 4.7,
-    "reviewsCount": 6789
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kolkata Tram Ride",
@@ -846,8 +846,8 @@ module.exports = [
     "nearbyHotels": ["Central Kolkata Hotels"],
     "nearbyRestaurants": ["Street Food Along Routes"],
     "priceFrom": "₹10",
-    "rating": 4.5,
-    "reviewsCount": 2345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Jorasanko Thakur Bari",
@@ -863,8 +863,8 @@ module.exports = [
     "nearbyHotels": ["North Kolkata Hotels","College Street Area"],
     "nearbyRestaurants": ["College Street Cafes","Local Eateries"],
     "priceFrom": "₹20",
-    "rating": 4.6,
-    "reviewsCount": 2987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "8th Day Cafe & Bakery",
@@ -880,8 +880,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels"],
     "nearbyRestaurants": ["Nearby Cafes","Ballygunge Restaurants"],
     "priceFrom": "₹350",
-    "rating": 4.4,
-    "reviewsCount": 1876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Blue Tokai Coffee Roasters",
@@ -897,8 +897,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Ballygunge Area"],
     "nearbyRestaurants": ["Specialty Cafes","Nearby Eateries"],
     "priceFrom": "₹250",
-    "rating": 4.5,
-    "reviewsCount": 1456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Esplanade Chowringhee Food Street",
@@ -914,8 +914,8 @@ module.exports = [
     "nearbyHotels": ["Esplanade Hotels","Park Street Hotels"],
     "nearbyRestaurants": ["Street Stalls","Quick Bite Joints"],
     "priceFrom": "₹20",
-    "rating": 4.6,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Gariahat Street Food Zone",
@@ -931,8 +931,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Gariahat Area"],
     "nearbyRestaurants": ["Suruchi","Street Food Stalls"],
     "priceFrom": "₹30",
-    "rating": 4.7,
-    "reviewsCount": 5432
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "South City Mall",
@@ -948,8 +948,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Jadavpur Area"],
     "nearbyRestaurants": ["Mall Food Court","Nearby Restaurants"],
     "priceFrom": "Free entry",
-    "rating": 4.5,
-    "reviewsCount": 12456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Quest Mall",
@@ -965,8 +965,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","The Oberoi Grand"],
     "nearbyRestaurants": ["Fine Dining","Mall Restaurants"],
     "priceFrom": "Free entry",
-    "rating": 4.6,
-    "reviewsCount": 8976
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Mani Square Mall",
@@ -982,8 +982,8 @@ module.exports = [
     "nearbyHotels": ["North Kolkata Hotels","Shyambazar Area"],
     "nearbyRestaurants": ["Food Court","Nearby Eateries"],
     "priceFrom": "Free entry",
-    "rating": 4.4,
-    "reviewsCount": 7654
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "City Centre Salt Lake",
@@ -999,8 +999,8 @@ module.exports = [
     "nearbyHotels": ["Salt Lake Hotels","Business Hotels"],
     "nearbyRestaurants": ["Restaurant Complex","Food Court"],
     "priceFrom": "Free entry",
-    "rating": 4.3,
-    "reviewsCount": 6789
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Forum Courtyard",
@@ -1016,8 +1016,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Courtyard Cafes","Park Street Dining"],
     "priceFrom": "Free entry",
-    "rating": 4.3,
-    "reviewsCount": 4567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Apex Mall",
@@ -1033,8 +1033,8 @@ module.exports = [
     "nearbyHotels": ["New Town Hotels","Rajarhat Stays"],
     "nearbyRestaurants": ["Mall Eateries","Food Court"],
     "priceFrom": "Free entry",
-    "rating": 4.2,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Avani Riverside Mall",
@@ -1050,8 +1050,8 @@ module.exports = [
     "nearbyHotels": ["Riverside Hotels","North Kolkata"],
     "nearbyRestaurants": ["Riverfront Dining","Mall Cafes"],
     "priceFrom": "Free entry",
-    "rating": 4.4,
-    "reviewsCount": 2876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "INOX South City",
@@ -1067,8 +1067,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Jadavpur Area"],
     "nearbyRestaurants": ["Mall Food Court","Cinema Cafe"],
     "priceFrom": "₹200",
-    "rating": 4.5,
-    "reviewsCount": 8976
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "PVR Mani Square",
@@ -1084,8 +1084,8 @@ module.exports = [
     "nearbyHotels": ["North Kolkata Hotels","Shyambazar Area"],
     "nearbyRestaurants": ["Mall Food Court","Nearby Eateries"],
     "priceFrom": "₹180",
-    "rating": 4.4,
-    "reviewsCount": 6543
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "INOX Quest Mall",
@@ -1101,8 +1101,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Premium Hotels"],
     "nearbyRestaurants": ["Quest Dining","Gourmet Options"],
     "priceFrom": "₹350",
-    "rating": 4.7,
-    "reviewsCount": 5678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "PVR Downtown",
@@ -1118,8 +1118,8 @@ module.exports = [
     "nearbyHotels": ["New Town Hotels","Business Hotels"],
     "nearbyRestaurants": ["Mall Dining","Tech Park Cafes"],
     "priceFrom": "₹200",
-    "rating": 4.3,
-    "reviewsCount": 4321
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "RDB Cinemas",
@@ -1135,8 +1135,8 @@ module.exports = [
     "nearbyHotels": ["Salt Lake Hotels","Budget Stays"],
     "nearbyRestaurants": ["Sector 5 Eateries","Snack Stalls"],
     "priceFrom": "₹120",
-    "rating": 4.1,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Priya Cinema",
@@ -1152,8 +1152,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Deshapriya Park Area"],
     "nearbyRestaurants": ["Gariahat Food","Nearby Cafes"],
     "priceFrom": "₹100",
-    "rating": 4.6,
-    "reviewsCount": 7890
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Navina Cinema",
@@ -1169,8 +1169,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Tollygunge Area"],
     "nearbyRestaurants": ["Local Eateries","Street Food"],
     "priceFrom": "₹80",
-    "rating": 4.2,
-    "reviewsCount": 4567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Menoka Cinema",
@@ -1186,8 +1186,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Lake Gardens Area"],
     "nearbyRestaurants": ["Lakeside Cafes","Nearby Restaurants"],
     "priceFrom": "₹90",
-    "rating": 4.2,
-    "reviewsCount": 3210
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Nandan Cinema Complex",
@@ -1203,8 +1203,8 @@ module.exports = [
     "nearbyHotels": ["Central Kolkata Hotels","Park Street Area"],
     "nearbyRestaurants": ["Nearby Cafes","Cultural District Dining"],
     "priceFrom": "₹50",
-    "rating": 4.7,
-    "reviewsCount": 5678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Star Theatre",
@@ -1220,8 +1220,8 @@ module.exports = [
     "nearbyHotels": ["North Kolkata Hotels","Hatibagan Area"],
     "nearbyRestaurants": ["Local Bengali Restaurants","Theatre Cafes"],
     "priceFrom": "₹100",
-    "rating": 4.5,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "INOX Forum Courtyard",
@@ -1237,8 +1237,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Forum Dining","Park Street Cafes"],
     "priceFrom": "₹250",
-    "rating": 4.4,
-    "reviewsCount": 4123
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Bioscope Axis Mall",
@@ -1254,8 +1254,8 @@ module.exports = [
     "nearbyHotels": ["New Town Hotels","Rajarhat Stays"],
     "nearbyRestaurants": ["Axis Mall Food Court","New Town Dining"],
     "priceFrom": "₹150",
-    "rating": 4.2,
-    "reviewsCount": 3789
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Academy of Fine Arts",
@@ -1271,8 +1271,8 @@ module.exports = [
     "nearbyHotels": ["Maidan Area Hotels","Park Street Hotels"],
     "nearbyRestaurants": ["Nearby Cafes","Maidan Eateries"],
     "priceFrom": "₹20",
-    "rating": 4.5,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Gaganendra Shilpa Pradarshashala",
@@ -1288,8 +1288,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Nandan Canteen","Nearby Cafes"],
     "priceFrom": "₹10",
-    "rating": 4.3,
-    "reviewsCount": 2345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Birla Academy of Art & Culture",
@@ -1305,8 +1305,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Ballygunge Area"],
     "nearbyRestaurants": ["Ballygunge Restaurants","Nearby Cafes"],
     "priceFrom": "₹30",
-    "rating": 4.6,
-    "reviewsCount": 4567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "ICCR Kolkata",
@@ -1322,8 +1322,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Ho Chi Minh Sarani Dining","Nearby Cafes"],
     "priceFrom": "Free-₹100",
-    "rating": 4.4,
-    "reviewsCount": 2876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Harrington Street Arts Centre",
@@ -1339,8 +1339,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Park Street Dining","Nearby Cafes"],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 1987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kolkata Centre for Creativity",
@@ -1356,8 +1356,8 @@ module.exports = [
     "nearbyHotels": ["East Kolkata Hotels","EM Bypass Area"],
     "nearbyRestaurants": ["KCC Cafe","Nearby Restaurants"],
     "priceFrom": "Free-₹200",
-    "rating": 4.7,
-    "reviewsCount": 5432
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Victoria Memorial Art Gallery",
@@ -1373,8 +1373,8 @@ module.exports = [
     "nearbyHotels": ["Maidan Area Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Park Street Dining","Maidan Cafes"],
     "priceFrom": "₹30",
-    "rating": 4.8,
-    "reviewsCount": 15678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Indian Museum Art Wing",
@@ -1390,8 +1390,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Esplanade Area"],
     "nearbyRestaurants": ["Park Street Dining","Museum Cafe"],
     "priceFrom": "₹50",
-    "rating": 4.6,
-    "reviewsCount": 8976
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Oxford Bookstore Kolkata",
@@ -1407,8 +1407,8 @@ module.exports = [
     "nearbyHotels": ["Park Street Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Cha Bar","Park Street Dining"],
     "priceFrom": "Free entry",
-    "rating": 4.7,
-    "reviewsCount": 6789
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Netaji Subhas Chandra Bose International Airport",
@@ -1424,8 +1424,8 @@ module.exports = [
     "nearbyHotels": ["Airport Hotels","Dum Dum Area"],
     "nearbyRestaurants": ["Airport Food Courts","Terminal Dining"],
     "priceFrom": "N/A",
-    "rating": 4.3,
-    "reviewsCount": 18976
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Salt Lake Stadium",
@@ -1441,8 +1441,8 @@ module.exports = [
     "nearbyHotels": ["Salt Lake Hotels","Sector V Hotels"],
     "nearbyRestaurants": ["Salt Lake Restaurants","Stadium Area Food"],
     "priceFrom": "₹100",
-    "rating": 4.6,
-    "reviewsCount": 9876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Mohun Bagan Ground",
@@ -1458,8 +1458,8 @@ module.exports = [
     "nearbyHotels": ["Maidan Area Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Nearby Eateries","Street Food"],
     "priceFrom": "Free-₹50",
-    "rating": 4.5,
-    "reviewsCount": 4321
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "East Bengal Ground",
@@ -1475,8 +1475,8 @@ module.exports = [
     "nearbyHotels": ["Maidan Hotels","Central Kolkata"],
     "nearbyRestaurants": ["Nearby Food Stalls","Esplanade Dining"],
     "priceFrom": "Free-₹50",
-    "rating": 4.5,
-    "reviewsCount": 3987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Kalighat Cricket Ground",
@@ -1492,8 +1492,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Kalighat Area"],
     "nearbyRestaurants": ["Local Eateries","Nearby Cafes"],
     "priceFrom": "Free-₹30",
-    "rating": 4.0,
-    "reviewsCount": 876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Rabindra Sarobar Stadium",
@@ -1509,8 +1509,8 @@ module.exports = [
     "nearbyHotels": ["South Kolkata Hotels","Lake Gardens Area"],
     "nearbyRestaurants": ["Lakeside Eateries","Nearby Restaurants"],
     "priceFrom": "₹50",
-    "rating": 4.2,
-    "reviewsCount": 2134
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Tiger Hill",
@@ -1526,8 +1526,8 @@ module.exports = [
     "nearbyHotels": ["Mayfair Darjeeling", "Glenburn Tea Estate", "Tiger Hill Sunrise Resort"],
     "nearbyRestaurants": ["Glenary's", "Hotel Sunrise Cafe", "Mountain View Restaurant"],
     "priceFrom": "₹50",
-    "rating": 4.9,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Darjeeling Himalayan Railway (Toy Train)",
@@ -1543,8 +1543,8 @@ module.exports = [
     "nearbyHotels": ["Windamere Hotel", "The Elgin", "Railway Retiring Rooms"],
     "nearbyRestaurants": ["Station Cafe", "Kunga Restaurant", "Sonam's Kitchen"],
     "priceFrom": "₹1,200",
-    "rating": 4.8,
-    "reviewsCount": 5678
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Batasia Loop & War Memorial",
@@ -1560,8 +1560,8 @@ module.exports = [
     "nearbyHotels": ["Mayfair Darjeeling", "Local Guesthouses", "Ghum Monastery Stay"],
     "nearbyRestaurants": ["Garden Cafe", "Local Tea Stalls", "Nearby Eateries"],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 2876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Happy Valley Tea Estate",
@@ -1577,8 +1577,8 @@ module.exports = [
     "nearbyHotels": ["Glenburn Tea Estate", "Mayfair Darjeeling", "Tea Garden Homestays"],
     "nearbyRestaurants": ["Estate Tea Room", "Glenary's", "Garden Cafe"],
     "priceFrom": "₹100",
-    "rating": 4.6,
-    "reviewsCount": 1987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Padmaja Naidu Himalayan Zoological Park",
@@ -1594,8 +1594,8 @@ module.exports = [
     "nearbyHotels": ["Windamere Hotel", "The Elgin", "Zoo View Hotels"],
     "nearbyRestaurants": ["Zoo Cafeteria", "Glenary's", "Kunga Restaurant"],
     "priceFrom": "₹60",
-    "rating": 4.5,
-    "reviewsCount": 4567
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Observatory Hill & Mahakal Temple",
@@ -1611,8 +1611,8 @@ module.exports = [
     "nearbyHotels": ["Mall Road Hotels", "Windamere Hotel", "Central Darjeeling Stays"],
     "nearbyRestaurants": ["Mall Road Cafes", "Glenary's", "Sonam's Kitchen"],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 2345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "The Mall (Chowrasta)",
@@ -1628,8 +1628,8 @@ module.exports = [
     "nearbyHotels": ["Windamere Hotel", "The Elgin", "Mall Road Hotels"],
     "nearbyRestaurants": ["Glenary's", "Kunga Restaurant", "Sonam's Kitchen", "Keventers"],
     "priceFrom": "Free",
-    "rating": 4.7,
-    "reviewsCount": 6789
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Ghum Monastery (Yiga Choeling)",
@@ -1645,8 +1645,8 @@ module.exports = [
     "nearbyHotels": ["Ghum Monastery Homestays", "Heritage Hotels", "Buddhist Guesthouses"],
     "nearbyRestaurants": ["Monastery Tea Stall", "Ghum Local Eateries", "Traditional Tibetan Food"],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 3210
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Tinchuley Village",
@@ -1662,8 +1662,8 @@ module.exports = [
     "nearbyHotels": ["Village Homestays", "Eco Lodges", "Local Guesthouses"],
     "nearbyRestaurants": ["Homestay Kitchens", "Local Eateries", "Organic Farm Food"],
     "priceFrom": "₹800",
-    "rating": 4.8,
-    "reviewsCount": 1456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Lebong Race Course",
@@ -1679,8 +1679,8 @@ module.exports = [
     "nearbyHotels": ["Mayfair Darjeeling", "Lebong Area Hotels", "Hill Station Resorts"],
     "nearbyRestaurants": ["Nearby Cafes", "Mall Road Restaurants", "Local Tea Stalls"],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Rock Garden & Ganga Maya Park",
@@ -1696,8 +1696,8 @@ module.exports = [
     "nearbyHotels": ["Mirik Hotels", "Roadside Resorts", "Forest Rest Houses"],
     "nearbyRestaurants": ["Garden Cafe", "Roadside Dhabas", "Picnic Areas"],
     "priceFrom": "₹30",
-    "rating": 4.4,
-    "reviewsCount": 2234
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Mirik Lake (Sumendu Lake)",
@@ -1713,8 +1713,8 @@ module.exports = [
     "nearbyHotels": ["The Elgin Mirik", "Mirik Valley Resort", "Lakeside Homestays"],
     "nearbyRestaurants": ["Lakeshore Cafe", "Mirik Restaurants", "Local Fish Grill"],
     "priceFrom": "₹50",
-    "rating": 4.6,
-    "reviewsCount": 3456
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Himalayan Mountaineering Institute (HMI)",
@@ -1730,8 +1730,8 @@ module.exports = [
     "nearbyHotels": ["Padmaja Naidu Zoo Hotels", "Windamere Hotel", "Central Darjeeling Stays"],
     "nearbyRestaurants": ["Zoo Cafeteria", "Glenary's", "Kunga Restaurant"],
     "priceFrom": "₹40",
-    "rating": 4.5,
-    "reviewsCount": 2987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Lamahatta Eco Park",
@@ -1747,8 +1747,8 @@ module.exports = [
     "nearbyHotels": ["Tinchuley Homestays", "Mirik Hotels", "Eco Lodges"],
     "nearbyRestaurants": ["Park Cafe", "Local Eateries", "Homestay Kitchens"],
     "priceFrom": "₹20",
-    "rating": 4.4,
-    "reviewsCount": 1654
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Rockface Viewpoint",
@@ -1764,8 +1764,8 @@ module.exports = [
     "nearbyHotels": ["Kurseong Hotels", "Ghum Guesthouses", "Highway Resorts"],
     "nearbyRestaurants": ["Roadside Dhabas", "Local Tea Stalls", "Kurseong Eateries"],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Observatory Ridge Photo Walk",
@@ -1781,8 +1781,8 @@ module.exports = [
     "nearbyHotels": ["Mall Road Hotels", "Windamere Hotel", "Observatory Hill Stays"],
     "nearbyRestaurants": ["Glenary's", "Keventers", "Mall Road Cafes"],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 1543
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Ghum Railway Station",
@@ -1798,8 +1798,8 @@ module.exports = [
     "nearbyHotels": ["Ghum Monastery Homestays", "Heritage Hotels", "Station Area Lodges"],
     "nearbyRestaurants": ["Station Tea Stall", "Ghum Eateries", "Local Tibetan Food"],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 2876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Tukvar Tea Estate",
@@ -1815,8 +1815,8 @@ module.exports = [
     "nearbyHotels": ["Tukvar Tea Bungalows", "Estate Homestays", "Glenburn Tea Estate"],
     "nearbyRestaurants": ["Estate Kitchen", "Garden Cafe", "Local Tea Rooms"],
     "priceFrom": "₹100",
-    "rating": 4.6,
-    "reviewsCount": 1432
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Tyson's Hill Trek",
@@ -1832,8 +1832,8 @@ module.exports = [
     "nearbyHotels": ["Ghum Hotels", "Tibetan Refugee Centre Lodges", "Forest Rest Houses"],
     "nearbyRestaurants": ["Trailhead Snacks", "Ghum Eateries", "Local Tea Stalls"],
     "priceFrom": "Free",
-    "rating": 4.4,
-    "reviewsCount": 1987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Tenzing Rock & Sherpa Park",
@@ -1849,8 +1849,8 @@ module.exports = [
     "nearbyHotels": ["HMI Area Hotels", "Central Darjeeling", "Windamere Hotel"],
     "nearbyRestaurants": ["Park Cafeteria", "Glenary's", "Kunga Restaurant"],
     "priceFrom": "₹20",
-    "rating": 4.3,
-    "reviewsCount": 1654
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Glenburn River Valley",
@@ -1866,8 +1866,8 @@ module.exports = [
     "nearbyHotels": ["Glenburn Tea Bungalows", "Estate Lodges", "Riverside Camps"],
     "nearbyRestaurants": ["Estate Dining Room", "River Picnic", "Gourmet Tea Pairings"],
     "priceFrom": "₹12,000",
-    "rating": 4.9,
-    "reviewsCount": 876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Loleygaon Village",
@@ -1883,8 +1883,8 @@ module.exports = [
     "nearbyHotels": ["Village Homestays", "Community Lodges", "Forest Guesthouses"],
     "nearbyRestaurants": ["Homestay Kitchens", "Village Eateries", "Organic Farm Food"],
     "priceFrom": "₹600",
-    "rating": 4.7,
-    "reviewsCount": 1234
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Rocky Point Sunset Viewpoint",
@@ -1900,8 +1900,8 @@ module.exports = [
     "nearbyHotels": ["Valley View Lodges", "Local Guesthouses", "Eco Resorts"],
     "nearbyRestaurants": ["Sunset Tea Stall", "Local Cafes", "Roadside Eateries"],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 1543
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Hill Cart Road Scenic Stops",
@@ -1917,8 +1917,8 @@ module.exports = [
     "nearbyHotels": ["Highway Resorts", "Kurseong Hotels", "Roadside Lodges"],
     "nearbyRestaurants": ["Highway Dhabas", "Tea Stalls", "Local Eateries"],
     "priceFrom": "Free",
-    "rating": 4.2,
-    "reviewsCount": 987
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Pashupati Market",
@@ -1934,8 +1934,8 @@ module.exports = [
     "nearbyHotels": ["Mirik Lakeside Hotels", "The Elgin Mirik", "Village Homestays"],
     "nearbyRestaurants": ["Market Food Stalls", "Lakeside Cafes", "Local Eateries"],
     "priceFrom": "Free entry",
-    "rating": 4.4,
-    "reviewsCount": 1876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Goke Ture Viewpoint",
@@ -1951,8 +1951,8 @@ module.exports = [
     "nearbyHotels": ["Tinchuley Homestays", "Mirik Hotels", "Village Guesthouses"],
     "nearbyRestaurants": ["Village Tea Stalls", "Homestay Breakfasts", "Local Snacks"],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 1123
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Happy Valley Viewpoint",
@@ -1968,8 +1968,8 @@ module.exports = [
     "nearbyHotels": ["Happy Valley Area Lodges", "Mayfair Darjeeling", "Tea Garden Homestays"],
     "nearbyRestaurants": ["Estate Tea Room", "Glenary's", "Garden Cafe"],
     "priceFrom": "Free",
-    "rating": 4.4,
-    "reviewsCount": 876
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Chowrasta Handicraft Market",
@@ -1985,8 +1985,8 @@ module.exports = [
     "nearbyHotels": ["Mall Road Hotels", "Windamere Hotel", "The Elgin"],
     "nearbyRestaurants": ["Glenary's", "Keventers", "Sonam's Kitchen"],
     "priceFrom": "Free entry",
-    "rating": 4.5,
-    "reviewsCount": 2345
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Chirping Bird Park",
@@ -2002,8 +2002,8 @@ module.exports = [
     "nearbyHotels": ["Tinchuley Homestays", "Forest Rest Houses", "Eco Lodges"],
     "nearbyRestaurants": ["Park Cafe", "Local Eateries", "Homestay Meals"],
     "priceFrom": "₹50",
-    "rating": 4.3,
-    "reviewsCount": 654
+    "rating": 0,
+    "reviewsCount": 0
   },
   {
     "title": "Jalpaiguri & Dooars Wildlife Circuit",
@@ -2044,8 +2044,8 @@ module.exports = [
       "Forest Lodge Dining Halls (set meals at govt bungalows)"
     ],
     "priceFrom": "₹2,000",
-    "rating": 4.7,
-    "reviewsCount": 2847,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1688998030272-b4da8ff17ef0?w=800",
       "https://images.unsplash.com/photo-1602320763174-e34d84feae55?w=800",
@@ -2088,8 +2088,8 @@ module.exports = [
       "Village Homestay Kitchens (authentic tribal & local preparations)"
     ],
     "priceFrom": "₹1,800",
-    "rating": 4.6,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800",
       "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=800",
@@ -2135,8 +2135,8 @@ module.exports = [
       "Heritage Hotel Dining Rooms"
     ],
     "priceFrom": "₹1,200",
-    "rating": 4.5,
-    "reviewsCount": 1456,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1642503408722-37456a4d763f?w=800",
@@ -2182,8 +2182,8 @@ module.exports = [
       "Transit Stop Chai Stalls"
     ],
     "priceFrom": "₹800",
-    "rating": 4.4,
-    "reviewsCount": 987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=800",
@@ -2229,8 +2229,8 @@ module.exports = [
       "Local Tea Shops & Bakeries"
     ],
     "priceFrom": "₹700",
-    "rating": 4.2,
-    "reviewsCount": 734,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -2276,8 +2276,8 @@ module.exports = [
       "Village Sweet Shops"
     ],
     "priceFrom": "₹3,500",
-    "rating": 4.8,
-    "reviewsCount": 2156,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1705521680496-d5d7b22c14f7?w=800",
       "https://images.unsplash.com/photo-1602320763174-e34d84feae55?w=800",
@@ -2323,8 +2323,8 @@ module.exports = [
       "Mobile Food Boats"
     ],
     "priceFrom": "₹200",
-    "rating": 4.6,
-    "reviewsCount": 1543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1705521680496-d5d7b22c14f7?w=800",
       "https://images.unsplash.com/photo-1664109074701-6c95090e852e?w=800",
@@ -2370,8 +2370,8 @@ module.exports = [
       "Floating Food Boats"
     ],
     "priceFrom": "₹200",
-    "rating": 4.7,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1664109074701-6c95090e852e?w=800",
       "https://images.unsplash.com/photo-1602320763174-e34d84feae55?w=800",
@@ -2417,8 +2417,8 @@ module.exports = [
       "Forest Gate Vendors"
     ],
     "priceFrom": "₹150",
-    "rating": 4.8,
-    "reviewsCount": 1432,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1664109074701-6c95090e852e?w=800",
@@ -2464,8 +2464,8 @@ module.exports = [
       "Tea Stalls along Beach Road"
     ],
     "priceFrom": "₹1,200",
-    "rating": 4.5,
-    "reviewsCount": 2987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1695332599891-7c85956b9f46?w=800",
       "https://images.unsplash.com/photo-1633714972458-5c968de4bb19?w=800",
@@ -2511,8 +2511,8 @@ module.exports = [
       "Packed Lunch Spots"
     ],
     "priceFrom": "₹1,000",
-    "rating": 4.6,
-    "reviewsCount": 1765,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1678799261423-a3d263bc3aa8?w=800",
       "https://images.unsplash.com/photo-1695332599891-7c85956b9f46?w=800",
@@ -2558,8 +2558,8 @@ module.exports = [
       "Street Snack Vendors"
     ],
     "priceFrom": "₹1,500",
-    "rating": 4.3,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -2605,8 +2605,8 @@ module.exports = [
       "Basic Restaurants near Ferry Point"
     ],
     "priceFrom": "₹500",
-    "rating": 4.7,
-    "reviewsCount": 3421,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1728364282744-61ccb6cfe2f9?w=800",
       "https://images.unsplash.com/photo-1695332599891-7c85956b9f46?w=800",
@@ -2652,8 +2652,8 @@ module.exports = [
       "Tea Shops"
     ],
     "priceFrom": "₹1,500",
-    "rating": 4.4,
-    "reviewsCount": 3245,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1695332599891-7c85956b9f46?w=800",
       "https://images.unsplash.com/photo-1633714972458-5c968de4bb19?w=800",
@@ -2699,8 +2699,8 @@ module.exports = [
       "Coconut Water Sellers"
     ],
     "priceFrom": "₹800",
-    "rating": 4.1,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1678799261423-a3d263bc3aa8?w=800",
       "https://images.unsplash.com/photo-1695332599891-7c85956b9f46?w=800",
@@ -2746,8 +2746,8 @@ module.exports = [
       "Street Food Vendors"
     ],
     "priceFrom": "₹50",
-    "rating": 4.2,
-    "reviewsCount": 987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -2793,8 +2793,8 @@ module.exports = [
       "Family Dining Options"
     ],
     "priceFrom": "₹100",
-    "rating": 4.3,
-    "reviewsCount": 1432,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622818171279-fe0b6a336835?w=800",
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800",
@@ -2840,8 +2840,8 @@ module.exports = [
       "Basic Thali Places"
     ],
     "priceFrom": "₹700",
-    "rating": 4.0,
-    "reviewsCount": 654,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1633714972458-5c968de4bb19?w=800",
       "https://images.unsplash.com/photo-1695332599891-7c85956b9f46?w=800",
@@ -2887,8 +2887,8 @@ module.exports = [
       "Home-style Meals"
     ],
     "priceFrom": "₹900",
-    "rating": 4.5,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1602320763174-e34d84feae55?w=800",
       "https://images.unsplash.com/photo-1678799261423-a3d263bc3aa8?w=800",
@@ -2934,8 +2934,8 @@ module.exports = [
       "Local Dhabas"
     ],
     "priceFrom": "₹1,000",
-    "rating": 4.2,
-    "reviewsCount": 765,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -2981,8 +2981,8 @@ module.exports = [
       "Prasad Distribution Centers"
     ],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3028,8 +3028,8 @@ module.exports = [
       "Fresh Fish Places"
     ],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3075,8 +3075,8 @@ module.exports = [
       "Basic Eateries"
     ],
     "priceFrom": "₹50",
-    "rating": 4.4,
-    "reviewsCount": 876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1717445952765-93f7a4934f87?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3122,8 +3122,8 @@ module.exports = [
       "Evening Snack Stalls"
     ],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 2134,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -3169,8 +3169,8 @@ module.exports = [
       "Traditional Food Joints"
     ],
     "priceFrom": "₹20",
-    "rating": 4.5,
-    "reviewsCount": 1567,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3216,8 +3216,8 @@ module.exports = [
       "Riverside Food Options"
     ],
     "priceFrom": "Free",
-    "rating": 4.7,
-    "reviewsCount": 1432,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3263,8 +3263,8 @@ module.exports = [
       "Evening Food Stalls"
     ],
     "priceFrom": "Free",
-    "rating": 4.4,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1611312410928-bdcb480e6239?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3310,8 +3310,8 @@ module.exports = [
       "Nearby Cafes"
     ],
     "priceFrom": "Free",
-    "rating": 4.8,
-    "reviewsCount": 3245,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3357,8 +3357,8 @@ module.exports = [
       "Riverside Dining"
     ],
     "priceFrom": "₹20",
-    "rating": 4.6,
-    "reviewsCount": 1987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1642503408722-37456a4d763f?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3404,8 +3404,8 @@ module.exports = [
       "Riverside Cafes"
     ],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1717445952765-93f7a4934f87?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3451,8 +3451,8 @@ module.exports = [
       "Traditional Cooking"
     ],
     "priceFrom": "Free",
-    "rating": 4.7,
-    "reviewsCount": 4567,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3498,8 +3498,8 @@ module.exports = [
       "Snack Vendors"
     ],
     "priceFrom": "Free",
-    "rating": 4.4,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -3545,8 +3545,8 @@ module.exports = [
       "Snack Shops"
     ],
     "priceFrom": "Free",
-    "rating": 4.2,
-    "reviewsCount": 876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1717445952765-93f7a4934f87?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3592,8 +3592,8 @@ module.exports = [
       "Spiritual Meal Services"
     ],
     "priceFrom": "Free (donations welcome)",
-    "rating": 4.9,
-    "reviewsCount": 8765,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3639,8 +3639,8 @@ module.exports = [
       "Simple Restaurants"
     ],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 2345,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -3686,8 +3686,8 @@ module.exports = [
       "Popular Local Cafes"
     ],
     "priceFrom": "₹20",
-    "rating": 4.4,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1717445952765-93f7a4934f87?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3733,8 +3733,8 @@ module.exports = [
       "Village Food Courts"
     ],
     "priceFrom": "Free (purchases optional)",
-    "rating": 4.7,
-    "reviewsCount": 3456,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3780,8 +3780,8 @@ module.exports = [
       "Traditional Food"
     ],
     "priceFrom": "₹50",
-    "rating": 4.3,
-    "reviewsCount": 987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3827,8 +3827,8 @@ module.exports = [
       "Basic Dining Options"
     ],
     "priceFrom": "Free",
-    "rating": 4.0,
-    "reviewsCount": 765,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3874,8 +3874,8 @@ module.exports = [
       "Tea & Snacks Shops"
     ],
     "priceFrom": "Free",
-    "rating": 4.4,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -3921,8 +3921,8 @@ module.exports = [
       "Local Specialties"
     ],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 1567,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -3968,8 +3968,8 @@ module.exports = [
       "Sweet Shops"
     ],
     "priceFrom": "₹20",
-    "rating": 4.8,
-    "reviewsCount": 5432,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4015,8 +4015,8 @@ module.exports = [
       "Traditional Cooking"
     ],
     "priceFrom": "₹30",
-    "rating": 4.7,
-    "reviewsCount": 3876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800",
@@ -4062,8 +4062,8 @@ module.exports = [
       "Multi-cuisine Dining"
     ],
     "priceFrom": "Free (campus visit)",
-    "rating": 4.6,
-    "reviewsCount": 2987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800",
@@ -4109,8 +4109,8 @@ module.exports = [
       "Thali Places"
     ],
     "priceFrom": "Free entry (shopping optional)",
-    "rating": 4.5,
-    "reviewsCount": 2345,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
@@ -4156,8 +4156,8 @@ module.exports = [
       "Seasonal Food"
     ],
     "priceFrom": "Free entry",
-    "rating": 4.8,
-    "reviewsCount": 4123,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4203,8 +4203,8 @@ module.exports = [
       "Nearby Cafes"
     ],
     "priceFrom": "₹50",
-    "rating": 4.4,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4250,8 +4250,8 @@ module.exports = [
       "Farm-fresh Meals"
     ],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 1543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4297,8 +4297,8 @@ module.exports = [
       "Popular Food Joints"
     ],
     "priceFrom": "Free",
-    "rating": 4.2,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1611312410928-bdcb480e6239?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4344,8 +4344,8 @@ module.exports = [
       "Pilgrim Food Centers"
     ],
     "priceFrom": "Free (offerings optional)",
-    "rating": 4.6,
-    "reviewsCount": 4567,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4391,8 +4391,8 @@ module.exports = [
       "Local Food Joints"
     ],
     "priceFrom": "Free",
-    "rating": 4.0,
-    "reviewsCount": 876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4438,8 +4438,8 @@ module.exports = [
       "Pilgrim Meal Services"
     ],
     "priceFrom": "₹20",
-    "rating": 4.3,
-    "reviewsCount": 2134,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4485,8 +4485,8 @@ module.exports = [
       "Traditional Biryani"
     ],
     "priceFrom": "Free (offerings optional)",
-    "rating": 4.4,
-    "reviewsCount": 1543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4532,8 +4532,8 @@ module.exports = [
       "Shantiniketan Restaurants"
     ],
     "priceFrom": "Varies (performances by arrangement)",
-    "rating": 4.7,
-    "reviewsCount": 2876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800",
       "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800",
@@ -4579,8 +4579,8 @@ module.exports = [
       "Nearby Town Restaurants"
     ],
     "priceFrom": "Free visit (purchases optional)",
-    "rating": 4.5,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4626,8 +4626,8 @@ module.exports = [
       "Traditional Cooking"
     ],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 3456,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4673,8 +4673,8 @@ module.exports = [
       "Snack Shops"
     ],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 2134,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
@@ -4720,8 +4720,8 @@ module.exports = [
       "Multi-cuisine Options"
     ],
     "priceFrom": "₹20",
-    "rating": 4.6,
-    "reviewsCount": 2876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -4767,8 +4767,8 @@ module.exports = [
       "Riverfront Cafes"
     ],
     "priceFrom": "₹20",
-    "rating": 4.3,
-    "reviewsCount": 1567,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4814,8 +4814,8 @@ module.exports = [
       "Lalbagh Food Options"
     ],
     "priceFrom": "₹30",
-    "rating": 4.5,
-    "reviewsCount": 1987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1717445952765-93f7a4934f87?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -4861,8 +4861,8 @@ module.exports = [
       "Nearby Dining"
     ],
     "priceFrom": "Free",
-    "rating": 4.2,
-    "reviewsCount": 876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -4908,8 +4908,8 @@ module.exports = [
       "Lalbagh Bazaar Food"
     ],
     "priceFrom": "₹30",
-    "rating": 4.4,
-    "reviewsCount": 1654,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1611312410928-bdcb480e6239?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -4955,8 +4955,8 @@ module.exports = [
       "Snack Stalls"
     ],
     "priceFrom": "₹50",
-    "rating": 4.6,
-    "reviewsCount": 2345,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -5002,8 +5002,8 @@ module.exports = [
       "Snack Stalls"
     ],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -5049,8 +5049,8 @@ module.exports = [
       "Riverfront Dining"
     ],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -5096,8 +5096,8 @@ module.exports = [
       "Jiaganj Artisan Market Food"
     ],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 2134,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -5143,8 +5143,8 @@ module.exports = [
       "Multi-cuisine Options"
     ],
     "priceFrom": "₹20",
-    "rating": 4.8,
-    "reviewsCount": 4231,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
@@ -5190,8 +5190,8 @@ module.exports = [
       "Multi-cuisine Dining"
     ],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 3765,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -5237,8 +5237,8 @@ module.exports = [
       "Multi-cuisine Options"
     ],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 3421,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
@@ -5284,8 +5284,8 @@ module.exports = [
       "Multi-cuisine Dining"
     ],
     "priceFrom": "₹20",
-    "rating": 4.6,
-    "reviewsCount": 2987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -5331,8 +5331,8 @@ module.exports = [
       "Home Cooking"
     ],
     "priceFrom": "Free visit (purchases extra)",
-    "rating": 4.6,
-    "reviewsCount": 2543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -5378,8 +5378,8 @@ module.exports = [
       "Multi-cuisine Dining"
     ],
     "priceFrom": "₹20 (entry); boating extra",
-    "rating": 4.5,
-    "reviewsCount": 3876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -5425,8 +5425,8 @@ module.exports = [
       "Multi-cuisine Options"
     ],
     "priceFrom": "₹20",
-    "rating": 4.3,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
@@ -5472,8 +5472,8 @@ module.exports = [
       "Traditional Cuisine"
     ],
     "priceFrom": "Free (forest access)",
-    "rating": 4.4,
-    "reviewsCount": 1654,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
@@ -5519,8 +5519,8 @@ module.exports = [
       "Traditional Cooking"
     ],
     "priceFrom": "Free (guide fees extra)",
-    "rating": 4.6,
-    "reviewsCount": 2987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
       "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
@@ -5566,8 +5566,8 @@ module.exports = [
       "Packed Meal Options"
     ],
     "priceFrom": "Free",
-    "rating": 4.3,
-    "reviewsCount": 1234,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
@@ -5613,8 +5613,8 @@ module.exports = [
       "Community Dining"
     ],
     "priceFrom": "Free visit (homestay costs extra)",
-    "rating": 4.4,
-    "reviewsCount": 876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -5660,8 +5660,8 @@ module.exports = [
       "Traditional Cuisine"
     ],
     "priceFrom": "Free (accommodation extra)",
-    "rating": 4.6,
-    "reviewsCount": 4321,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
       "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
@@ -5707,8 +5707,8 @@ module.exports = [
       "Basic Restaurants"
     ],
     "priceFrom": "Free",
-    "rating": 4.7,
-    "reviewsCount": 3654,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
@@ -5754,8 +5754,8 @@ module.exports = [
       "Village Cooking"
     ],
     "priceFrom": "Free",
-    "rating": 4.5,
-    "reviewsCount": 2543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
@@ -5801,8 +5801,8 @@ module.exports = [
       "Village Cooking"
     ],
     "priceFrom": "Free",
-    "rating": 4.6,
-    "reviewsCount": 2987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
@@ -5848,8 +5848,8 @@ module.exports = [
       "Village Food"
     ],
     "priceFrom": "Free (view only - no water access)",
-    "rating": 4.4,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
@@ -5895,8 +5895,8 @@ module.exports = [
       "Authentic Cuisine"
     ],
     "priceFrom": "Free (homestay/boat extra)",
-    "rating": 4.5,
-    "reviewsCount": 1543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
@@ -5942,8 +5942,8 @@ module.exports = [
       "Snack Stalls"
     ],
     "priceFrom": "Free (boating extra if available)",
-    "rating": 4.3,
-    "reviewsCount": 2134,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
@@ -5989,8 +5989,8 @@ module.exports = [
       "Refreshment Stands"
     ],
     "priceFrom": "₹20",
-    "rating": 4.5,
-    "reviewsCount": 3421,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
       "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
@@ -6036,8 +6036,8 @@ module.exports = [
       "Nearby Restaurants"
     ],
     "priceFrom": "Free visit (purchases extra)",
-    "rating": 4.7,
-    "reviewsCount": 2765,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800",
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
@@ -6083,8 +6083,8 @@ module.exports = [
       "Seasonal Specialties"
     ],
     "priceFrom": "Varies by event",
-    "rating": 4.8,
-    "reviewsCount": 3210,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800",
       "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800",
@@ -6130,8 +6130,8 @@ module.exports = [
       "Cultural Food Experiences"
     ],
     "priceFrom": "Free visit (homestay/guide extra)",
-    "rating": 4.6,
-    "reviewsCount": 1987,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -6177,8 +6177,8 @@ module.exports = [
       "Refreshment Stops"
     ],
     "priceFrom": "Free (guide fees extra if arranged)",
-    "rating": 4.5,
-    "reviewsCount": 1654,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
@@ -6224,8 +6224,8 @@ module.exports = [
       "Market Food Vendors"
     ],
     "priceFrom": "Varies (services-based town)",
-    "rating": 4.2,
-    "reviewsCount": 2341,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
@@ -6271,8 +6271,8 @@ module.exports = [
       "Packed Lunch Options"
     ],
     "priceFrom": "₹20",
-    "rating": 4.7,
-    "reviewsCount": 2876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6318,8 +6318,8 @@ module.exports = [
       "Dhaba Food"
     ],
     "priceFrom": "₹20",
-    "rating": 4.5,
-    "reviewsCount": 2134,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6365,8 +6365,8 @@ module.exports = [
       "Packed Lunches"
     ],
     "priceFrom": "₹20",
-    "rating": 4.8,
-    "reviewsCount": 3421,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6412,8 +6412,8 @@ module.exports = [
       "Packed Meals"
     ],
     "priceFrom": "₹20",
-    "rating": 4.4,
-    "reviewsCount": 1765,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6459,8 +6459,8 @@ module.exports = [
       "Street Food"
     ],
     "priceFrom": "Free (donations welcome)",
-    "rating": 4.6,
-    "reviewsCount": 2543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6506,8 +6506,8 @@ module.exports = [
       "Packed Lunches"
     ],
     "priceFrom": "₹20",
-    "rating": 4.2,
-    "reviewsCount": 1432,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
@@ -6553,8 +6553,8 @@ module.exports = [
       "Packed Lunches"
     ],
     "priceFrom": "₹20",
-    "rating": 4.9,
-    "reviewsCount": 4532,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6600,8 +6600,8 @@ module.exports = [
       "Packed Meals"
     ],
     "priceFrom": "₹20",
-    "rating": 4.8,
-    "reviewsCount": 3654,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6647,8 +6647,8 @@ module.exports = [
       "Packed Lunches"
     ],
     "priceFrom": "₹20",
-    "rating": 4.5,
-    "reviewsCount": 2134,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1609416921929-0e6c7665b0da?w=800",
       "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
@@ -6694,8 +6694,8 @@ module.exports = [
       "Traditional Food"
     ],
     "priceFrom": "₹20",
-    "rating": 4.3,
-    "reviewsCount": 1876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800",
       "https://images.unsplash.com/photo-1622811895178-6e4377539eb3?w=800",
@@ -6741,8 +6741,8 @@ module.exports = [
       "Local Specialties"
     ],
     "priceFrom": "Varies (commercial town)",
-    "rating": 4.1,
-    "reviewsCount": 3214,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1567473968505-84d64bc72b26?w=800",
       "https://images.unsplash.com/photo-1582719471137-c3967ffb0c42?w=800",
@@ -6788,8 +6788,8 @@ module.exports = [
       "Fresh Fish Preparation"
     ],
     "priceFrom": "Free",
-    "rating": 4.2,
-    "reviewsCount": 1543,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
       "https://images.unsplash.com/photo-1566614788784-9f63ec3e9c87?w=800",
@@ -6835,8 +6835,8 @@ module.exports = [
       "Traditional Food"
     ],
     "priceFrom": "Free orchard visit (purchases extra)",
-    "rating": 4.7,
-    "reviewsCount": 3876,
+    "rating": 0,
+    "reviewsCount": 0,
     "gallery": [
       "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=800",
       "https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=800",
@@ -6880,8 +6880,8 @@ module.exports = [
           "Bhojohori Manna"
       ],
       "priceFrom": "\u20b93,000",
-      "rating": 4.7,
-      "reviewsCount": 2890,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "city"
   },
   {
@@ -6917,8 +6917,8 @@ module.exports = [
           "Aranyak Dhaba"
       ],
       "priceFrom": "\u20b91,500",
-      "rating": 4.4,
-      "reviewsCount": 287,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "tribal"
   },
   {
@@ -6953,8 +6953,8 @@ module.exports = [
           "Hangla's"
       ],
       "priceFrom": "\u20b91,800",
-      "rating": 4.0,
-      "reviewsCount": 178,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "city"
   },
   {
@@ -6989,8 +6989,8 @@ module.exports = [
           "Spice Junction"
       ],
       "priceFrom": "\u20b92,000",
-      "rating": 4.1,
-      "reviewsCount": 156,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "city"
   },
   {
@@ -7024,8 +7024,8 @@ module.exports = [
           "Maa Sitala Sweets"
       ],
       "priceFrom": "\u20b91,200",
-      "rating": 4.2,
-      "reviewsCount": 134,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "heritage"
   },
   {
@@ -7059,8 +7059,8 @@ module.exports = [
           "Riverside Mishti"
       ],
       "priceFrom": "\u20b91,000",
-      "rating": 4.5,
-      "reviewsCount": 234,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "pilgrimage"
   },
   {
@@ -7094,8 +7094,8 @@ module.exports = [
           "Bishnu Mishtanna Bhandar"
       ],
       "priceFrom": "\u20b9500",
-      "rating": 4.7,
-      "reviewsCount": 1456,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "pilgrimage"
   },
   {
@@ -7128,8 +7128,8 @@ module.exports = [
           "Bansberia Mishti Centre"
       ],
       "priceFrom": "\u20b9800",
-      "rating": 4.3,
-      "reviewsCount": 187,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "festival-town"
   },
   {
@@ -7162,8 +7162,8 @@ module.exports = [
           "Mahaprabhu Bhojonaloy"
       ],
       "priceFrom": "\u20b9600",
-      "rating": 4.2,
-      "reviewsCount": 89,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "pilgrimage"
   },
   {
@@ -7197,8 +7197,8 @@ module.exports = [
           "Shantipur Mishti"
       ],
       "priceFrom": "\u20b9700",
-      "rating": 4.4,
-      "reviewsCount": 156,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "heritage"
   },
   {
@@ -7233,8 +7233,8 @@ module.exports = [
           "Bhojohori Manna"
       ],
       "priceFrom": "\u20b9900",
-      "rating": 4.5,
-      "reviewsCount": 412,
+      "rating": 0,
+      "reviewsCount": 0,
       "category": "food-destination"
   },
 ];

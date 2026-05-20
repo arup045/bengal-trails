@@ -110,7 +110,12 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
       );
 
       if (response.ok) {
-        toast.success('Review submitted successfully!');
+        const data = await response.json();
+        if (data.pendingModeration) {
+          toast.success('Review submitted! It will appear after admin approval.');
+        } else {
+          toast.success('Review submitted successfully!');
+        }
         setShowWriteReview(false);
         setTitle('');
         setContent('');
@@ -118,6 +123,10 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
         setRating(5);
         setPhotos([]);
         loadReviews();
+        // Broadcast so place cards / profile / detail pages refresh their counts
+        window.dispatchEvent(new CustomEvent('bt:review-changed', { detail: { slug: destinationSlug } }));
+      } else if (response.status === 409) {
+        toast.error("You've already reviewed this place. Delete your old review to write a new one.");
       } else {
         toast.error('Failed to submit review');
       }

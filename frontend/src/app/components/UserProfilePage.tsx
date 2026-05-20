@@ -68,11 +68,13 @@ export function UserProfilePage() {
   const [isEditing,       setIsEditing]       = useState(false);
   const [loading,         setLoading]         = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [activeTab,       setActiveTab]       = useState<'profile' | 'trips' | 'settings'>('profile');
+  const [activeTab,       setActiveTab]       = useState<'profile' | 'trips' | 'reviews' | 'settings'>('profile');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirm,   setDeleteConfirm]   = useState('');
   const [bookings,        setBookings]        = useState<any[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [myReviews,       setMyReviews]       = useState<any[]>([]);
+  const [reviewsLoading,  setReviewsLoading]  = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -110,7 +112,40 @@ export function UserProfilePage() {
         .catch(() => setBookings([]))
         .finally(() => setBookingsLoading(false));
     }
+    if (activeTab === 'reviews') {
+      loadMyReviews();
+    }
   }, [activeTab]);
+
+  const loadMyReviews = () => {
+    setReviewsLoading(true);
+    authFetch('/reviews/user/me')
+      .then(r => r.ok ? r.json() : { reviews: [] })
+      .then(d => setMyReviews(d.reviews || []))
+      .catch(() => setMyReviews([]))
+      .finally(() => setReviewsLoading(false));
+  };
+
+  // Listen for global review changes (when user posts/edits/deletes a review
+  // from a place detail page, refresh this list on next visit to the tab).
+  useEffect(() => {
+    const handler = () => { if (activeTab === 'reviews') loadMyReviews(); };
+    window.addEventListener('bt:review-changed', handler);
+    return () => window.removeEventListener('bt:review-changed', handler);
+  }, [activeTab]);
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!confirm('Delete this review? This cannot be undone.')) return;
+    const r = await authFetch(`/reviews/${reviewId}`, { method: 'DELETE' });
+    if (r.ok) {
+      toast.success('Review deleted');
+      setMyReviews(prev => prev.filter(rv => rv.id !== reviewId));
+      // Broadcast so place pages / cards refresh their counts
+      window.dispatchEvent(new CustomEvent('bt:review-changed'));
+    } else {
+      toast.error('Could not delete review');
+    }
+  };
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error('Name is required'); return; }
@@ -244,11 +279,11 @@ export function UserProfilePage() {
       <div className="bg-white border-b border-gray-100 sticky top-16 z-20 shadow-sm -mt-8 rounded-t-3xl">
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex gap-1 pt-2">
-            {(['profile', 'trips', 'settings'] as const).map(tab => (
+            {(['profile', 'trips', 'reviews', 'settings'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-5 py-3 font-poppins text-sm font-medium rounded-t-xl transition-colors capitalize
                   ${activeTab === tab ? 'text-purple-600 border-b-2 border-purple-600 -mb-px' : 'text-gray-500 hover:text-gray-700'}`}>
-                {tab === 'profile' ? '👤 Profile' : tab === 'trips' ? '🗺️ My Trips' : '⚙️ Settings'}
+                {tab === 'profile' ? '👤 Profile' : tab === 'trips' ? '🗺️ My Trips' : tab === 'reviews' ? '⭐ My Reviews' : '⚙️ Settings'}
               </button>
             ))}
           </div>
@@ -447,18 +482,22 @@ export function UserProfilePage() {
                     <h2 className="font-poppins text-base font-semibold text-slate-900 mb-4">Quick Actions</h2>
                     <div className="grid sm:grid-cols-3 gap-3">
                       {[
-                        { icon: Heart,    label: 'My Wishlist',   href: '#/wishlist',   color: 'text-rose-600  bg-rose-50'   },
-                        { icon: Compass,  label: 'Plan a Trip',   href: '#/planner',    color: 'text-purple-600 bg-purple-50' },
-                        { icon: Star,     label: 'My Reviews',    href: '#/profile',    color: 'text-amber-600 bg-amber-50'  },
-                      ].map(({ icon: Icon, label, href, color }) => (
-                        <a key={label} href={href} className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors group">
-                          <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center shrink-0`}>
-                            <Icon className="w-4.5 h-4.5" />
-                          </div>
-                          <span className="font-poppins text-sm font-medium text-slate-700">{label}</span>
-                          <ChevronRight className="w-4 h-4 text-gray-400 ml-auto group-hover:translate-x-0.5 transition-transform" />
-                        </a>
-                      ))}
+                        { icon: Heart,    label: 'My Wishlist',   href: '#/wishlist',       color: 'text-rose-600  bg-rose-50'    },
+                        { icon: Compass,  label: 'Plan a Trip',   href: '#/planner',        color: 'text-purple-600 bg-purple-50' },
+                        { icon: Star,     label: 'My Reviews',    onClick: () => setActiveTab('reviews'), color: 'text-amber-600 bg-amber-50' },
+                      ].map(({ icon: Icon, label, href, onClick, color }) => {
+                        const Tag = href ? 'a' : 'button';
+                        const props: any = href ? { href } : { onClick };
+                        return (
+                          <Tag key={label} {...props} className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors group w-full text-left">
+                            <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center shrink-0`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <span className="font-poppins text-sm font-medium text-slate-700 flex-1">{label}</span>
+                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                          </Tag>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -504,6 +543,125 @@ export function UserProfilePage() {
                         </span>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── REVIEWS TAB ─────────────────────────────────────────── */}
+          {activeTab === 'reviews' && (
+            <motion.div key="reviews" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="font-poppins text-xl font-semibold text-slate-900">My Reviews</h2>
+                    <p className="font-poppins text-sm text-gray-500 mt-1">
+                      Reviews you've written across Bengal Trails
+                    </p>
+                  </div>
+                  {myReviews.length > 0 && (
+                    <span className="font-poppins text-sm font-semibold text-purple-600 bg-purple-50 rounded-full px-3 py-1">
+                      {myReviews.length} {myReviews.length === 1 ? 'review' : 'reviews'}
+                    </span>
+                  )}
+                </div>
+
+                {reviewsLoading ? (
+                  <div className="flex justify-center py-16">
+                    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                  </div>
+                ) : myReviews.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Star className="w-8 h-8 text-amber-300" />
+                    </div>
+                    <h3 className="font-poppins text-base font-semibold text-slate-900 mb-2">No reviews yet</h3>
+                    <p className="font-poppins text-sm text-gray-500 mb-5">
+                      Share your experiences to help fellow travelers discover Bengal
+                    </p>
+                    <a href="#/explore"
+                      className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
+                      <Compass className="w-4 h-4" /> Explore Destinations
+                    </a>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {myReviews.map((review: any) => {
+                      const placeImage = review.destination_image || `https://source.unsplash.com/featured/?${encodeURIComponent(review.destination_slug)}`;
+                      const placeTitle = review.destination_title || review.destination_slug;
+                      const placeUrl   = `#/explore/${review.destination_slug}`;
+                      const dt = review.created_at ? new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                      return (
+                        <div key={review.id}
+                          className="group border border-gray-100 rounded-2xl overflow-hidden hover:border-purple-200 hover:shadow-md transition-all bg-white">
+                          <div className="flex flex-col sm:flex-row">
+                            {/* Image — click to go to place */}
+                            <a href={placeUrl} className="sm:w-40 h-32 sm:h-auto shrink-0 overflow-hidden bg-gray-100 relative">
+                              <img
+                                src={placeImage}
+                                alt={placeTitle}
+                                loading="lazy"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400'; }}
+                              />
+                            </a>
+
+                            <div className="flex-1 p-4 flex flex-col">
+                              {/* Header: place name + rating */}
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <a href={placeUrl} className="flex-1 min-w-0">
+                                  <h3 className="font-poppins text-base font-semibold text-slate-900 hover:text-purple-700 transition-colors truncate">
+                                    {placeTitle}
+                                  </h3>
+                                  <div className="flex items-center gap-3 mt-1">
+                                    <div className="flex items-center gap-0.5">
+                                      {[1, 2, 3, 4, 5].map(s => (
+                                        <Star key={s}
+                                          className={`w-3.5 h-3.5 ${s <= review.rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-200'}`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-poppins text-xs text-gray-400">{dt}</span>
+                                    {review.status === 'pending' && (
+                                      <span className="font-poppins text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                                        Pending Review
+                                      </span>
+                                    )}
+                                  </div>
+                                </a>
+
+                                {/* Delete button */}
+                                <button onClick={() => handleDeleteReview(review.id)}
+                                  className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                                  title="Delete review">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              {/* Title */}
+                              {review.title && (
+                                <h4 className="font-poppins text-sm font-semibold text-slate-800 mb-1.5">
+                                  {review.title}
+                                </h4>
+                              )}
+
+                              {/* Content */}
+                              <p className="font-poppins text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
+                                {review.content}
+                              </p>
+
+                              {/* Footer link */}
+                              <a href={placeUrl}
+                                className="inline-flex items-center gap-1.5 text-xs font-poppins font-medium text-purple-600 hover:text-purple-700 mt-auto self-start group/link">
+                                View on {placeTitle}
+                                <ChevronRight className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

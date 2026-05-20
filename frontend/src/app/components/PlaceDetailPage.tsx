@@ -30,55 +30,54 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const [isLoading, setIsLoading] = useState(true);
   const [apiPlace, setApiPlace] = useState<any | null>(null);
-  useEffect(() => {
+
+  const fetchPlace = () => {
     if (!slug) return;
     fetch(`${API_BASE}/destinations/${slug}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d?.destination) return;
         const dest = d.destination;
-        // Complete mapping: API shape → frontend shape
-        // Frontend expects: title, heroImage.url, heroImage.alt, excerpt, tags,
-        // priceFrom, district, rating, reviewsCount, coordinates, bestTime,
-        // description, region, slug, nearbyRestaurants
         setApiPlace({
           ...dest,
-          // Names
           title: dest.name,
           slug: dest.slug,
-          // Images
           image: (dest.imageUrl || dest.image_url),
           heroImage: {
             url: (dest.imageUrl || dest.image_url) || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200',
             alt: dest.name || 'Destination photo',
           },
           gallery: Array.isArray((dest.galleryImages || dest.gallery_images)) ? (dest.galleryImages || dest.gallery_images) : [],
-          // Text
           excerpt: (dest.shortDescription || dest.short_description) || dest.description?.slice(0, 160) || '',
           description: dest.description || '',
-          // Geographic
           region: dest.region || 'Bengal',
           district: dest.district || dest.region || 'West Bengal',
           coordinates: (dest.latitude && dest.longitude)
             ? { lat: parseFloat(dest.latitude), lng: parseFloat(dest.longitude) }
             : { lat: 22.5726, lng: 88.3639 },
-          // Tags / categories — fall back across multiple possible shapes
           tags: Array.isArray(dest.highlights) && dest.highlights.length ? dest.highlights
                 : Array.isArray(dest.activities) ? dest.activities
                 : (dest.category ? [dest.category] : []),
-          // Pricing
           priceFrom: (dest.priceRange || dest.price_range) || ((dest.priceFrom || dest.price_from) ? `₹${(dest.priceFrom || dest.price_from).toLocaleString('en-IN')}` : 'Free'),
-          // Ratings
           rating: parseFloat(dest.rating) || 0,
           reviewsCount: (dest.reviewCount || dest.review_count) || 0,
-          // Time
           bestTime: (dest.bestTimeToVisit || dest.best_time_to_visit) || 'Oct–Mar',
-          // Restaurant placeholder (page expects an array to map; backend doesn't expose this yet)
           nearbyRestaurants: Array.isArray(dest.nearbyRestaurants) ? dest.nearbyRestaurants : [],
         });
       })
-      .catch(() => {
-        setIsLoading(false); /* fall back to staticPlace */ });
+      .catch(() => { setIsLoading(false); });
+  };
+
+  useEffect(() => { fetchPlace(); }, [slug]);
+
+  // Refresh rating + review count when ANY review changes on this page
+  useEffect(() => {
+    const handler = (e: any) => {
+      // Only refresh if the change relates to this destination (or no slug = unknown source)
+      if (!e?.detail?.slug || e.detail.slug === slug) fetchPlace();
+    };
+    window.addEventListener('bt:review-changed', handler);
+    return () => window.removeEventListener('bt:review-changed', handler);
   }, [slug]);
   const staticPlace = placesData.find(p => p.slug === slug);
   // Clear loading once we have either API or static data
