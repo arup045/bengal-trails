@@ -64,9 +64,13 @@ if (rawOrigins.includes('*')) {
   console.warn('[CORS] FRONTEND_URL=* is unsafe. Set it to your exact Vercel URL in Render env vars.');
 }
 
-// Compiled patterns for *.vercel.app and *.netlify.app (preview deploys)
-// All Vercel preview URLs (e.g. bengal-trails-xxx-arup-s-projects.vercel.app) are allowed.
-const PREVIEW_PATTERNS = [/\.vercel\.app$/, /\.netlify\.app$/, /^http:\/\/localhost:/];
+// Compiled patterns for *.vercel.app and *.netlify.app (preview deploys).
+// localhost is only allowed in non-production to prevent a malicious local server
+// from making credentialed requests against production APIs.
+const isProd = process.env.NODE_ENV === 'production';
+const PREVIEW_PATTERNS = isProd
+  ? [/\.vercel\.app$/, /\.netlify\.app$/]
+  : [/\.vercel\.app$/, /\.netlify\.app$/, /^http:\/\/localhost:/];
 
 app.use(cors({
   origin: (origin, cb) => {
@@ -83,8 +87,10 @@ app.use(cors({
 }));
 
 // ── Logging ───────────────────────────────────────────────────────────────────
+// 'combined' format in production writes structured log lines suitable for
+// Render/Railway's log aggregation. 'dev' is for local developer readability only.
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
 // ── Body Parsing ──────────────────────────────────────────────────────────────
@@ -223,14 +229,29 @@ app.use((req, res) => {
 app.use(sentryErrorHandler());
 
 // ── Global Error Handler ──────────────────────────────────────────────────────
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+// SECURITY: never leak stack traces or internal error details to clients.
+// Log the full error server-side for debugging, but send only a generic message.
+app.use((err, req, res, _next) => {
+  const status = err.status || err.statusCode || 500;
+  // Log with full detail on the server
+  if (status >= 500) {
+    console.error('[error]', req.method, req.path, err.message, err.stack);
+  } else {
+    console.warn('[warn]', req.method, req.path, err.message);
+  }
+  // Multer errors have a user-readable message that's safe to forward
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'File too large. Maximum size is 5MB.' });
+  }
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return res.status(400).json({ error: 'Unexpected file field.' });
+  }
+  return res.status(status).json({ error: status < 500 ? err.message : 'Internal server error' });
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n[server] Bengal Trails API on port ${PORT}`);
   console.log(`[server] Env: ${process.env.NODE_ENV || 'development'}`);
   console.log(`[server] Frontend: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
@@ -244,5 +265,33 @@ app.listen(PORT, () => {
     console.log('[server] Keep-alive ping active (' + url + ')');
   }
 });
+
+// ── Graceful Shutdown ─────────────────────────────────────────────────────────
+// On SIGTERM (Render/Railway sends this before restarting the container),
+// stop accepting new connections and finish in-flight requests before exiting.
+// Without this, the process is killed immediately and in-flight DB transactions
+// are abandoned.
+function gracefulShutdown(signal) {
+  console.log(`[server] ${signal} received — shutting down gracefully`);
+  server.close(async () => {
+    console.log('[server] HTTP server closed');
+    try {
+      const pool = require('./db/pool');
+      await pool.end();
+      console.log('[server] Database pool closed');
+    } catch (e) {
+      console.error('[server] Error closing DB pool:', e.message);
+    }
+    process.exit(0);
+  });
+  // Force exit after 10 s if graceful close takes too long
+  setTimeout(() => {
+    console.error('[server] Graceful shutdown timed out — forcing exit');
+    process.exit(1);
+  }, 10_000).unref();
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
 
 module.exports = app;

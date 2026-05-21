@@ -35,8 +35,8 @@ const BCRYPT_COST = 12;
 
 // ── Token helpers ──────────────────────────────────────────────────────────────
 const ACCESS_TTL   = '15m';          // short-lived, stored in memory on client
-const REFRESH_TTL  = '365d';         // long-lived; stored in localStorage AND httpOnly cookie
-const REFRESH_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 1000;
+const REFRESH_TTL  = '30d';          // 30 days — matches oauth.js; 365d was overly permissive
+const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 
 function makeAccessToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: ACCESS_TTL });
@@ -72,16 +72,21 @@ function clearRefreshCookie(res) {
 
 
 const safeUser = (u) => ({
-  id: u.id,
-  email: u.email,
-  name: u.name,
-  role: u.role,
-  status: u.status,
+  id:         u.id,
+  email:      u.email,
+  name:       u.name,
+  role:       u.role,
+  status:     u.status,
   avatar_url: u.avatar_url,
-  phone: u.phone,
-  location: u.location,
-  bio: u.bio,
+  phone:      u.phone,
+  location:   u.location,
+  bio:        u.bio,
+  country:    u.country,
+  interests:  u.interests,
+  budget:     u.budget,
+  trip_type:  u.trip_type,
   created_at: u.created_at,
+  // Never include: password, provider_id, reset tokens, compliance timestamps
 });
 
 // ── POST /auth/signup ─────────────────────────────────────────────────────────
@@ -170,7 +175,13 @@ router.post('/signin', validate(schemas.signin), async (req, res) => {
 // ── GET /auth/user ────────────────────────────────────────────────────────────
 router.get('/user', authenticate, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const { rows } = await pool.query(
+      `SELECT id, email, name, role, status, avatar_url, phone, location, bio,
+              country, interests, budget, trip_type, created_at
+         FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'User not found' });
     return res.json({ user: safeUser(rows[0]) });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
@@ -214,7 +225,11 @@ router.delete('/account', authenticate, async (req, res) => {
 });
 
 // ── POST /auth/signout ─────────────────────────────────────────────────────────
-router.post('/signout', authenticate, async (req, res) => {
+// Does NOT require authentication — a user whose 15-min access token has already
+// expired still needs to be able to sign out. Skipping auth means the httpOnly
+// refresh cookie is always cleared regardless of token state, preventing orphaned
+// long-lived sessions.
+router.post('/signout', (req, res) => {
   clearRefreshCookie(res);
   return res.json({ success: true });
 });

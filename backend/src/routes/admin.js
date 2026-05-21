@@ -3,9 +3,28 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { cache } = require('../utils/cache');
+const { limiters } = require('../middleware/rateLimit');
 
 // All admin routes require auth + admin role
 router.use(authenticate, requireAdmin);
+
+// ── Ensure audit_logs table exists at module load (not lazily in the GET handler).
+// writeAuditLog is called throughout this module; creating the table eagerly
+// prevents silent failures when the first write happens before a GET.
+pool.query(`
+  CREATE TABLE IF NOT EXISTS audit_logs (
+    id           SERIAL       PRIMARY KEY,
+    admin_id     UUID         REFERENCES users(id) ON DELETE SET NULL,
+    action       VARCHAR(100) NOT NULL,
+    entity_type  VARCHAR(100),
+    entity_id    VARCHAR(100),
+    detail       JSONB,
+    ip_address   VARCHAR(50),
+    created_at   TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_audit_logs_admin ON audit_logs(admin_id);
+  CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC);
+`).catch((e) => console.warn('[admin] audit_logs table init warning:', e.message));
 
 // ── GET /admin/stats?range=7d|30d|90d ────────────────────────────────────────
 router.get('/stats', async (req, res) => {
@@ -111,6 +130,7 @@ router.put('/users/:userId/role', async (req, res) => {
       [role, req.params.userId]
     );
     if (!rows.length) return res.status(404).json({ error: 'User not found' });
+    writeAuditLog(req.user.id, 'user.role_changed', 'user', req.params.userId, req, { newRole: role });
     return res.json({ success: true, user: rows[0] });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
@@ -133,6 +153,7 @@ router.put('/users/:userId/status', async (req, res) => {
       [status, req.params.userId]
     );
     if (!rows.length) return res.status(404).json({ error: 'User not found' });
+    writeAuditLog(req.user.id, 'user.status_changed', 'user', req.params.userId, req, { newStatus: status });
     return res.json({ success: true, user: rows[0] });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
@@ -161,7 +182,18 @@ router.post('/destinations', async (req, res) => {
     if (!name || !category || !region || !description)
       return res.status(400).json({ error: 'name, category, region, description required' });
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    // Handle slug collisions by appending a numeric suffix
+    let slug = baseSlug;
+    let attempt = 0;
+    while (true) {
+      const existing = await pool.query('SELECT id FROM destinations WHERE slug = $1', [slug]);
+      if (!existing.rows.length) break;
+      attempt++;
+      slug = `${baseSlug}-${attempt}`;
+      if (attempt > 99) return res.status(409).json({ error: 'Cannot generate unique slug for this name.' });
+    }
 
     const { rows } = await pool.query(
       `INSERT INTO destinations
@@ -175,9 +207,11 @@ router.post('/destinations', async (req, res) => {
     );
 
     cache.invalidate('/api/destinations');
+    writeAuditLog(req.user.id, 'destination.created', 'destination', rows[0].id, req, { name, slug });
     return res.status(201).json({ success: true, destination: rows[0] });
   } catch (err) {
-    if (err.code === '23505') return res.status(409).json({ error: 'Destination with this name already exists' });
+    if (err.code === '23505') return res.status(409).json({ error: 'Destination with this name already exists.' });
+    console.error('create destination error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
@@ -220,6 +254,7 @@ router.delete('/destinations/:id', async (req, res) => {
     const { rowCount } = await pool.query('DELETE FROM destinations WHERE id = $1', [req.params.id]);
     if (!rowCount) return res.status(404).json({ error: 'Destination not found' });
     cache.invalidate('/api/destinations');
+    writeAuditLog(req.user.id, 'destination.deleted', 'destination', req.params.id, req);
     return res.json({ success: true });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
@@ -288,7 +323,7 @@ router.get('/newsletter/subscribers', async (req, res) => {
 });
 
 // ── POST /admin/newsletter/send ───────────────────────────────────────────────
-router.post('/newsletter/send', async (req, res) => {
+router.post('/newsletter/send', limiters.newsletter, async (req, res) => {
   try {
     const { subject, body } = req.body;
     if (!subject || !body) return res.status(400).json({ error: 'subject and body required' });
@@ -299,6 +334,10 @@ router.post('/newsletter/send', async (req, res) => {
 
     const emails = rows.map(r => r.email);
     const result = await sendNewsletterEmail(emails, subject, body);
+    writeAuditLog(req.user.id, 'newsletter.sent', 'newsletter', 'campaign', req, {
+      subject,
+      recipientCount: emails.length,
+    });
     return res.json({ success: true, message: `Newsletter sent to ${result.sent} subscribers.` });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
@@ -344,57 +383,39 @@ router.get('/check-exists', async (req, res) => {
   }
 });
 
-// ── POST /admin/create-first-admin ────────────────────────────────────────────
-// One-time endpoint — only works if no admin exists yet
-router.post('/create-first-admin', async (req, res) => {
-  try {
-    const { rows } = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
-    if (parseInt(rows[0].count) > 0) {
-      return res.status(403).json({ error: 'Admin already exists' });
-    }
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId required' });
+// NOTE: /admin/create-first-admin was removed. It was unreachable because all
+// admin routes require existing admin auth (router.use(authenticate, requireAdmin)).
+// First admin setup is handled by the migration script via FIRST_ADMIN_EMAIL/PASSWORD
+// environment variables. See backend/src/db/migrate.js.
 
-    await pool.query("UPDATE users SET role = 'admin' WHERE id = $1", [userId]);
-    return res.json({ success: true, message: 'Admin created!' });
-  } catch (err) {
-    return res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// ── POST /admin/audit-log ─────────────────────────────────────────────────────
-// Internal helper — called by admin routes to log actions.
-async function writeAuditLog(adminId, action, entityType, entityId, req) {
+// ── Internal audit log writer ─────────────────────────────────────────────────
+// Non-blocking — logs admin actions for compliance and incident response.
+// Called at every sensitive operation (role/status changes, deletions, newsletter).
+function writeAuditLog(adminId, action, entityType, entityId, req, detail = null) {
   pool.query(
-    `INSERT INTO audit_logs (admin_id, action, entity_type, entity_id, ip_address)
-     VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`,
-    [adminId, action, entityType, entityId, req.ip]
-  ).catch(console.error);
+    `INSERT INTO audit_logs (admin_id, action, entity_type, entity_id, detail, ip_address)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [adminId, action, entityType, String(entityId || ''), detail ? JSON.stringify(detail) : null, req.ip]
+  ).catch((e) => console.error('[audit] write failed:', e.message));
 }
 
 // ── GET /admin/audit-logs ─────────────────────────────────────────────────────
 router.get('/audit-logs', async (req, res) => {
   try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS audit_logs (
-        id           SERIAL PRIMARY KEY,
-        admin_id     UUID    REFERENCES users(id),
-        action       VARCHAR(100) NOT NULL,
-        entity_type  VARCHAR(100),
-        entity_id    VARCHAR(100),
-        ip_address   VARCHAR(50),
-        created_at   TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
+    const limit  = Math.min(parseInt(req.query.limit  || '100', 10), 500);
+    const offset = Math.max(parseInt(req.query.offset || '0',   10), 0);
     const { rows } = await pool.query(`
-      SELECT a.*, u.name AS admin_name, u.email AS admin_email
+      SELECT a.id, a.action, a.entity_type, a.entity_id, a.detail,
+             a.ip_address, a.created_at,
+             u.name AS admin_name, u.email AS admin_email
       FROM audit_logs a
       LEFT JOIN users u ON a.admin_id = u.id
       ORDER BY a.created_at DESC
-      LIMIT 100
-    `);
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
     return res.json({ logs: rows });
   } catch (err) {
+    console.error('audit-logs error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });

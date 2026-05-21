@@ -8,61 +8,47 @@ import { useAuth } from '../contexts/AuthContext';
  * Handles the redirect back from the backend OAuth flow.
  *
  * Backend redirects to: /#/oauth-success?token=<access_token>
- * The refresh token is sent separately as an httpOnly cookie.
+ * The refresh token arrives separately as an httpOnly cookie.
  *
- * This component:
- *   1. Reads access_token from the URL
- *   2. Stores it in localStorage (same keys AuthContext uses)
- *   3. Calls refreshUser() so AuthContext picks up the logged-in user
- *   4. Redirects to /admin (if admin) or / (everyone else)
+ *   1. Read access_token from URL fragment parameters
+ *   2. Strip token from URL bar immediately (replaceState) — prevents history leak
+ *   3. Hand token to AuthContext via setSessionFromToken, which fetches user data
+ *   4. Redirect to /admin (if admin) or / (standard user)
  */
 export function OAuthSuccessPage() {
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { setSessionFromToken } = useAuth();
+  const { setSessionFromToken, user } = useAuth();
 
   useEffect(() => {
     const handleOAuth = async () => {
       try {
-        // Parse ?token=... from the hash
+        // Parse ?token=... from the URL fragment (e.g. /#/oauth-success?token=xxx)
         const hash = window.location.hash;
         const queryStart = hash.indexOf('?');
-        if (queryStart === -1) {
-          throw new Error('No token in URL');
-        }
+        if (queryStart === -1) throw new Error('No token in URL');
+
         const params = new URLSearchParams(hash.slice(queryStart + 1));
         const token = params.get('token') || params.get('access_token');
-        if (!token) {
-          throw new Error('No token in URL');
-        }
+        if (!token) throw new Error('No token in URL');
 
-        // SECURITY: strip the token from the URL bar immediately so it doesn't
-        // sit in browser history / get copy-pasted / leak via screenshots or
-        // session-replay tools. Replace state silently — no navigation event.
-        try {
-          history.replaceState(null, '', '#/oauth-success');
-        } catch { /* non-fatal */ }
+        // SECURITY: strip the token from the URL bar BEFORE any async work so it
+        // can't be captured by browser history, session-replay tools, or screenshot.
+        try { history.replaceState(null, '', '#/oauth-success'); } catch { /* non-fatal */ }
 
-        // Store in memory via AuthContext (no localStorage — security upgrade).
-        // setSessionFromToken stores the token in the module-level variable in api.ts
-        // and fetches the user so AuthContext has the correct user object.
+        // setSessionFromToken stores the token in memory and fetches the user object
+        // into AuthContext — no second fetch needed.
         await setSessionFromToken(token);
-        const user = await import('../utils/api').then(m =>
-          fetch(`${m.API_BASE}/auth/user`, {
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: 'include',
-          }).then(r => r.ok ? r.json() : null)
-        );
-        const isAdmin = user?.user?.role === 'admin';
 
         setStatus('success');
 
-        // Navigate after a brief delay so the user sees the success state
+        // Brief delay so the user sees the success animation before redirect
         setTimeout(() => {
+          // user state is populated by setSessionFromToken above
+          const isAdmin = user?.role === 'admin';
           window.location.hash = isAdmin ? '#/admin' : '#/';
         }, 800);
       } catch (err: any) {
-        console.error('OAuth callback error:', err);
         setStatus('error');
         setErrorMessage(err?.message || 'Sign-in failed');
         setTimeout(() => {
@@ -72,7 +58,7 @@ export function OAuthSuccessPage() {
     };
 
     handleOAuth();
-    // We deliberately run this once on mount; refreshUser changes are fine to ignore
+    // Run once on mount; user ref is captured in the timeout closure
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

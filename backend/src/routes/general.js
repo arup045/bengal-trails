@@ -69,8 +69,8 @@ router.post('/bookings', authenticate, limiters.write, validate(schemas.booking)
     const { rows } = await pool.query(
       `INSERT INTO bookings
          (booking_id, user_id, destination_slug, destination_name, check_in, check_out,
-          guests, rooms, accommodation_type, add_ons, total, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'pending') RETURNING *`,
+          guests, rooms, accommodation_type, add_ons, total, total_amount, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,'pending') RETURNING *`,
       [bookingId, req.user.id, destinationSlug, destinationName, checkIn, checkOut,
        safeGuests, safeRooms, accommodationType, JSON.stringify(addOns || []), authoritativeTotal]
     );

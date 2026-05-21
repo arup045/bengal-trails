@@ -47,11 +47,13 @@ setInterval(() => {
 
 // Pre-configured limiters
 const limiters = {
-  auth: makeLimiter({ windowMs: 15 * 60_000, max: 20, message: 'Too many auth attempts.' }),
-  ai: makeLimiter({ windowMs: 60_000, max: 20, message: 'AI rate limit hit. Try again in a minute.' }),
-  upload: makeLimiter({ windowMs: 60_000, max: 10, message: 'Upload limit hit.' }),
-  write: makeLimiter({ windowMs: 60_000, max: 30, message: 'Slow down — too many writes.' }),
-  general: makeLimiter({ windowMs: 60_000, max: 100 }),
+  auth:      makeLimiter({ windowMs: 15 * 60_000, max: 20,  message: 'Too many auth attempts.' }),
+  ai:        makeLimiter({ windowMs: 60_000,       max: 20,  message: 'AI rate limit hit. Try again in a minute.' }),
+  upload:    makeLimiter({ windowMs: 60_000,       max: 10,  message: 'Upload limit hit.' }),
+  write:     makeLimiter({ windowMs: 60_000,       max: 30,  message: 'Slow down — too many writes.' }),
+  general:   makeLimiter({ windowMs: 60_000,       max: 100 }),
+  // Newsletter campaign send — max 3 per hour per admin to prevent accidental mass-sends.
+  newsletter: makeLimiter({ windowMs: 60 * 60_000, max: 3,  message: 'Newsletter send limit reached. Wait 1 hour.' }),
 };
 
 module.exports = { makeLimiter, limiters };

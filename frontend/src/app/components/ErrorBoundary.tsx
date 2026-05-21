@@ -4,60 +4,73 @@ import { reportError } from '../utils/errorReporter';
 
 interface Props {
   children: ReactNode;
+  /** When true, renders a compact inline fallback instead of a full-page one. */
+  inline?: boolean;
 }
 
 interface State {
   hasError: boolean;
-  error: Error | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  static getDerivedStateFromError() {
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    // Log full detail server-side only; never surface error.message to users
+    // (could leak stack traces, file paths, or internal identifiers).
     reportError(error, { componentStack: errorInfo?.componentStack });
+    if (import.meta.env.DEV) {
+      console.error('[ErrorBoundary]', error, errorInfo);
+    }
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false });
     window.location.reload();
   };
 
   handleGoHome = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false });
     window.location.hash = '#/';
   };
 
   render() {
     if (this.state.hasError) {
+      if (this.props.inline) {
+        return (
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+            <AlertTriangle className="w-10 h-10 text-red-400 mb-3" />
+            <p className="text-gray-700 font-medium mb-1">Something went wrong</p>
+            <p className="text-gray-500 text-sm mb-4">This section failed to load.</p>
+            <button
+              onClick={this.handleReset}
+              className="text-purple-600 text-sm underline hover:no-underline"
+            >
+              Try again
+            </button>
+          </div>
+        );
+      }
+
       return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-6">
+        <div className="min-h-[60vh] bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-10 h-10 text-red-600" />
             </div>
-            
-            <h1 className="text-3xl mb-3 text-gray-900">Oops! Something went wrong</h1>
-            
-            <p className="text-gray-600 mb-6">
-              We're sorry, but something unexpected happened. Don't worry, your data is safe.
-            </p>
 
-            {this.state.error && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-                <p className="text-xs text-gray-500 font-mono break-all">
-                  {this.state.error.message}
-                </p>
-              </div>
-            )}
+            <h1 className="text-3xl mb-3 text-gray-900">Oops! Something went wrong</h1>
+
+            <p className="text-gray-600 mb-6">
+              We're sorry — something unexpected happened. Your data is safe. Please try again or go back home.
+            </p>
 
             <div className="flex gap-3">
               <button
@@ -67,7 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="w-4 h-4" />
                 Try Again
               </button>
-              
+
               <button
                 onClick={this.handleGoHome}
                 className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"

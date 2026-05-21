@@ -50,11 +50,15 @@ const schemas = {
   }),
 
   profile: z.object({
-    name: z.string().min(2).max(100).optional(),
-    phone: z.string().max(20).optional(),
-    location: z.string().max(255).optional(),
+    name: z.string().min(2).max(100).transform(stripHtml).optional(),
+    phone: z.string().max(20).transform(stripHtml).optional(),
+    location: z.string().max(255).transform(stripHtml).optional(),
     bio: z.string().max(500).transform(stripHtml).optional(),
     avatar_url: z.string().url().optional(),
+    country: z.string().max(100).transform(stripHtml).optional(),
+    interests: z.array(z.string().max(100).transform(stripHtml)).max(20).optional(),
+    budget: z.string().max(50).transform(stripHtml).optional(),
+    trip_type: z.string().max(50).transform(stripHtml).optional(),
   }),
 
   review: z.object({
@@ -83,14 +87,14 @@ const schemas = {
   }),
 
   forumThread: z.object({
-    title: z.string().min(5).max(255),
+    title: z.string().min(5).max(255).transform(stripHtml),
     content: z.string().min(10).max(5000).transform(stripHtml),
-    category: z.string().max(100).optional(),
-    tags: z.array(z.string().max(50)).max(10).optional(),
+    category: z.string().max(100).transform(stripHtml).optional(),
+    tags: z.array(z.string().max(50).transform(stripHtml)).max(10).optional(),
   }),
 
   forumReply: z.object({
-    content: z.string().min(1).max(2000),
+    content: z.string().min(1).max(2000).transform(stripHtml),
   }),
 
   socialPost: z.object({
@@ -114,8 +118,8 @@ const schemas = {
   }),
 
   tripPlan: z.object({
-    name: z.string().min(1).max(255),
-    description: z.string().max(2000).optional(),
+    name: z.string().min(1).max(255).transform(stripHtml),
+    description: z.string().max(2000).transform(stripHtml).optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     destinations: z.any().optional(),

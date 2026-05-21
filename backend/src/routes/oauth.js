@@ -58,10 +58,9 @@ function validateState(req) {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-// SECURITY: Access tokens are short-lived (15 min) and stored in memory only.
-// The refresh token in the httpOnly cookie does the long-lived work.
-// Previously this was 7d, which defeated the in-memory storage design —
-// a leaked access token was valid for 7 days.
+// Access tokens are short-lived (15 min), stored in memory only on the client.
+// Refresh tokens live for 30 days — matches auth.js to ensure consistent
+// session lifetime regardless of whether the user signed in via OAuth or password.
 const ACCESS_TTL  = '15m';
 const REFRESH_TTL = '30d';
 const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
@@ -384,9 +383,16 @@ router.get('/facebook/callback', async (req, res) => {
 });
 
 // ── POST /api/auth/signout-oauth ───────────────────────────────────────────────
-// Clears the httpOnly refresh cookie (used in addition to the main /signout)
+// Clears the httpOnly refresh cookie. clearCookie must use the same options
+// that were used to SET the cookie (secure, sameSite, path) or browsers ignore it.
 router.post('/signout-oauth', (req, res) => {
-  res.clearCookie('bt_refresh', { path: '/api/auth' });
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie('bt_refresh', {
+    httpOnly: true,
+    secure:   isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path:     '/api/auth',
+  });
   return res.json({ success: true });
 });
 

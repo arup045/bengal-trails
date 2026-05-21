@@ -65,9 +65,12 @@ router.post('/create-order', authenticate, async (req, res) => {
     const { bookingId, currency = 'INR' } = req.body || {};
     if (!bookingId) return res.status(400).json({ error: 'bookingId required' });
 
-    // Load booking & verify ownership + that it hasn't already been paid
+    // Load booking & verify ownership + that it hasn't already been paid.
+    // COALESCE(total_amount, total) handles legacy rows created before the
+    // total_amount column was added (migration backfill may not cover all rows).
     const { rows } = await client.query(
-      `SELECT booking_id, user_id, status, total_amount
+      `SELECT booking_id, user_id, status,
+              COALESCE(total_amount, total) AS total_amount
          FROM bookings WHERE booking_id = $1`,
       [bookingId]
     );
@@ -79,7 +82,7 @@ router.post('/create-order', authenticate, async (req, res) => {
 
     const serverAmount = Number(booking.total_amount);
     if (!Number.isFinite(serverAmount) || serverAmount <= 0) {
-      return res.status(400).json({ error: 'Invalid booking amount' });
+      return res.status(400).json({ error: 'Invalid booking amount. Contact support.' });
     }
 
     const rzp = getRazorpay();

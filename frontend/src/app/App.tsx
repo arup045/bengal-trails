@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, lazy, Suspense, startTransition } 
 import { AnimatePresence, motion } from 'motion/react';
 import { ChevronUp } from 'lucide-react';
 import { Toaster } from 'sonner';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import { Hero } from './components/Hero';
 import { BentoGrid } from './components/BentoGrid';
 import { Features } from './components/Features';
@@ -9,7 +11,7 @@ import { FavoritePlaces } from './components/FavoritePlaces';
 import { Header } from './components/Header';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { MobileNav } from './components/MobileNav';
-import { DestinationGridSkeleton, BlogCardSkeleton, GenericSkeleton } from './components/Skeletons';
+import { DestinationGridSkeleton } from './components/Skeletons';
 import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
@@ -23,6 +25,7 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { placesData } from './data/places-full';
 import { installGlobalErrorHandlers } from './utils/errorReporter';
 import { setPageMeta, PAGE_META } from './utils/seo';
+import { SITE_URL } from './utils/siteConfig';
 
 
 installGlobalErrorHandlers();
@@ -210,7 +213,6 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<RouteId>('home');
   const [currentSlug, setCurrentSlug] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // Respect user's motion preferences
   usePrefersReducedMotion();
@@ -238,10 +240,10 @@ export default function App() {
         }),
         getFaqSchema(getDefaultPlaceFaqs(currentPlace)),
         getBreadcrumbSchema([
-          { name: 'Home', url: 'https://bengaltrails.netlify.app/#/' },
-          { name: 'Explore', url: 'https://bengaltrails.netlify.app/#/explore' },
-          { name: currentPlace.region || 'West Bengal', url: 'https://bengaltrails.netlify.app/#/explore' },
-          { name: currentPlace.title, url: `https://bengaltrails.netlify.app/#/explore/${currentPlace.slug}` },
+          { name: 'Home',    url: `${SITE_URL}/#/` },
+          { name: 'Explore', url: `${SITE_URL}/#/explore` },
+          { name: currentPlace.region || 'West Bengal', url: `${SITE_URL}/#/explore` },
+          { name: currentPlace.title, url: `${SITE_URL}/#/explore/${currentPlace.slug}` },
         ]),
       );
     }
@@ -249,8 +251,8 @@ export default function App() {
   }, [currentPlace]);
   useStructuredData(structuredData);
 
-  // Get page-specific SEO data
-  const getPageSEO = () => {
+  // Memoized SEO data — only recomputes when the active route changes.
+  const pageSEO = useMemo(() => {
     if (currentPage === 'place' && currentSlug) {
       const place = placesData.find((p: any) => p.slug === currentSlug);
       if (place) {
@@ -258,7 +260,7 @@ export default function App() {
           title: `${place.title} – ${place.region} | Bengal Trails`,
           description: place.excerpt || place.description?.slice(0, 160) || '',
           image: place.heroImage?.url,
-          url: `https://bengaltrails.netlify.app/#/explore/${place.slug}`,
+          url: `${SITE_URL}/#/explore/${place.slug}`,
         };
       }
     }
@@ -299,9 +301,7 @@ export default function App() {
           description: 'Your complete guide to West Bengal tourism. Discover destinations, plan trips, explore culture.',
         };
     }
-  };
-
-  const pageSEO = getPageSEO();
+  }, [currentPage, currentSlug]);
 
   // Hash-based routing. Resolution is table-driven (see resolveRoute above),
   // so adding a new page is a one-liner in STATIC_ROUTES rather than another
@@ -390,6 +390,7 @@ export default function App() {
 
 
   return (
+    <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <AuthProvider>
         <div className="min-h-screen bg-white">
@@ -419,13 +420,13 @@ export default function App() {
             }}
           />
 
-        <ErrorBoundary>
           <AnnouncementBar />
-          {/* Header is now universal across all pages */}
+          {/* Header is universal across all pages */}
           <Header />
-      <MobileNav />
+          <MobileNav />
 
           <main id="main-content" role="main" tabIndex={-1} className="">
+            <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               {currentPage === 'home' && (
                 <>
@@ -537,8 +538,8 @@ export default function App() {
 
               {currentPage === 'not-found' && <NotFoundPage />}
             </Suspense>
+            </ErrorBoundary>
           </main>
-        </ErrorBoundary>
 
         {/* Footer is now universal across all pages */}
         <Footer />
@@ -570,5 +571,6 @@ export default function App() {
       </div>
     </AuthProvider>
     </LanguageProvider>
+    </QueryClientProvider>
   );
 }
