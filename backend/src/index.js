@@ -88,6 +88,16 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // ── Body Parsing ──────────────────────────────────────────────────────────────
+// IMPORTANT: webhook routes need the RAW request body for HMAC signature
+// verification. Mount the raw-body parser ONLY on the webhook path and BEFORE
+// the generic express.json() middleware so the JSON body isn't pre-parsed.
+app.use('/api/payments/webhook', express.raw({ type: 'application/json', limit: '1mb' }), (req, _res, next) => {
+  req.rawBody = req.body;          // raw Buffer for HMAC verify
+  try { req.body = req.body && req.body.length ? JSON.parse(req.body.toString()) : {}; }
+  catch { req.body = {}; }
+  next();
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Parses httpOnly cookies (used by OAuth refresh-token flow)

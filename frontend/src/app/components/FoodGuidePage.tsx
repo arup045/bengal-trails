@@ -225,15 +225,13 @@ export function FoodGuidePage() {
 
       {/* ────────────────────────────── HERO ──────────────────────────── */}
       <section className="relative overflow-hidden">
-        {/* Brand-anchored gradient: slate-900 base + purple→amber accent, with food imagery */}
-        <div className="absolute inset-0 bg-slate-900" />
+        {/* Vivid food imagery with light gradient overlay for text legibility only */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1600&q=70)' }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1600&q=85)' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/85 via-slate-900/70 to-amber-800/60" />
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" aria-hidden="true" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl" aria-hidden="true" />
+        {/* Minimal dark overlay just for text readability — no purple blur */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60" />
 
         <div className="relative max-w-6xl mx-auto px-6 py-20 sm:py-24 text-white">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-poppins font-medium mb-6">

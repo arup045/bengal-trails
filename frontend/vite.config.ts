@@ -10,9 +10,8 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src/app'),
     },
   },
-  // optimizeDeps helps in DEV. manualChunks fixes the TDZ crash in PRODUCTION.
-  // motion v12 has an ESM module ordering issue — bundling it as its own chunk
-  // ensures it fully initialises before any component that imports from it.
+  // Pre-bundle these CJS/ESM-mixed packages so Vite resolves their named
+  // exports correctly in both dev and prod.
   optimizeDeps: {
     include: ['motion/react', 'motion', 'recharts'],
   },
@@ -25,19 +24,32 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    chunkSizeWarningLimit: 1200,
+    chunkSizeWarningLimit: 1500,
+    commonjsOptions: {
+      // Recharts ships some CJS-style internals — let the plugin
+      // hoist their imports so named exports always resolve.
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-motion':   ['motion/react'],
-          'vendor-react':    ['react', 'react-dom'],
-          // Recharts has the same ESM module-ordering issue as motion. Bundling
-          // it as its own chunk ensures ResponsiveContainer & friends fully
-          // initialise before AdminDashboard / AnalyticsDashboard load.
-          'vendor-recharts': ['recharts'],
-          // Sanitization runs on every blog/AI render — keep it in its own chunk
-          // so it's cached separately across deploys.
-          'vendor-sanitize': ['isomorphic-dompurify'],
+        // Function-form manualChunks: ensures recharts AND its deep
+        // dependencies (d3-shape, d3-scale, victory-vendor, etc.) all land
+        // in the SAME chunk so named exports cannot deadlock at runtime.
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('motion'))        return 'vendor-motion';
+            if (id.includes('recharts')
+             || id.includes('victory')
+             || id.includes('d3-shape')
+             || id.includes('d3-scale')
+             || id.includes('d3-array')
+             || id.includes('d3-time'))       return 'vendor-recharts';
+            if (id.includes('isomorphic-dompurify')
+             || id.includes('dompurify'))     return 'vendor-sanitize';
+            if (id.includes('react-dom')
+             || id.includes('/react/')
+             || id.includes('scheduler'))     return 'vendor-react';
+          }
         },
       },
     },

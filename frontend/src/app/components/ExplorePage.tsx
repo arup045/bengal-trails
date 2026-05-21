@@ -170,8 +170,12 @@ export function ExplorePage() {
 
   // Filter and sort logic
   const filteredPlaces = useMemo(() => {
-    // Use API data if available, else fall back to static
-    let filtered: any[] = apiPlaces && apiPlaces.length > 0
+    // Use API data if available, else fall back to static.
+    // Falling back to static when API returns empty (not just unset) prevents
+    // showing "0 destinations" while the API is still being recomputed after
+    // a review change or while the Render dyno is cold-starting.
+    const hasApiData = Array.isArray(apiPlaces) && apiPlaces.length > 0;
+    let filtered: any[] = hasApiData
       ? apiPlaces.map((p: any) => ({
           ...p,
           // Map every field PlaceDetailPage / ExplorePage / FavoritePlaces / wishlist may access

@@ -468,6 +468,27 @@ async function migrate() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS interests TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS budget    VARCHAR(50);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS trip_type VARCHAR(50);
+    `);
+
+    // ── One-time cleanup: remove all fake demo reviews & demo users ──────────
+    // The seed-content.js script used to insert sample reviews from fake users
+    // (priya@bengaltrails.com, arjun@bengaltrails.com, rohan@bengaltrails.com).
+    // This block deletes any leftover demo data so the platform shows only
+    // genuine user reviews. Safe to run repeatedly — uses NOT EXISTS guards.
+    await client.query(`
+      DELETE FROM reviews
+       WHERE user_id IN (
+         SELECT id FROM users
+         WHERE email IN ('priya@bengaltrails.com', 'arjun@bengaltrails.com', 'rohan@bengaltrails.com')
+       );
+      DELETE FROM users
+       WHERE email IN ('priya@bengaltrails.com', 'arjun@bengaltrails.com', 'rohan@bengaltrails.com');
+      UPDATE destinations d
+         SET review_count = (SELECT COUNT(*)                   FROM reviews WHERE destination_slug = d.slug AND status = 'published'),
+             rating       = COALESCE(
+                              (SELECT AVG(rating)::numeric(3,2) FROM reviews WHERE destination_slug = d.slug AND status = 'published'),
+                              0
+                            );
       -- Compliance: store when the user agreed to T&C / privacy.
       -- Required for India DPDP Act 2023 and GDPR audit trails.
       ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at   TIMESTAMPTZ;
@@ -554,6 +575,30 @@ async function migrate() {
     `);
 
     await client.query('COMMIT');
+
+    // ── Safe ALTERs for payment hardening (idempotent — re-runnable) ────────
+    // Adds columns required by the new payments.js state machine without
+    // touching existing rows.
+    await client.query(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS razorpay_order_id   VARCHAR(64);
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR(64);
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS paid_at             TIMESTAMPTZ;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS total_amount        DECIMAL(10,2);
+    `).catch(e => console.warn('[migrate] booking ALTERs warn:', e.message));
+
+    // Backfill total_amount from existing `total` column (one-time)
+    await client.query(`UPDATE bookings SET total_amount = total WHERE total_amount IS NULL AND total IS NOT NULL`).catch(() => {});
+
+    // Allow new lifecycle states without dropping the original constraint hard
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check;
+        ALTER TABLE bookings ADD CONSTRAINT bookings_status_check
+          CHECK (status IN ('created','pending','confirmed','cancelled','completed','failed','refunded'));
+      EXCEPTION WHEN others THEN NULL; END $$;
+    `).catch(() => {});
+
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_bookings_rzp_order ON bookings(razorpay_order_id)`).catch(() => {});
     console.log('✅ Migration complete!');
 
     // Print credentials ONLY in dev, and ONLY when the admin was actually just created.

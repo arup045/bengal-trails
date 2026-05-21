@@ -6,15 +6,15 @@ import { API_BASE } from '../utils/api';
 interface Place { name: string; slug: string; image_url?: string; imageUrl?: string; region?: string; rating?: number; category?: string; }
 
 const FALLBACK: Place[] = [
-  { name: 'Darjeeling',        slug: 'darjeeling',               region: 'North Bengal', rating: 4.9, category: 'Hill Station',
+  { name: 'Darjeeling',        slug: 'darjeeling',               region: 'North Bengal', category: 'Hill Station',
     image_url: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800' },
-  { name: 'Sundarbans',        slug: 'sundarbans-national-park', region: 'South Bengal', rating: 4.8, category: 'Wildlife',
+  { name: 'Sundarbans',        slug: 'sundarbans-national-park', region: 'South Bengal', category: 'Wildlife',
     image_url: 'https://images.unsplash.com/photo-1585136917228-63d6c2a43ffa?w=600' },
-  { name: 'Victoria Memorial', slug: 'victoria-memorial-kolkata',region: 'Kolkata',      rating: 4.7, category: 'Heritage',
+  { name: 'Victoria Memorial', slug: 'victoria-memorial-kolkata',region: 'Kolkata',      category: 'Heritage',
     image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600' },
-  { name: 'Bishnupur',         slug: 'bishnupur',                region: 'Bankura',      rating: 4.6, category: 'Heritage',
+  { name: 'Bishnupur',         slug: 'bishnupur',                region: 'Bankura',      category: 'Heritage',
     image_url: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600' },
-  { name: 'Digha',             slug: 'digha',                    region: 'East Midnapore',rating: 4.5, category: 'Beach',
+  { name: 'Digha',             slug: 'digha',                    region: 'East Midnapore', category: 'Beach',
     image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
 ];
 
@@ -33,9 +33,9 @@ function PlaceCard({ place, large = false }: { place: Place; large?: boolean }) 
         <div className="flex items-center gap-1.5 mb-1">
           <MapPin className="w-3 h-3 text-white/70" />
           <span className="font-poppins text-xs text-white/70">{place.region}</span>
-          {place.rating && (
+          {place.rating && place.rating > 0 && (
             <span className="ml-auto flex items-center gap-0.5 font-poppins text-xs text-amber-300 font-medium">
-              <Star className="w-3 h-3 fill-amber-300" />{place.rating}
+              <Star className="w-3 h-3 fill-amber-300" />{Number(place.rating).toFixed(1)}
             </span>
           )}
         </div>

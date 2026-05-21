@@ -70,20 +70,18 @@ export function AboutUsPage() {
     <div className="min-h-screen bg-white pt-16">
 
       {/* ── Hero Banner ─────────────────────────────────────────────── */}
-      <section className="relative bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
-        {/* Background hero image */}
+      <section className="relative text-white overflow-hidden">
+        {/* Banner image — clear and vivid */}
         <div className="absolute inset-0">
           <img
             src="https://i1-c.pinimg.com/1200x/b5/3e/2b/b53e2b7b4ba5e4efaaf5208513d6b866.jpg"
             alt="West Bengal landscape"
-            className="w-full h-full object-cover opacity-30"
+            className="w-full h-full object-cover"
             loading="eager"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/85 via-purple-800/80 to-indigo-900/85" />
+          {/* Minimal dark gradient just for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70" />
         </div>
-        {/* Decorative pattern */}
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
             <Heart className="w-4 h-4 text-rose-400" />
