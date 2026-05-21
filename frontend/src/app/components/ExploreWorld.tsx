@@ -59,11 +59,21 @@ export function ExploreWorld() {
 
   useEffect(() => {
     let alive = true;
-    fetch(`${API_BASE}/destinations?limit=25&featured=true`)
+    // featured=false → show the REST of the catalog. BentoGrid already shows the
+    // featured destinations near the top of the home page, so requesting only
+    // non-featured here means the two grids never repeat the same places.
+    // Falls back to the full list if there happen to be no non-featured rows.
+    fetch(`${API_BASE}/destinations?limit=25&featured=false`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (!alive || !d?.destinations) return;
-        const mapped: Place[] = d.destinations.map((p: ApiDestination) => ({
+      .then(async d => {
+        if (!alive) return;
+        let list = d?.destinations;
+        if (!list || list.length === 0) {
+          // Fallback: no non-featured destinations exist — show the general list.
+          const r2 = await fetch(`${API_BASE}/destinations?limit=25`).then(r => r.ok ? r.json() : null).catch(() => null);
+          list = r2?.destinations || [];
+        }
+        const mapped: Place[] = list.map((p: ApiDestination) => ({
           name:    p.name,
           slug:    p.slug,
           category: normaliseCategory(p.category || p.region),
@@ -105,7 +115,7 @@ export function ExploreWorld() {
     <section className="py-16 px-6 bg-gray-50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
-          <p className="font-poppins text-purple-600 uppercase tracking-widest text-xs font-semibold mb-2">Discover Bengal</p>
+          <p className="font-poppins text-purple-600 uppercase tracking-widest text-xs font-semibold mb-2">More to Explore</p>
           <h2 className="font-poppins text-3xl md:text-4xl font-bold text-slate-900 mb-6">Explore West Bengal</h2>
           {/* Category filters */}
           <div className="flex flex-wrap justify-center gap-2">

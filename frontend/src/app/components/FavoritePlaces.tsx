@@ -1,6 +1,7 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { buildSrcSet } from '../utils/responsiveImage';
+import { API_BASE } from '../utils/api';
 
 import { OptimizedImage } from './OptimizedImage';
 const PlaceCardMemo = memo(({ place }: { place: { name: string; slug: string; image: string } }) => (
@@ -28,34 +29,58 @@ const PlaceCardMemo = memo(({ place }: { place: { name: string; slug: string; im
 
 PlaceCardMemo.displayName = 'PlaceCard';
 
+// Curated fallback — shown until the API returns real "most viewed" data (or if
+// view counts aren't populated yet / the request fails). Hand-picked imagery keeps
+// this strip looking good on a fresh database.
+const CURATED_PLACES = [
+  {
+    name: 'Darjeeling',
+    slug: 'darjeeling',
+    image: 'https://images.unsplash.com/photo-1679418536818-7a7fb2db49bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJqZWVsaW5nJTIwdGVhJTIwZ2FyZGVuc3xlbnwxfHx8fDE3NjM0NDc5MDd8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    name: 'Victoria Memorial',
+    slug: 'victoria-memorial-kolkata',
+    image: 'https://images.unsplash.com/photo-1697817665440-f988c6d5080f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWN0b3JpYSUyMG1lbW9yaWFsJTIwa29sa2F0YXxlbnwxfHx8fDE3NjM0NzU2MTB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    name: 'Sundarbans',
+    slug: 'sundarbans-national-park',
+    image: 'https://images.unsplash.com/photo-1705521680496-d5d7b22c14f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdW5kYXJiYW5zJTIwbWFuZ3JvdmUlMjBmb3Jlc3R8ZW58MXx8fHwxNzYzNTMwNjU1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    name: 'Kalimpong',
+    slug: 'kalimpong',
+    image: 'https://images.unsplash.com/photo-1637825987997-6e6d117b81b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrYWxpbXBvbmclMjBtb25hc3Rlcnl8ZW58MXx8fHwxNzYzNTMwNjU1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    name: 'Digha',
+    slug: 'digha',
+    image: 'https://images.unsplash.com/photo-1695332599891-7c85956b9f46?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaWdoYSUyMGJlYWNoJTIwc3Vuc2V0fGVufDF8fHx8MTc2MzUzMDY1NXww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+];
+
 export function FavoritePlaces() {
-  const places = [
-    {
-      name: 'Darjeeling',
-      slug: 'darjeeling',
-      image: 'https://images.unsplash.com/photo-1679418536818-7a7fb2db49bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJqZWVsaW5nJTIwdGVhJTIwZ2FyZGVuc3xlbnwxfHx8fDE3NjM0NDc5MDd8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    },
-    {
-      name: 'Victoria Memorial',
-      slug: 'victoria-memorial-kolkata',
-      image: 'https://images.unsplash.com/photo-1697817665440-f988c6d5080f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWN0b3JpYSUyMG1lbW9yaWFsJTIwa29sa2F0YXxlbnwxfHx8fDE3NjM0NzU2MTB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    },
-    {
-      name: 'Sundarbans',
-      slug: 'sundarbans-national-park',
-      image: 'https://images.unsplash.com/photo-1705521680496-d5d7b22c14f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdW5kYXJiYW5zJTIwbWFuZ3JvdmUlMjBmb3Jlc3R8ZW58MXx8fHwxNzYzNTMwNjU1fDA&ixlib=rb-4.1.0&q=80&w=1080',
-    },
-    {
-      name: 'Kalimpong',
-      slug: 'kalimpong',
-      image: 'https://images.unsplash.com/photo-1637825987997-6e6d117b81b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrYWxpbXBvbmclMjBtb25hc3Rlcnl8ZW58MXx8fHwxNzYzNTMwNjU1fDA&ixlib=rb-4.1.0&q=80&w=1080',
-    },
-    {
-      name: 'Digha',
-      slug: 'digha',
-      image: 'https://images.unsplash.com/photo-1695332599891-7c85956b9f46?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaWdoYSUyMGJlYWNoJTIwc3Vuc2V0fGVufDF8fHx8MTc2MzUzMDY1NXww&ixlib=rb-4.1.0&q=80&w=1080',
-    },
-  ];
+  // "Most Popular" = the real most-viewed destinations. Falls back to the curated
+  // list above until enough view data exists, so the strip is never empty/ugly.
+  const [places, setPlaces] = useState(CURATED_PLACES);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`${API_BASE}/destinations?sort=popular&limit=5`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!alive || !d?.destinations) return;
+        const mapped = d.destinations
+          .map((p: any) => ({ name: p.name, slug: p.slug, image: p.image_url || p.imageUrl || '' }))
+          .filter((p: any) => p.name && p.slug && p.image);
+        // Only swap in real data when we have a full strip of 5 with images —
+        // otherwise keep the curated fallback so the layout always looks complete.
+        if (mapped.length >= 5) setPlaces(mapped.slice(0, 5));
+      })
+      .catch(() => { /* keep curated fallback */ });
+    return () => { alive = false; };
+  }, []);
 
   return (
     <section className="py-20 px-6 bg-white">

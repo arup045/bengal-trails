@@ -3,7 +3,10 @@ const pool   = require('../db/pool');
 const { cacheMiddleware } = require('../utils/cache');
 
 // ── GET /destinations ──────────────────────────────────────────────────────────
-// ?region= &category= &featured=true &search= &limit=24 &page=1
+// ?region= &category= &featured=true|false &search= &limit=24 &page=1
+// featured=true  → only featured destinations
+// featured=false → only NON-featured destinations (lets the home page show the
+//                  rest of the catalog without repeating the featured grid)
 router.get('/', cacheMiddleware(60), async (req, res) => {
   try {
     const { region, category, featured } = req.query;
@@ -18,7 +21,8 @@ router.get('/', cacheMiddleware(60), async (req, res) => {
 
     if (region)           { params.push(region);   clauses.push(`region = $${params.length}`); }
     if (category)         { params.push(category); clauses.push(`category = $${params.length}`); }
-    if (featured === 'true') clauses.push('featured = true');
+    if (featured === 'true')  clauses.push('featured = true');
+    else if (featured === 'false') clauses.push('featured = false');
     if (search) {
       params.push(`%${search.toLowerCase()}%`);
       const i = params.length;
@@ -27,11 +31,17 @@ router.get('/', cacheMiddleware(60), async (req, res) => {
 
     const where = clauses.join(' AND ');
 
+    // Whitelisted sort orders (never interpolate raw user input into SQL).
+    // 'popular' = most viewed (real view_count), used by the home "Most Popular" strip.
+    const orderBy = req.query.sort === 'popular'
+      ? 'view_count DESC NULLS LAST, rating DESC NULLS LAST'
+      : 'featured DESC, rating DESC NULLS LAST';
+
     const [countRes, dataRes] = await Promise.all([
       pool.query(`SELECT COUNT(*) FROM destinations WHERE ${where}`, params),
       pool.query(
         `SELECT * FROM destinations WHERE ${where}
-         ORDER BY featured DESC, rating DESC NULLS LAST
+         ORDER BY ${orderBy}
          LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
         [...params, limitNum, offset]
       ),
