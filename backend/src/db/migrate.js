@@ -599,6 +599,68 @@ async function migrate() {
     `).catch(() => {});
 
     await client.query(`CREATE INDEX IF NOT EXISTS idx_bookings_rzp_order ON bookings(razorpay_order_id)`).catch(() => {});
+
+    // ── One-time fake-data cleanup (idempotent) ─────────────────────────────
+    // Render free tier doesn't include Shell access, so we wipe seeded
+    // fake reviews / users on every migrate.js run. Safe to re-run — only
+    // deletes rows that match the known seed-data fingerprints.
+    try {
+      const seedEmails = [
+        'priya@bengaltrails.com',  'arjun@bengaltrails.com',  'rohan@bengaltrails.com',
+        'riya@bengaltrails.com',   'suman@bengaltrails.com',  'anjali@bengaltrails.com',
+      ];
+
+      const r1 = await client.query(
+        `DELETE FROM reviews WHERE user_id IN (SELECT id FROM users WHERE email = ANY($1::text[]))`,
+        [seedEmails]
+      );
+
+      // Any review whose author has a pravatar.cc avatar is a seed user
+      const r2 = await client.query(`
+        DELETE FROM reviews WHERE user_id IN (
+          SELECT id FROM users WHERE avatar_url LIKE '%pravatar.cc%'
+        )
+      `).catch(() => ({ rowCount: 0 }));
+
+      // Recompute destination ratings from remaining (real) reviews
+      const r3 = await client.query(`
+        UPDATE destinations
+        SET review_count = COALESCE((
+              SELECT COUNT(*) FROM reviews
+              WHERE destination_slug = destinations.slug AND status = 'published'
+            ), 0),
+            rating = COALESCE((
+              SELECT AVG(rating)::numeric(3,2) FROM reviews
+              WHERE destination_slug = destinations.slug AND status = 'published'
+            ), 0)
+      `);
+
+      // Remove fake blog posts (specific known seed authors)
+      const r4 = await client.query(`
+        DELETE FROM blog_posts WHERE author IN
+          ('Riya Sen','Arjun Banerjee','Priya Roy','Suman Ghosh','Rohan Das','Anjali Mukherjee')
+      `).catch(() => ({ rowCount: 0 }));
+
+      // Remove fake forum threads from seed accounts
+      const r5 = await client.query(
+        `DELETE FROM forum_threads WHERE user_id IN (SELECT id FROM users WHERE email = ANY($1::text[]))`,
+        [seedEmails]
+      ).catch(() => ({ rowCount: 0 }));
+
+      // Finally remove the seed user accounts themselves
+      const r6 = await client.query(
+        `DELETE FROM users WHERE email = ANY($1::text[])`,
+        [seedEmails]
+      );
+
+      const total = (r1.rowCount || 0) + (r2.rowCount || 0) + (r4.rowCount || 0) + (r5.rowCount || 0) + (r6.rowCount || 0);
+      if (total > 0) {
+        console.log(`🧹 Cleaned ${r1.rowCount} fake reviews, ${r2.rowCount} pravatar reviews, ${r4.rowCount} seed blog posts, ${r5.rowCount} seed forum threads, ${r6.rowCount} seed users`);
+        console.log(`   Recomputed ratings for ${r3.rowCount} destinations`);
+      }
+    } catch (err) {
+      console.warn('[migrate] fake-data cleanup warn:', err.message);
+    }
     console.log('✅ Migration complete!');
 
     // Print credentials ONLY in dev, and ONLY when the admin was actually just created.
@@ -624,7 +686,13 @@ async function migrate() {
     process.exit(1);
   } finally {
     client.release();
-    pool.end();
+    // Only close the pool when migrate.js runs standalone (e.g. `npm run migrate`).
+    // When chained via `node src/db/migrate.js && node src/index.js`, the server
+    // process exits the migrate script first, so we just release the client and
+    // let the OS reap the pool when the process exits.
+    if (require.main === module) {
+      await pool.end().catch(() => {});
+    }
   }
 }
 
