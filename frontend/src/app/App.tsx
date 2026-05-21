@@ -22,7 +22,10 @@ import { SEOHead, useStructuredData, getOrganizationSchema, getWebsiteSchema, ge
 import { GoogleAnalytics, trackPageView } from './components/Analytics';
 import { AITravelAssistant } from './components/AITravelAssistant';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
-import { placesData } from './data/places-full';
+// NOTE: places-full is ~490 KB. It is ONLY needed to build JSON-LD structured
+// data on place-detail pages, so we lazy-load it on demand (see the effect in
+// App) instead of importing it eagerly — that alone keeps it out of the initial
+// bundle. PlaceDetailPage loads its own content from the API independently.
 import { installGlobalErrorHandlers } from './utils/errorReporter';
 import { setPageMeta, PAGE_META } from './utils/seo';
 import { SITE_URL } from './utils/siteConfig';
@@ -213,14 +216,24 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<RouteId>('home');
   const [currentSlug, setCurrentSlug] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
+  // placesData is loaded on demand (it's ~490 KB) the first time a place page is
+  // viewed; until then it's an empty array, which all consumers handle gracefully.
+  const [placesData, setPlacesData] = useState<any[]>([]);
 
   // Respect user's motion preferences
   usePrefersReducedMotion();
 
+  // Lazy-load the heavy static place dataset only when a place page is opened.
+  useEffect(() => {
+    if (currentPage === 'place' && placesData.length === 0) {
+      import('./data/places-full').then(m => setPlacesData(m.placesData)).catch(() => {});
+    }
+  }, [currentPage, placesData.length]);
+
   // Add structured data for SEO (memoized to avoid re-running effect every render)
   const currentPlace = useMemo(
     () => (currentPage === 'place' && currentSlug ? placesData.find((p: any) => p.slug === currentSlug) : null),
-    [currentPage, currentSlug],
+    [currentPage, currentSlug, placesData],
   );
 
   const structuredData = useMemo(() => {
@@ -301,7 +314,7 @@ export default function App() {
           description: 'Your complete guide to West Bengal tourism. Discover destinations, plan trips, explore culture.',
         };
     }
-  }, [currentPage, currentSlug]);
+  }, [currentPage, currentSlug, placesData]);
 
   // Hash-based routing. Resolution is table-driven (see resolveRoute above),
   // so adding a new page is a one-liner in STATIC_ROUTES rather than another

@@ -103,7 +103,7 @@ export function AnalyticsDashboard() {
               <XAxis type="number" tick={{ fontSize: 11 }} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={110} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-              <Bar dataKey="view_count" fill="#9333ea" radius={[0,4,4,0]} />
+              <Bar dataKey="viewCount" fill="#9333ea" radius={[0,4,4,0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -1,4 +1,4 @@
-import { API_BASE, getToken} from '../utils/api';
+import { authFetch } from '../utils/api';
 import React, { useState } from 'react';
 import { Calendar, Users, Home, MapPin, CheckCircle, CreditCard, Shield, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -97,31 +97,53 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
     try {
       setLoading(true);
 
-      // Step 1: Create Razorpay order on backend
-      const orderRes = await fetch(`${API_BASE}/payments/create-order`, {
+      // The backend is BOOKING-FIRST: a booking row must exist (status 'pending')
+      // before a payment order can be created, because the order amount is read
+      // server-side from the booking — never trusted from the client.
+
+      // Step 1: Create the booking → returns a bookingId (status 'pending').
+      const bookingRes = await authFetch('/bookings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken() || ''}`,
-        },
-        body: JSON.stringify({ amount: Math.round(costs.total) }),
+        body: JSON.stringify({
+          destinationSlug,
+          destinationName,
+          ...booking,
+          total: Math.round(costs.total),
+        }),
+      });
+      const bookingData = await bookingRes.json();
+      if (!bookingRes.ok) {
+        toast.error(bookingData.error || 'Could not create booking');
+        setLoading(false);
+        return;
+      }
+      const newBookingId: string = bookingData.bookingId;
+
+      // Step 2: Create a Razorpay order FOR that booking (server uses its amount).
+      const orderRes = await authFetch('/payments/create-order', {
+        method: 'POST',
+        body: JSON.stringify({ bookingId: newBookingId }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
-        toast.error(orderData.error || 'Could not create payment order');
+        toast.error(orderData.error || 'Could not start payment');
         setLoading(false);
         return;
       }
 
-      // Step 2: If real Razorpay, open checkout; if dev mode, skip directly to booking
-      if (!orderData.order?.dev_mode && orderData.keyId !== 'dev_mode_no_real_payment') {
+      // Step 3: Real Razorpay checkout. Skipped automatically when the backend
+      // reports dev mode (no Razorpay keys configured).
+      const isDevMode = orderData.devMode === true || orderData.keyId === 'dev_mode_no_real_payment';
+      if (!isDevMode) {
         const sdkLoaded = await loadRazorpay();
         if (!sdkLoaded) {
           toast.error('Could not load payment gateway. Try again.');
           setLoading(false);
           return;
         }
-        const paymentResult: { paymentId: string; orderId: string; signature: string } | null = await new Promise((resolve) => {
+        // Razorpay's checkout SDK returns its OWN snake_case fields in the handler —
+        // these are NOT from our API and must stay snake_case.
+        const paymentResult: any = await new Promise((resolve) => {
           const rzp = new (window as any).Razorpay({
             key: orderData.keyId,
             amount: orderData.order.amount,
@@ -134,65 +156,44 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
               email: user.email || '',
             },
             theme: { color: '#9333ea' },
-            handler: (response: any) => resolve({
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-              signature: response.razorpay_signature,
-            }),
+            handler: (response: any) => resolve(response),
             modal: { ondismiss: () => resolve(null) },
           });
           rzp.open();
         });
 
         if (!paymentResult) {
-          toast.info('Payment cancelled');
+          toast.info('Payment cancelled — your booking is reserved but unpaid.');
           setLoading(false);
           return;
         }
 
-        // Step 3: Verify payment on backend
-        const verifyRes = await fetch(`${API_BASE}/payments/verify`, {
+        // Step 4: Verify the payment server-side → backend confirms the booking.
+        const verifyRes = await authFetch('/payments/verify', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getToken() || ''}`,
-          },
-          body: JSON.stringify(paymentResult),
+          body: JSON.stringify({
+            bookingId: newBookingId,
+            razorpay_order_id:   paymentResult.razorpay_order_id,
+            razorpay_payment_id: paymentResult.razorpay_payment_id,
+            razorpay_signature:  paymentResult.razorpay_signature,
+          }),
         });
         if (!verifyRes.ok) {
           toast.error('Payment verification failed');
           setLoading(false);
           return;
         }
-      }
-
-      // Step 4: Create booking record (works for both real and dev mode)
-      const response = await fetch(
-        `${API_BASE}/bookings`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getToken() || ''}`,
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            destinationSlug,
-            destinationName,
-            ...booking,
-            total: calculateTotal().total,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setBookingId(data.bookingId);
-        setStep('success');
-        toast.success('Booking confirmed successfully!');
       } else {
-        toast.error('Failed to complete booking');
+        // Dev mode — confirm the booking without a real charge.
+        await authFetch('/payments/verify', {
+          method: 'POST',
+          body: JSON.stringify({ bookingId: newBookingId }),
+        });
       }
+
+      setBookingId(newBookingId);
+      setStep('success');
+      toast.success('Booking confirmed successfully!');
     } catch (error) {
       console.error('Error submitting booking:', error);
       toast.error('Failed to complete booking');

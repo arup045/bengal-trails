@@ -41,7 +41,7 @@ export const UserGeneratedContent: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `${API_BASE}/user-content?type=${filter}&sort=${sortBy}`,
+        `${API_BASE}/gamification/user-content?type=${filter}&sort=${sortBy}`,
         {
           headers: {
             Authorization: `Bearer ${getToken() || ''}`,
@@ -68,7 +68,7 @@ export const UserGeneratedContent: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${API_BASE}/user-content/${contentId}/like`,
+        `${API_BASE}/gamification/user-content/${contentId}/like`,
         {
           method: 'POST',
           headers: {

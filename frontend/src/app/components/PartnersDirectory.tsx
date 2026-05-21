@@ -35,7 +35,21 @@ export function PartnersDirectory() {
     if (area) params.set('area', area);
     fetch(`${API_BASE}/vendors/approved?${params}`)
       .then(r => r.ok ? r.json() : { vendors: [] })
-      .then(d => setVendors(d.vendors || []))
+      // The API camelCases all keys (business_name → businessName …). This
+      // component is written against snake_case, so map each vendor back once
+      // here rather than guarding every field in the JSX. Falls back to
+      // snake_case so it keeps working regardless of API casing.
+      .then(d => setVendors((d.vendors || []).map((v: any): Vendor => ({
+        business_name:  v.businessName  ?? v.business_name,
+        business_type:  v.businessType  ?? v.business_type,
+        description:    v.description,
+        experience_yrs: v.experienceYrs ?? v.experience_yrs,
+        languages:      v.languages,
+        service_areas:  v.serviceAreas  ?? v.service_areas,
+        website:        v.website,
+        guide_name:     v.guideName     ?? v.guide_name,
+        avatar_url:     v.avatarUrl      ?? v.avatar_url,
+      }))))
       .finally(() => setLoading(false));
   }, [type, area]);
 

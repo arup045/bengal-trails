@@ -124,6 +124,30 @@ export async function apiJson<T = any>(path: string, init: RequestInit = {}): Pr
   return res.json();
 }
 
+// ── Search analytics ──────────────────────────────────────────────────────────
+// Fire-and-forget: records a COMMITTED search so the admin dashboard can show
+// real top queries. Never blocks or throws — analytics must not affect search UX.
+let _lastTrackedSearch = '';
+export function trackSearch(query: string): void {
+  const q = (query || '').trim();
+  if (q.length < 2) return;
+  // De-dupe identical consecutive searches (e.g. re-mounts firing the same query).
+  if (q.toLowerCase() === _lastTrackedSearch) return;
+  _lastTrackedSearch = q.toLowerCase();
+  try {
+    fetch(`${API_BASE}/search/track`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(_accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}),
+      },
+      body: JSON.stringify({ query: q }),
+      credentials: 'include',
+      keepalive: true,
+    }).catch(() => {});
+  } catch { /* never throw */ }
+}
+
 // ── Image upload helpers ──────────────────────────────────────────────────────
 export async function uploadImage(file: File): Promise<{ url: string; publicId: string }> {
   const formData = new FormData();

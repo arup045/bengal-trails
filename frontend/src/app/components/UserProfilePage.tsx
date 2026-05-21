@@ -64,7 +64,7 @@ function ProfileCompletion({ user }: { user: any }) {
 }
 
 export function UserProfilePage() {
-  const { user, updateProfile, signOut, deleteAccount, refreshUser } = useAuth();
+  const { user, loading: authLoading, updateProfile, signOut, deleteAccount, refreshUser } = useAuth();
   const [isEditing,       setIsEditing]       = useState(false);
   const [loading,         setLoading]         = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -194,6 +194,16 @@ export function UserProfilePage() {
     if (r.success) { window.location.hash = '#/'; toast.success('Account deleted'); }
     else toast.error(r.error || 'Failed');
   };
+
+  // While the session is being restored on a page refresh, show a loader instead
+  // of briefly flashing the "Sign in" prompt to an already-logged-in user.
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-16">
+        <div className="animate-spin w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -588,10 +598,12 @@ export function UserProfilePage() {
                 ) : (
                   <div className="space-y-4">
                     {myReviews.map((review: any) => {
-                      const placeImage = review.destination_image || `https://source.unsplash.com/featured/?${encodeURIComponent(review.destination_slug)}`;
-                      const placeTitle = review.destination_title || review.destination_slug;
-                      const placeUrl   = `#/explore/${review.destination_slug}`;
-                      const dt = review.created_at ? new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                      const slug       = review.destinationSlug || review.destination_slug;
+                      const placeImage = (review.destinationImage || review.destination_image) || `https://source.unsplash.com/featured/?${encodeURIComponent(slug)}`;
+                      const placeTitle = (review.destinationTitle || review.destination_title) || slug;
+                      const placeUrl   = `#/explore/${slug}`;
+                      const createdAt  = review.createdAt || review.created_at;
+                      const dt = createdAt ? new Date(createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                       return (
                         <div key={review.id}
                           className="group border border-gray-100 rounded-2xl overflow-hidden hover:border-purple-200 hover:shadow-md transition-all bg-white">

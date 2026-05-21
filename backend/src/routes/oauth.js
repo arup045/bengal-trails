@@ -59,11 +59,12 @@ function validateState(req) {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 // Access tokens are short-lived (15 min), stored in memory only on the client.
-// Refresh tokens live for 30 days — matches auth.js to ensure consistent
-// session lifetime regardless of whether the user signed in via OAuth or password.
+// Refresh tokens live for 90 days — matches auth.js to ensure consistent,
+// long-lived sliding sessions regardless of whether the user signed in via
+// OAuth or password. Rotated on every use, so active users never get logged out.
 const ACCESS_TTL  = '15m';
-const REFRESH_TTL = '30d';
-const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+const REFRESH_TTL = '90d';
+const REFRESH_COOKIE_MAX_AGE = 90 * 24 * 60 * 60 * 1000; // 90 days in ms
 
 function issueTokens(userId) {
   return {
@@ -73,13 +74,18 @@ function issueTokens(userId) {
 }
 
 function setRefreshCookie(res, refreshToken) {
-  // sameSite: 'lax' rather than 'strict' so the cookie travels with the OAuth
-  // redirect (which is a cross-site GET from Google → our backend → frontend).
-  // 'strict' would cause the cookie to be stripped on the cross-site step.
+  // Must mirror auth.js: in production the frontend (Vercel) and backend (Render)
+  // are different sites, so the refresh cookie is only sent on the later
+  // cross-site POST /auth/refresh if sameSite='none' + Secure. 'lax' would cause
+  // the browser to strip it on that cross-site request, silently logging the
+  // user out on refresh. (We ALSO hand the refresh token to the frontend in the
+  // redirect fragment below, so localStorage works even when third-party cookies
+  // are blocked entirely.)
+  const isProd = process.env.NODE_ENV === 'production';
   res.cookie('bt_refresh', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     path: '/api/auth',
     maxAge: REFRESH_COOKIE_MAX_AGE,
   });
@@ -281,7 +287,15 @@ router.get('/google/callback', async (req, res) => {
     const { access_token, refresh_token } = issueTokens(user.id);
     setRefreshCookie(res, refresh_token);
 
-    return res.redirect(`${frontendUrl()}/#/oauth-success?token=${encodeURIComponent(access_token)}`);
+    // Hand BOTH tokens to the frontend in the URL fragment. The fragment is never
+    // sent to the server and is stripped from the address bar immediately on arrival
+    // (see OAuthSuccessPage). The refresh token is what makes the OAuth session
+    // survive a browser refresh on cross-domain hosting where cookies are blocked.
+    return res.redirect(
+      `${frontendUrl()}/#/oauth-success` +
+      `?token=${encodeURIComponent(access_token)}` +
+      `&refresh_token=${encodeURIComponent(refresh_token)}`
+    );
   } catch (err) {
     if (err && err.code === 'account_exists_local') {
       return redirectWithError(res, 'account_exists_local');
@@ -372,7 +386,15 @@ router.get('/facebook/callback', async (req, res) => {
     const { access_token, refresh_token } = issueTokens(user.id);
     setRefreshCookie(res, refresh_token);
 
-    return res.redirect(`${frontendUrl()}/#/oauth-success?token=${encodeURIComponent(access_token)}`);
+    // Hand BOTH tokens to the frontend in the URL fragment. The fragment is never
+    // sent to the server and is stripped from the address bar immediately on arrival
+    // (see OAuthSuccessPage). The refresh token is what makes the OAuth session
+    // survive a browser refresh on cross-domain hosting where cookies are blocked.
+    return res.redirect(
+      `${frontendUrl()}/#/oauth-success` +
+      `?token=${encodeURIComponent(access_token)}` +
+      `&refresh_token=${encodeURIComponent(refresh_token)}`
+    );
   } catch (err) {
     if (err && err.code === 'account_exists_local') {
       return redirectWithError(res, 'account_exists_local');

@@ -100,7 +100,23 @@ export function BlogPage() {
   useEffect(() => {
     fetch(`${API_BASE}/blog`)
       .then(r => r.json())
-      .then(data => { if (data?.articles?.length) setArticles(data.articles); })
+      // The backend returns { posts }, camelCased (image_url → imageUrl …). The
+      // old code read data.articles (wrong key) so real posts never showed and
+      // it always fell back to the static list. Map posts back to the snake_case
+      // Article shape this component renders.
+      .then(data => {
+        const posts = data?.posts || data?.articles;
+        if (Array.isArray(posts) && posts.length) {
+          setArticles(posts.map((p: any): Article => ({
+            id: p.id, title: p.title, slug: p.slug, excerpt: p.excerpt,
+            content: p.content, category: p.category, author: p.author,
+            image_url: p.imageUrl ?? p.image_url,
+            read_time: p.readTime ?? p.read_time,
+            created_at: p.createdAt ?? p.created_at,
+            tags: p.tags || [],
+          })));
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

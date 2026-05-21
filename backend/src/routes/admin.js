@@ -36,7 +36,7 @@ router.get('/stats', async (req, res) => {
     // Postgres way to pass interval-as-parameter. Old code interpolated
     // ${days} which was safe by virtue of the line above clamping to
     // 7/30/90, but the pattern is fragile (one careless edit = SQLi).
-    const [totals, signupTrend, topDests, enquiryCount] = await Promise.all([
+    const [totals, signupTrend, topDests, enquiryCount, searchTotals, searchTerms] = await Promise.all([
       // Totals
       Promise.all([
         pool.query('SELECT COUNT(*) FROM users'),
@@ -66,9 +66,29 @@ router.get('/stats', async (req, res) => {
       `),
       // Enquiries
       pool.query("SELECT COUNT(*) FROM enquiries").catch(() => ({ rows: [{ count: 0 }] })),
+      // Search totals (real, from analytics_events) — graceful if table/data absent
+      pool.query(`
+        SELECT COUNT(*)::int AS total,
+               COUNT(DISTINCT LOWER(metadata->>'query'))::int AS unique
+          FROM analytics_events
+         WHERE event_type = 'search'
+           AND created_at >= NOW() - make_interval(days => $1)
+      `, [days]).catch(() => ({ rows: [{ total: 0, unique: 0 }] })),
+      // Top search terms (real)
+      pool.query(`
+        SELECT LOWER(metadata->>'query') AS term, COUNT(*)::int AS count
+          FROM analytics_events
+         WHERE event_type = 'search'
+           AND created_at >= NOW() - make_interval(days => $1)
+           AND metadata->>'query' IS NOT NULL
+         GROUP BY LOWER(metadata->>'query')
+         ORDER BY count DESC
+         LIMIT 8
+      `, [days]).catch(() => ({ rows: [] })),
     ]);
 
     const [usersRes, destRes, reviewsRes, subsRes, newUsersRes] = totals;
+    const searchTotalsRow = searchTotals.rows[0] || { total: 0, unique: 0 };
 
     return res.json({
       stats: {
@@ -81,6 +101,11 @@ router.get('/stats', async (req, res) => {
       },
       signupTrend:  signupTrend.rows.map(r => ({ date: r.date, users: parseInt(r.count) })),
       topDestinations: topDests.rows,
+      searchStats: {
+        total:    searchTotalsRow.total  || 0,
+        unique:   searchTotalsRow.unique || 0,
+        topTerms: searchTerms.rows,   // [{ term, count }]
+      },
     });
   } catch (err) {
     console.error('admin stats error:', err);

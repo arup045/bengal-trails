@@ -32,8 +32,11 @@ interface AuthContextType {
   updateProfile:    (updates: Partial<User>) => Promise<{ success: boolean; error?: string }>;
   deleteAccount:    () => Promise<{ success: boolean; error?: string }>;
   refreshUser:      () => Promise<void>;
-  // Called by OAuthSuccessPage after reading the token from the URL hash
-  setSessionFromToken: (token: string) => Promise<void>;
+  // Called by OAuthSuccessPage after reading the token(s) from the URL hash.
+  // The optional refreshToken is persisted so the OAuth session survives reloads.
+  // Returns the resolved user (or null) so the caller can route correctly without
+  // depending on the async React state update.
+  setSessionFromToken: (token: string, refreshToken?: string) => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,7 +49,9 @@ const safeUser = (u: any): User => ({
   wishlist:         u.wishlist,
   savedItineraries: u.savedItineraries,
   role:             u.role,
-  avatar_url:       u.avatar_url,
+  // API responses are camelCased by the backend middleware (avatar_url → avatarUrl),
+  // so we read camelCase first and fall back to snake_case for any raw/local objects.
+  avatar_url:       u.avatarUrl || u.avatar_url,
   phone:            u.phone,
   location:         u.location,
   bio:              u.bio,
@@ -150,17 +155,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true };
   };
 
-  // ── Called by OAuthSuccessPage after reading token from URL hash ──────────────
-  const setSessionFromToken = async (token: string) => {
+  // ── Called by OAuthSuccessPage after reading token(s) from URL hash ───────────
+  const setSessionFromToken = async (token: string, refreshToken?: string) => {
     setToken(token);
     setAccessToken(token);
+    // Persist the refresh token (cross-domain fallback) so the OAuth session
+    // survives a page reload, exactly like password login does.
+    if (refreshToken) setRefreshToken(refreshToken);
     try {
       const res = await authFetch('/auth/user');
       if (res.ok) {
         const data = await res.json();
-        setUser(safeUser(data.user));
+        const u = safeUser(data.user);
+        setUser(u);
+        return u;
       }
     } catch { /* non-fatal */ }
+    return null;
   };
 
   // ── signOut ───────────────────────────────────────────────────────────────────

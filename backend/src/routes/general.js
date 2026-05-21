@@ -380,6 +380,25 @@ router.get('/search/suggestions', async (req, res) => {
   }
 });
 
+// POST /search/track
+// Records a COMMITTED search (user pressed Enter / opened the results page),
+// NOT every keystroke. Stored in analytics_events so the admin dashboard can
+// surface real top queries. Best-effort: never blocks or errors the caller.
+router.post('/search/track', optionalAuth, async (req, res) => {
+  try {
+    const q = String(req.body?.query || '').toLowerCase().trim().slice(0, 100);
+    if (q.length < 2) return res.json({ ok: true });
+    await pool.query(
+      `INSERT INTO analytics_events (event_type, user_id, metadata)
+       VALUES ('search', $1, $2)`,
+      [req.user?.id || null, JSON.stringify({ query: q })]
+    ).catch(() => {});
+    return res.json({ ok: true });
+  } catch {
+    return res.json({ ok: true }); // analytics must never break search UX
+  }
+});
+
 // ════════════════════════════════════════
 // PLACE REPORTS
 // ════════════════════════════════════════

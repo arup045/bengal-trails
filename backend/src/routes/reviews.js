@@ -254,7 +254,7 @@ router.delete('/:id', authenticate, async (req, res) => {
 router.get('/user/me', authenticate, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT r.*, d.title AS destination_title, d.hero_image_url AS destination_image
+      `SELECT r.*, d.name AS destination_title, d.image_url AS destination_image
          FROM reviews r
          LEFT JOIN destinations d ON d.slug = r.destination_slug
         WHERE r.user_id = $1

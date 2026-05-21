@@ -17,8 +17,9 @@ export function EmailVerificationPage() {
         const token = params.get('token') || params.get('access_token');
 
         if (!token) {
-          setVerificationStatus('error');
-          setErrorMessage('No verification token found in the link.');
+          // Verification isn't enabled and nothing links here, so a tokenless
+          // visit (e.g. a manually-typed URL) shouldn't show a scary error.
+          setVerificationStatus('not-required');
           return;
         }
 

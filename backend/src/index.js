@@ -206,8 +206,7 @@ app.use('/api/bookings/enquiry', enquiryLimiter);
 app.use('/api',                 searchLimiter, generalRoutes);   // bookings, newsletter, notifications, search, report
 app.use('/api/social',          socialRoutes);
 app.use('/api/forum',           forumRoutes);
-app.use('/api/gamification',    gamificationRoutes);
-app.use('/api/user-content',    gamificationRoutes); // reuses same router (user-content endpoint inside)
+app.use('/api/gamification',    gamificationRoutes); // also serves /gamification/user-content[...]
 app.use('/api/admin',           adminRoutes);
 app.use('/api/ai-assistant',    aiLimiter, aiRoutes);
 app.use('/api/blog',            blogRoutes);

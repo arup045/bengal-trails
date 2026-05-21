@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, trackSearch } from '../utils/api';
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, MapPin, Star, SlidersHorizontal, X, Sparkles, Navigation, Heart, SearchX } from 'lucide-react';
@@ -114,6 +114,9 @@ export function ExplorePage() {
       const activity = params.get('activity');
       const tourType = params.get('tourType');
       if (location) setSearchQuery(location);
+      // Record the committed search (from any search bar) for admin analytics.
+      // Fire-and-forget + de-duped inside trackSearch.
+      if (q || location) trackSearch(q || location || '');
       if (activity && activity !== 'all') setSelectedActivity(activity.toLowerCase());
       if (tourType && tourType !== 'all') setSelectedCategory(tourType);
     };

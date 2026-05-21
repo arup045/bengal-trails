@@ -34,9 +34,14 @@ function hashResetToken(rawToken) {
 const BCRYPT_COST = 12;
 
 // ── Token helpers ──────────────────────────────────────────────────────────────
+// Sessions are "sliding": the access token stays short (15m) so a stolen token
+// is useless quickly, while the refresh token is long-lived (90 days) AND rotated
+// on every use (see /auth/refresh). Because each visit issues a fresh 90-day
+// refresh token, an active user is effectively never logged out — matching the
+// UX of large consumer apps — without the security risk of a non-expiring token.
 const ACCESS_TTL   = '15m';          // short-lived, stored in memory on client
-const REFRESH_TTL  = '30d';          // 30 days — matches oauth.js; 365d was overly permissive
-const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+const REFRESH_TTL  = '90d';          // 90 days, sliding — renewed on every refresh
+const REFRESH_COOKIE_MAX_AGE = 90 * 24 * 60 * 60 * 1000;
 
 function makeAccessToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: ACCESS_TTL });

@@ -18,34 +18,36 @@ import { useAuth } from '../contexts/AuthContext';
 export function OAuthSuccessPage() {
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { setSessionFromToken, user } = useAuth();
+  const { setSessionFromToken } = useAuth();
 
   useEffect(() => {
     const handleOAuth = async () => {
       try {
-        // Parse ?token=... from the URL fragment (e.g. /#/oauth-success?token=xxx)
+        // Parse ?token=...&refresh_token=... from the URL fragment
+        // (e.g. /#/oauth-success?token=xxx&refresh_token=yyy)
         const hash = window.location.hash;
         const queryStart = hash.indexOf('?');
         if (queryStart === -1) throw new Error('No token in URL');
 
         const params = new URLSearchParams(hash.slice(queryStart + 1));
         const token = params.get('token') || params.get('access_token');
+        const refreshToken = params.get('refresh_token') || undefined;
         if (!token) throw new Error('No token in URL');
 
-        // SECURITY: strip the token from the URL bar BEFORE any async work so it
+        // SECURITY: strip the tokens from the URL bar BEFORE any async work so they
         // can't be captured by browser history, session-replay tools, or screenshot.
         try { history.replaceState(null, '', '#/oauth-success'); } catch { /* non-fatal */ }
 
-        // setSessionFromToken stores the token in memory and fetches the user object
-        // into AuthContext — no second fetch needed.
-        await setSessionFromToken(token);
+        // setSessionFromToken stores the access token in memory, persists the refresh
+        // token (so the session survives reloads), fetches the user, and returns it.
+        const resolvedUser = await setSessionFromToken(token, refreshToken);
 
         setStatus('success');
 
-        // Brief delay so the user sees the success animation before redirect
+        // Brief delay so the user sees the success animation before redirect.
+        // Use the returned user (not React state) to avoid a stale-closure race.
         setTimeout(() => {
-          // user state is populated by setSessionFromToken above
-          const isAdmin = user?.role === 'admin';
+          const isAdmin = resolvedUser?.role === 'admin';
           window.location.hash = isAdmin ? '#/admin' : '#/';
         }, 800);
       } catch (err: any) {

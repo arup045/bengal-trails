@@ -61,16 +61,16 @@ export function AdminEnquiries() {
                       {e.status}
                     </span>
                     <span className="font-poppins text-xs text-gray-400">
-                      {new Date(e.created_at).toLocaleDateString('en-IN')}
+                      {new Date(e.createdAt || e.created_at).toLocaleDateString('en-IN')}
                     </span>
                   </div>
                   <h3 className="font-poppins font-semibold text-slate-900 text-sm mb-2">
-                    {e.name} — {e.destination_name}
+                    {e.name} — {e.destinationName || e.destination_name}
                   </h3>
                   <div className="flex flex-wrap gap-3 text-xs text-gray-500 font-poppins">
                     <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{e.email}</span>
                     {e.phone && <span className="flex items-center gap-1">📞 {e.phone}</span>}
-                    {e.check_in && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{e.check_in} → {e.check_out}</span>}
+                    {(e.checkIn || e.check_in) && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{e.checkIn || e.check_in} → {e.checkOut || e.check_out}</span>}
                     <span className="flex items-center gap-1"><Users className="w-3 h-3" />{e.guests} guests</span>
                   </div>
                   {e.message && (
