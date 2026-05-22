@@ -1,12 +1,13 @@
 import { authFetch } from '../utils/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Shield, Users, MapPin, Eye, Heart, LayoutDashboard, BarChart3, Mail, Settings, Activity, TrendingUp, Search, Bookmark, Star, FileEdit } from 'lucide-react';
+import { Shield, Users, MapPin, Eye, Heart, LayoutDashboard, BarChart3, Mail, Settings, Activity, TrendingUp, Search, Bookmark, Star, FileEdit, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AnalyticsDashboard } from './admin/AnalyticsDashboard';
 import { AdminEnquiries }     from './admin/AdminEnquiries';
 import { AdminVendors }       from './admin/AdminVendors';
 import { ContentManagement }  from './admin/ContentManagement';
+import { AdminPlaceImages }    from './admin/AdminPlaceImages';
 // Charts: most chart logic now lives in AnalyticsDashboard, but the
 // Overview tab still renders inline charts in this file (lines ~175-540),
 // so we keep recharts imports here.
@@ -17,7 +18,7 @@ import {
 
 export function AdminDashboard() {
   const { user, isAdmin, loading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics' | 'enquiries' | 'vendors' | 'content'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics' | 'enquiries' | 'vendors' | 'content' | 'images'>('overview');
   // Stat keys mirror the real /admin/stats response (camelCased by the API middleware).
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -152,6 +153,7 @@ export function AdminDashboard() {
     { id: 'analytics',     label: 'Analytics',    icon: BarChart3       },
     { id: 'enquiries',     label: 'Enquiries',    icon: Mail            },
     { id: 'vendors',       label: 'Partners',     icon: Star            },
+    { id: 'images',        label: 'Card Images',  icon: ImageIcon       },
   ];
 
   return (
@@ -542,6 +544,12 @@ export function AdminDashboard() {
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <AnalyticsDashboard />
+          </div>
+        )}
+
+        {activeTab === 'images' && (
+          <div className="space-y-4">
+            <AdminPlaceImages />
           </div>
         )}
       </div>

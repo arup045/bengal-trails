@@ -453,3 +453,58 @@ Respond ONLY with a valid JSON object — no markdown, no code fences. Structure
     return res.status(500).json({ error: 'Server error generating itinerary' });
   }
 });
+
+// ── GET /ai-assistant/district-faq?slug=&name= ──────────────────────────────────
+// Returns 4 traveller Q&A for a district. Real AI (Gemini, cached 24h) when
+// configured; otherwise an honest fallback that points users to the live Ask-AI
+// bar instead of inventing facts.
+const _faqCache = new Map(); // slug -> { ts, faqs }
+const FAQ_TTL_MS = 24 * 60 * 60 * 1000;
+
+router.get('/district-faq', async (req, res) => {
+  const slug = String(req.query.slug || '').toLowerCase().slice(0, 64);
+  const name = String(req.query.name || slug).slice(0, 60) || slug;
+  if (!slug) return res.status(400).json({ error: 'slug required' });
+
+  const cached = _faqCache.get(slug);
+  if (cached && Date.now() - cached.ts < FAQ_TTL_MS) {
+    return res.json({ faqs: cached.faqs, poweredByAI: true, cached: true });
+  }
+
+  const questions = [
+    `What are the must-do activities in ${name}?`,
+    `What are good hotel and stay options in ${name}?`,
+    `How do travellers reach and get around ${name}?`,
+    `What local food should I try in ${name}?`,
+  ];
+
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const prompt =
+        `You are a West Bengal travel expert. For the district "${name}", answer these four traveller ` +
+        `questions concisely (2-3 sentences each), accurately, using only real, well-known information. ` +
+        `Do not invent specific names you are unsure of. Return ONLY JSON ` +
+        `{"faqs":[{"q":"...","a":"..."}]} in this exact question order:\n` +
+        questions.map((q, i) => `${i + 1}. ${q}`).join('\n');
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 800 } }) }
+      );
+      const data = await r.json();
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const clean = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(clean);
+      if (Array.isArray(parsed?.faqs) && parsed.faqs.length) {
+        _faqCache.set(slug, { ts: Date.now(), faqs: parsed.faqs });
+        return res.json({ faqs: parsed.faqs, poweredByAI: true });
+      }
+    } catch { /* fall through to honest fallback */ }
+  }
+
+  const faqs = questions.map((q) => ({
+    q,
+    a: `Tap “Ask” in the “Plan ${name} with AI” box above for a live, tailored answer — or browse the sections on this page for places, food, stays and more.`,
+  }));
+  return res.json({ faqs, poweredByAI: false });
+});

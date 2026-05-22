@@ -413,6 +413,57 @@ router.get('/check-exists', async (req, res) => {
 // First admin setup is handled by the migration script via FIRST_ADMIN_EMAIL/PASSWORD
 // environment variables. See backend/src/db/migrate.js.
 
+// ── Per-item district images ───────────────────────────────────────────────────
+// GET    /admin/place-images/:districtSlug  → { images: { itemName: url } }
+// POST   /admin/place-images  { districtSlug, itemName, section?, imageUrl }
+// DELETE /admin/place-images  { districtSlug, itemName }
+router.get('/place-images/:districtSlug', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT item_name, image_url, section FROM place_images WHERE district_slug = $1',
+      [String(req.params.districtSlug).toLowerCase()]
+    );
+    const images = {};
+    rows.forEach((r) => { images[r.item_name] = r.image_url; });
+    return res.json({ images });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/place-images', async (req, res) => {
+  try {
+    const { districtSlug, itemName, section, imageUrl } = req.body || {};
+    if (!districtSlug || !itemName || !imageUrl)
+      return res.status(400).json({ error: 'districtSlug, itemName and imageUrl are required' });
+    await pool.query(
+      `INSERT INTO place_images (district_slug, item_name, section, image_url)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (district_slug, item_name)
+       DO UPDATE SET image_url = $4, section = $3, updated_at = NOW()`,
+      [String(districtSlug).toLowerCase(), itemName, section || null, imageUrl]
+    );
+    writeAuditLog(req.user.id, 'place_image.set', 'place_image', `${districtSlug}/${itemName}`, req);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('place-image upsert error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.delete('/place-images', async (req, res) => {
+  try {
+    const { districtSlug, itemName } = req.body || {};
+    if (!districtSlug || !itemName) return res.status(400).json({ error: 'districtSlug and itemName required' });
+    await pool.query('DELETE FROM place_images WHERE district_slug = $1 AND item_name = $2',
+      [String(districtSlug).toLowerCase(), itemName]);
+    writeAuditLog(req.user.id, 'place_image.removed', 'place_image', `${districtSlug}/${itemName}`, req);
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ── Internal audit log writer ─────────────────────────────────────────────────
 // Non-blocking — logs admin actions for compliance and incident response.
 // Called at every sensitive operation (role/status changes, deletions, newsletter).

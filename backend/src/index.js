@@ -26,6 +26,7 @@ const oauthRoutes = require('./routes/oauth');
 const digestsRoutes = require('./routes/digests');
 const wishlistRoutes    = require('./routes/wishlist');
 const recentlyViewedRoutes = require('./routes/recentlyViewed');
+const placeImagesRoutes = require('./routes/placeImages');
 
 const app = express();
 
@@ -218,6 +219,7 @@ app.use('/api/auth',            oauthRoutes);
 app.use('/api/digests',         digestsRoutes);
 app.use('/api/wishlist',         wishlistRoutes);
 app.use('/api/recently-viewed',  recentlyViewedRoutes);
+app.use('/api/place-images',     placeImagesRoutes); // per-item district photos
 app.use('/api/bengal',           bengalRoutes);  // festivals, food, transport, hotels, subplaces
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
