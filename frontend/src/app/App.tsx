@@ -35,6 +35,7 @@ installGlobalErrorHandlers();
 
 // Lazy load heavy components for better performance
 const ExplorePage = lazy(() => import('./components/ExplorePage').then(m => ({ default: m.ExplorePage })));
+const DistrictDetailPage = lazy(() => import('./components/DistrictDetailPage').then(m => ({ default: m.DistrictDetailPage })));
 const PlaceDetailPage = lazy(() => import('./components/PlaceDetailPage').then(m => ({ default: m.PlaceDetailPage })));
 const SignInPage = lazy(() => import('./components/SignInPage').then(m => ({ default: m.SignInPage })));
 const UserProfilePage = lazy(() => import('./components/UserProfilePage').then(m => ({ default: m.UserProfilePage })));
@@ -123,7 +124,7 @@ const PAGE_TITLES: Partial<Record<string, string>> = {
 // that lived inside the routing useEffect. Adding a new page is now a
 // single line in this table.
 type RouteId =
-  | 'home' | 'explore' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist'
+  | 'home' | 'explore' | 'district' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist'
   | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals'
   | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools'
   | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup'
@@ -186,7 +187,11 @@ function resolveRoute(hash: string): { id: RouteId; slug?: string; path: string;
   if (hash.includes('access_token') && hash.includes('type=recovery')) {
     return { id: 'reset-password', path: '/reset-password', title: 'Reset Password' };
   }
-  // Dynamic routes
+  // Dynamic routes — district detail must be matched BEFORE the generic place route.
+  if (hash.startsWith('/explore/district/')) {
+    const slug = hash.replace('/explore/district/', '').split('?')[0];
+    return { id: 'district', slug, path: `/explore/district/${slug}`, title: `District: ${slug}` };
+  }
   if (hash.startsWith('/explore/')) {
     const slug = hash.replace('/explore/', '');
     return { id: 'place', slug, path: `/explore/${slug}`, title: `Destination: ${slug}` };
@@ -325,7 +330,7 @@ export default function App() {
       const hash = window.location.hash.slice(1);
       const r = resolveRoute(hash);
       setCurrentPage(r.id);
-      if (r.id === 'place' && r.slug) setCurrentSlug(r.slug);
+      if ((r.id === 'place' || r.id === 'district') && r.slug) setCurrentSlug(r.slug);
       // oauth-success handles its own scroll behavior; all other pages reset.
       if (r.id !== 'oauth-success') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -472,7 +477,9 @@ export default function App() {
               )}
               
               {currentPage === 'explore' && <ExplorePage />}
-              
+
+              {currentPage === 'district' && <DistrictDetailPage slug={currentSlug} />}
+
               {currentPage === 'place' && <PlaceDetailPage slug={currentSlug} />}
               
               {currentPage === 'signin' && <SignInPage />}
