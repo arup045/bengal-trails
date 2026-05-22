@@ -1,34 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Cloud, CloudRain, Sun, Wind, Droplets, ThermometerSun, MapPin, Calendar } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Wind, Droplets, MapPin, Loader2 } from 'lucide-react';
 import { placesData } from '../data/places-full';
+
+// Real regions with coordinates — weather is fetched live from Open-Meteo
+// (same free, key-less source as the LiveWeather widget). No hardcoded numbers.
+const REGIONS = [
+  { region: 'Darjeeling & Hills', lat: 27.0360, lon: 88.2627, note: 'Hills & tea gardens' },
+  { region: 'Kolkata & Plains',   lat: 22.5726, lon: 88.3639, note: 'City & heritage' },
+  { region: 'Sundarbans',         lat: 21.9497, lon: 88.9100, note: 'Mangroves & wildlife' },
+  { region: 'Digha & Coastal',    lat: 21.6276, lon: 87.5089, note: 'Beaches & coast' },
+];
+
+interface RegionWeather {
+  region: string;
+  note: string;
+  temp: number | null;
+  condition: string;
+  humidity: number | null;
+  wind: number | null;
+  rain: number | null;
+  Icon: typeof Cloud;
+  loading: boolean;
+}
+
+// WMO weather code → condition label + icon (subset of LiveWeather's mapping).
+function codeToDisplay(code: number, isDay: 0 | 1): { condition: string; Icon: typeof Cloud } {
+  if (code === 0) return { condition: isDay ? 'Clear' : 'Clear Night', Icon: Sun };
+  if (code <= 2) return { condition: 'Partly Cloudy', Icon: Cloud };
+  if (code === 3) return { condition: 'Overcast', Icon: Cloud };
+  if (code >= 45 && code <= 48) return { condition: 'Foggy', Icon: Cloud };
+  if (code >= 51 && code <= 67) return { condition: 'Rainy', Icon: CloudRain };
+  if (code >= 71 && code <= 77) return { condition: 'Snowing', Icon: CloudRain };
+  if (code >= 80 && code <= 82) return { condition: 'Rain Showers', Icon: CloudRain };
+  if (code >= 95) return { condition: 'Thunderstorm', Icon: CloudRain };
+  return { condition: 'Cloudy', Icon: Cloud };
+}
 
 export function WeatherRecommendations() {
   const [selectedSeason, setSelectedSeason] = useState('current');
+  const [weather, setWeather] = useState<RegionWeather[]>(
+    REGIONS.map(r => ({ region: r.region, note: r.note, temp: null, condition: '', humidity: null, wind: null, rain: null, Icon: Cloud, loading: true })),
+  );
 
-  // Mock weather data for different regions
-  const weatherData = [
-    {
-      region: 'Darjeeling & Hills',
-      current: { temp: 12, condition: 'Pleasant', humidity: 65, wind: 15, icon: Cloud, rain: 10 },
-      forecast: 'Perfect trekking weather',
-    },
-    {
-      region: 'Kolkata & Plains',
-      current: { temp: 28, condition: 'Warm', humidity: 75, wind: 10, icon: Sun, rain: 5 },
-      forecast: 'Great for city exploration',
-    },
-    {
-      region: 'Sundarbans',
-      current: { temp: 26, condition: 'Humid', humidity: 85, wind: 12, icon: CloudRain, rain: 30 },
-      forecast: 'Ideal for wildlife spotting',
-    },
-    {
-      region: 'Digha & Coastal',
-      current: { temp: 25, condition: 'Breezy', humidity: 80, wind: 20, icon: Wind, rain: 15 },
-      forecast: 'Perfect beach weather',
-    },
-  ];
+  // Fetch real current weather for all four regions in parallel.
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(REGIONS.map(async (r) => {
+      try {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${r.lat}&longitude=${r.lon}` +
+          `&current_weather=true&hourly=relativehumidity_2m,precipitation_probability&timezone=auto`,
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const cw = json.current_weather;
+        const { condition, Icon } = codeToDisplay(cw?.weathercode ?? 3, cw?.is_day ?? 1);
+        // Read humidity + rain chance for the current hour.
+        let humidity: number | null = null, rain: number | null = null;
+        const nowHour = (cw?.time || '').slice(0, 13);
+        const idx = json.hourly?.time?.findIndex((t: string) => t.startsWith(nowHour)) ?? -1;
+        if (idx >= 0) {
+          humidity = Math.round(json.hourly.relativehumidity_2m?.[idx] ?? NaN);
+          rain     = Math.round(json.hourly.precipitation_probability?.[idx] ?? NaN);
+          if (Number.isNaN(humidity)) humidity = null;
+          if (Number.isNaN(rain)) rain = null;
+        }
+        return {
+          region: r.region, note: r.note,
+          temp: cw ? Math.round(cw.temperature) : null,
+          condition, humidity, wind: cw ? Math.round(cw.windspeed) : null, rain, Icon, loading: false,
+        } as RegionWeather;
+      } catch {
+        return { region: r.region, note: r.note, temp: null, condition: 'Unavailable', humidity: null, wind: null, rain: null, Icon: Cloud, loading: false } as RegionWeather;
+      }
+    })).then((results) => { if (!cancelled) setWeather(results); });
+    return () => { cancelled = true; };
+  }, []);
 
   const seasons = [
     { id: 'current', name: 'This Week', icon: '📅' },
@@ -66,13 +114,13 @@ export function WeatherRecommendations() {
         >
           <h1 className="text-5xl font-bold text-gray-900 mb-4">Weather & Season Guide</h1>
           <p className="text-xl text-gray-600">
-            Find the best destinations based on current weather and seasons
+            Live weather across West Bengal, plus the best destinations for each season
           </p>
         </motion.div>
 
-        {/* Current Weather Cards */}
+        {/* Current Weather Cards — real data from Open-Meteo */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {weatherData.map((data, index) => (
+          {weather.map((data, index) => (
             <motion.div
               key={data.region}
               initial={{ opacity: 0, y: 20 }}
@@ -82,41 +130,48 @@ export function WeatherRecommendations() {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">{data.region}</h3>
-                <data.current.icon className="w-8 h-8 text-blue-500" />
+                <data.Icon className="w-8 h-8 text-blue-500" />
               </div>
 
-              <div className="mb-4">
-                <div className="text-5xl font-bold text-gray-900 mb-1">{data.current.temp}°C</div>
-                <div className="text-gray-600">{data.current.condition}</div>
-              </div>
+              {data.loading ? (
+                <div className="flex items-center gap-2 text-gray-400 py-6">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Loading live weather…
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <div className="text-5xl font-bold text-gray-900 mb-1">
+                      {data.temp != null ? `${data.temp}°C` : '—'}
+                    </div>
+                    <div className="text-gray-600">{data.condition || data.note}</div>
+                  </div>
 
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2 text-gray-600">
-                    <Droplets className="w-4 h-4" />
-                    Humidity
-                  </span>
-                  <span className="font-semibold">{data.current.humidity}%</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2 text-gray-600">
-                    <Wind className="w-4 h-4" />
-                    Wind
-                  </span>
-                  <span className="font-semibold">{data.current.wind} km/h</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2 text-gray-600">
-                    <CloudRain className="w-4 h-4" />
-                    Rain Chance
-                  </span>
-                  <span className="font-semibold">{data.current.rain}%</span>
-                </div>
-              </div>
+                  <div className="space-y-2 mb-4">
+                    {data.humidity != null && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 text-gray-600"><Droplets className="w-4 h-4" /> Humidity</span>
+                        <span className="font-semibold">{data.humidity}%</span>
+                      </div>
+                    )}
+                    {data.wind != null && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 text-gray-600"><Wind className="w-4 h-4" /> Wind</span>
+                        <span className="font-semibold">{data.wind} km/h</span>
+                      </div>
+                    )}
+                    {data.rain != null && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 text-gray-600"><CloudRain className="w-4 h-4" /> Rain Chance</span>
+                        <span className="font-semibold">{data.rain}%</span>
+                      </div>
+                    )}
+                  </div>
 
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-sm text-blue-600 font-semibold">{data.forecast}</p>
-              </div>
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="text-sm text-blue-600 font-semibold">{data.note}</p>
+                  </div>
+                </>
+              )}
             </motion.div>
           ))}
         </div>
@@ -156,7 +211,7 @@ export function WeatherRecommendations() {
             {recommendations.map((place, index) => (
               <motion.a
                 key={place.slug}
-                href={`#/place/${place.slug}`}
+                href={`#/explore/${place.slug}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}

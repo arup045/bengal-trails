@@ -222,7 +222,7 @@ export function TestimonialsSection() {
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 px-6 py-2.5 rounded-full text-sm mb-8 shadow-sm"
               >
                 <Star className="w-4 h-4 fill-orange-600 text-orange-600" />
-                <span>Rated 4.9/5 by 12,000+ travelers</span>
+                <span>Loved by travelers across West Bengal</span>
               </motion.div>
 
               <motion.h2
@@ -278,7 +278,7 @@ export function TestimonialsSection() {
             className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 px-5 py-2 rounded-full text-sm mb-6 shadow-sm"
           >
             <Star className="w-4 h-4 fill-orange-600 text-orange-600" />
-            <span>Rated 4.9/5 by 12,000+ travelers</span>
+            <span>Loved by travelers across West Bengal</span>
           </motion.div>
 
           <motion.h2

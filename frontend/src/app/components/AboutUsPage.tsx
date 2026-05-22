@@ -60,9 +60,9 @@ const TEAM = [
 
 const TIMELINE = [
   { year: '2023', event: 'Idea born — frustrated by the lack of quality travel information for West Bengal' },
-  { year: '2024', event: 'Platform launched with 50 destinations. 1,000 users in the first month.' },
+  { year: '2024', event: 'Platform launched with our first batch of curated destinations' },
   { year: '2025', event: 'Expanded to 197+ destinations across all 23 districts. Launched AI Trip Planner.' },
-  { year: '2026', event: 'Vendor marketplace launched. 50,000+ travelers served. Still growing.' },
+  { year: '2026', event: 'Vendor marketplace launched. Still growing, every day.' },
 ];
 
 export function AboutUsPage() {
@@ -255,14 +255,14 @@ export function AboutUsPage() {
             Recognition
           </div>
           <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-4">
-            Trusted by travelers across India and beyond
+            Built for travelers exploring West Bengal
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto font-poppins text-sm">
-            Bengal Trails has been recommended by travel bloggers, featured in local tourism circles,
-            and trusted by over 50,000 travelers planning their Bengal journey.
+            A complete, free guide to West Bengal — every district, hundreds of destinations,
+            authentic local content, and tools to plan your whole trip in one place.
           </p>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-6 mt-12 items-center">
-            {['★ 4.8 / 5', '50K+ Users', '197 Destinations', '23 Districts', '500+ Reviews', '100% Free'].map((item) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-12 items-center">
+            {['197+ Destinations', '23 Districts', 'AI Trip Planner', '100% Free'].map((item) => (
               <div key={item} className="font-poppins text-sm font-semibold text-gray-400 text-center">{item}</div>
             ))}
           </div>
