@@ -32,8 +32,10 @@ export const ReviewModeration: React.FC = () => {
   const loadReviews = async () => {
     try {
       setLoading(true);
+      // Backend stores approved reviews as status 'published' — map the tab to it.
+      const apiStatus = filter === 'approved' ? 'published' : filter;
       const response = await fetch(
-        `${API_BASE}/admin/reviews?status=${filter}`,
+        `${API_BASE}/admin/reviews?status=${apiStatus}`,
         {
           headers: {
             Authorization: `Bearer ${getToken() || ''}`,
@@ -43,11 +45,30 @@ export const ReviewModeration: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setReviews(data.reviews || mockReviews);
+        const rows = Array.isArray(data.reviews) ? data.reviews : [];
+        // Normalize to the component's shape with safe fallbacks. The API returns
+        // camelCased keys and does NOT include destinationName/reportCount, so we
+        // default them (reading review.destinationName.toLowerCase() used to crash).
+        setReviews(rows.map((r: any): Review => ({
+          id:              String(r.id),
+          destinationSlug: r.destinationSlug || r.destination_slug || '',
+          destinationName: r.destinationName || r.destination_name || r.destinationSlug || r.destination_slug || '',
+          userId:          r.userId || r.user_id || '',
+          userName:        r.userName || r.user_name || 'User',
+          rating:          Number(r.rating) || 0,
+          title:           r.title || '',
+          content:         r.content || '',
+          photos:          r.photos || [],
+          status:          r.status === 'published' ? 'approved' : (r.status || 'pending'),
+          reportCount:     Number(r.reportCount ?? r.report_count ?? 0),
+          createdAt:       r.createdAt || r.created_at || new Date().toISOString(),
+        })));
+      } else {
+        setReviews([]);
       }
     } catch (error) {
       console.error('Error loading reviews:', error);
-      setReviews(mockReviews);
+      setReviews([]); // never show fabricated reviews in the admin panel
     } finally {
       setLoading(false);
     }
@@ -131,41 +152,10 @@ export const ReviewModeration: React.FC = () => {
   };
 
   const filteredReviews = reviews.filter((review) =>
-    review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    review.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    review.destinationName.toLowerCase().includes(searchQuery.toLowerCase())
+    (review.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (review.content || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (review.destinationName || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const mockReviews: Review[] = [
-    {
-      id: '1',
-      destinationSlug: 'darjeeling',
-      destinationName: 'Darjeeling',
-      userId: 'u1',
-      userName: 'Priya Sharma',
-      rating: 5,
-      title: 'Amazing Tea Gardens!',
-      content: 'The tea gardens in Darjeeling are absolutely stunning. Highly recommend visiting during sunrise for the best views of Kanchenjunga.',
-      photos: [],
-      status: 'pending',
-      reportCount: 0,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      destinationSlug: 'sundarbans',
-      destinationName: 'Sundarbans',
-      userId: 'u2',
-      userName: 'Rajesh Kumar',
-      rating: 4,
-      title: 'Wildlife Paradise',
-      content: 'Saw a Royal Bengal Tiger! The boat safari was incredible. Guide was very knowledgeable.',
-      photos: [],
-      status: 'flagged',
-      reportCount: 2,
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-    },
-  ];
 
   return (
     <div className="p-8">

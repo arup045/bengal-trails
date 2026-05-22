@@ -175,14 +175,12 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     { src: `https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800`, alt: `${place.title} architecture` }
   ];
 
-  // Mock restaurants data
-  const restaurants = place.nearbyRestaurants.map((name, idx) => ({
+  // Nearby restaurants — we only have the real names from our data, so we show
+  // exactly that. Previously this fabricated rating/price/distance with
+  // Math.random() (which also flickered on every re-render) — removed.
+  const restaurants = place.nearbyRestaurants.map((name) => ({
     name,
-    rating: 4.2 + Math.random() * 0.8,
-    cuisine: ['Bengali', 'North Indian', 'Chinese', 'Continental'][idx % 4],
-    price: Math.floor(300 + Math.random() * 700),
     image: 'https://images.unsplash.com/photo-1588644525273-f37b60d78512?w=800',
-    distance: (Math.random() * 3).toFixed(1)
   }));
 
   // Mock current festivals (if tags include festival-related)
@@ -519,22 +517,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                         className="w-full h-48 object-cover"
                       />
                       <div className="p-5">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="text-xl">{restaurant.name}</h3>
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                            <span className="text-sm">{restaurant.rating.toFixed(1)}</span>
-                          </div>
-                        </div>
-                        <p className="text-purple-600 mb-2">{restaurant.cuisine}</p>
-                        <p className="text-gray-600 text-sm mb-4">{restaurant.distance} km away</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-700">₹{restaurant.price} for two</span>
-                          <button className="text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                            View Menu
-                            <ExternalLink className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <h3 className="text-xl mb-1">{restaurant.name}</h3>
+                        <p className="text-gray-600 text-sm flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-purple-600" />
+                          Near {place.title}
+                        </p>
                       </div>
                     </div>
                   ))}
