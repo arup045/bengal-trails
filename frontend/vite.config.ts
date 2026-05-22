@@ -32,24 +32,27 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        // Function-form manualChunks: ensures recharts AND its deep
-        // dependencies (d3-shape, d3-scale, victory-vendor, etc.) all land
-        // in the SAME chunk so named exports cannot deadlock at runtime.
+        // Function-form manualChunks.
+        //
+        // IMPORTANT: splitting interdependent libraries across multiple chunks
+        // can produce a non-deterministic "Cannot access 'X' before initialization"
+        // TDZ at runtime (a cross-chunk circular-init that only triggers under
+        // certain chunk load orders — exactly what crashed /explore in production).
+        // To make that class of bug impossible we keep all the interdependent UI
+        // libraries together in ONE `vendor` chunk, and only carve out chunks that
+        // are fully self-contained leaves:
+        //   - recharts + ALL its chart deps (d3-*, victory, internmap) → its own
+        //     chunk. It's only used by the lazy admin route, and grouping every
+        //     transitive dep prevents a recharts↔d3 cross-chunk cycle.
+        //   - zxcvbn → left to its own dynamic chunk (only the signup password
+        //     meter imports it, lazily), so it never weighs down the initial load.
         manualChunks(id: string) {
-          if (id.includes('node_modules')) {
-            if (id.includes('motion'))        return 'vendor-motion';
-            if (id.includes('recharts')
-             || id.includes('victory')
-             || id.includes('d3-shape')
-             || id.includes('d3-scale')
-             || id.includes('d3-array')
-             || id.includes('d3-time'))       return 'vendor-recharts';
-            if (id.includes('isomorphic-dompurify')
-             || id.includes('dompurify'))     return 'vendor-sanitize';
-            if (id.includes('react-dom')
-             || id.includes('/react/')
-             || id.includes('scheduler'))     return 'vendor-react';
+          if (!id.includes('node_modules')) return;
+          if (id.includes('zxcvbn')) return; // keep lazy (dynamic import only)
+          if (/[\\/](recharts|recharts-scale|victory-vendor|internmap|d3-[a-z-]+)[\\/]/.test(id)) {
+            return 'vendor-recharts';
           }
+          return 'vendor';
         },
       },
     },

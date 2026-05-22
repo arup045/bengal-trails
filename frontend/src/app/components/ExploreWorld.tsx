@@ -59,20 +59,23 @@ export function ExploreWorld() {
 
   useEffect(() => {
     let alive = true;
-    // featured=false → show the REST of the catalog. BentoGrid already shows the
-    // featured destinations near the top of the home page, so requesting only
-    // non-featured here means the two grids never repeat the same places.
-    // Falls back to the full list if there happen to be no non-featured rows.
-    fetch(`${API_BASE}/destinations?limit=25&featured=false`)
-      .then(r => r.ok ? r.json() : null)
-      .then(async d => {
-        if (!alive) return;
-        let list = d?.destinations;
-        if (!list || list.length === 0) {
-          // Fallback: no non-featured destinations exist — show the general list.
+    // Prefer the non-featured catalog (BentoGrid already shows the featured set
+    // near the top, so this avoids repeating the same places). But many databases
+    // have most/all destinations flagged featured — so we ALWAYS fall back to the
+    // full list whenever non-featured returns too few, guaranteeing this section
+    // is never empty.
+    const MIN = 6;
+    (async () => {
+      try {
+        let list: ApiDestination[] = [];
+        const r1 = await fetch(`${API_BASE}/destinations?limit=25&featured=false`).then(r => r.ok ? r.json() : null).catch(() => null);
+        list = r1?.destinations || [];
+        if (list.length < MIN) {
+          // Not enough non-featured rows — show the general list instead.
           const r2 = await fetch(`${API_BASE}/destinations?limit=25`).then(r => r.ok ? r.json() : null).catch(() => null);
-          list = r2?.destinations || [];
+          if ((r2?.destinations || []).length > list.length) list = r2.destinations;
         }
+        if (!alive) return;
         const mapped: Place[] = list.map((p: ApiDestination) => ({
           name:    p.name,
           slug:    p.slug,
@@ -83,9 +86,12 @@ export function ExploreWorld() {
           price:   formatPrice(p),
         }));
         setDestinations(mapped);
-      })
-      .catch(() => { /* silent — UI will just show empty state */ })
-      .finally(() => { if (alive) setLoading(false); });
+      } catch {
+        /* silent — section just stays on its skeleton/empty state */
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
     return () => { alive = false; };
   }, []);
 
