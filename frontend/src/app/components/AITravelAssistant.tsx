@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { API_BASE, getToken } from '../utils/api';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Send, Bot, Sparkles, MapPin, Calendar, DollarSign, X,
@@ -113,13 +113,21 @@ export const AITravelAssistant: React.FC = () => {
     setLoading(true);
 
     try {
+      // Current page (from the hash route) lets the AI tailor answers; the auth
+      // token lets it use the personalization tools (my wishlist / trips / etc.).
+      const token = getToken();
+      const page = (window.location.hash || '').replace(/^#\/?/, '').split('?')[0] || 'home';
       const res = await fetch(`${API_BASE}/ai-assistant/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
         body: JSON.stringify({
           message: text,
           language,
-          userId: user?.id,
+          page,
           conversationHistory: messages.slice(-6).map((m) => ({
             role: m.role,
             content: m.content,

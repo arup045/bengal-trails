@@ -19,15 +19,15 @@ const pool = require('../db/pool');
 const { optionalAuth } = require('../middleware/auth');
 const { toolDeclarations, executeTool } = require('../services/aiTools');
 
-const MAX_TOOL_HOPS = 3;       // Max chained function calls before forcing a text response
-const GEMINI_MODEL  = 'gemini-1.5-flash';
+const MAX_TOOL_HOPS = 4;       // Max chained function calls before forcing a text response
+const GEMINI_MODEL  = 'gemini-2.0-flash';  // faster + better tool use than 1.5-flash
 
 // ─── Gemini with function-calling support ──────────────────────────────────────
 
-async function callGeminiWithTools(message, conversationHistory, language) {
+async function callGeminiWithTools(message, conversationHistory, language, context = {}, ctx = {}) {
   if (!process.env.GEMINI_API_KEY) return null;
 
-  const systemPrompt = buildSystemPrompt(language);
+  const systemPrompt = buildSystemPrompt(language, context);
 
   // Build initial contents array
   const contents = [
@@ -92,7 +92,7 @@ async function callGeminiWithTools(message, conversationHistory, language) {
     const functionResponses = [];
     for (const fc of functionCalls) {
       const { name, args } = fc.functionCall;
-      const { result, error } = await executeTool(name, args);
+      const { result, error } = await executeTool(name, args, ctx);
       // If the tool returned destination-like data, harvest it for the API payload
       if (result) {
         harvestDestinations(name, result, surfacedDestinations);
@@ -140,15 +140,24 @@ function harvestDestinations(toolName, result, out) {
       if (out.find((x) => x.slug === r.id)) continue;
       out.push({ name: r.name, slug: r.id, image: r.image });
     }
+  } else if (
+    (toolName === 'get_my_wishlist' || toolName === 'get_recently_viewed') &&
+    Array.isArray(result.results)
+  ) {
+    // Surface the user's own places as clickable chips too.
+    for (const r of result.results.slice(0, 6)) {
+      if (!r.slug || out.find((x) => x.slug === r.slug)) continue;
+      out.push({ name: r.name, slug: r.slug, image: r.image });
+    }
   }
 }
 
 // ─── Groq fallback (no function calling — text only) ───────────────────────────
 
-async function callGroq(message, conversationHistory, language) {
+async function callGroq(message, conversationHistory, language, context = {}) {
   if (!process.env.GROQ_API_KEY) return null;
   try {
-    const systemPrompt = buildSystemPrompt(language);
+    const systemPrompt = buildSystemPrompt(language, context);
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -177,46 +186,60 @@ async function callGroq(message, conversationHistory, language) {
 
 // ─── System prompt ─────────────────────────────────────────────────────────────
 
-function buildSystemPrompt(language) {
+function buildSystemPrompt(language, context = {}) {
   const langInstruction = {
     en: 'Respond in English.',
     bn: 'Respond in Bengali (বাংলা).',
     hi: 'Respond in Hindi (हिंदी).',
   }[language] || 'Respond in English.';
 
+  // ── Live context block — makes answers situational ──────────────────────────
+  const now = new Date();
+  const monthName = now.toLocaleString('en-US', { month: 'long' });
+  const m = now.getMonth() + 1;
+  const season =
+    (m >= 3 && m <= 6)  ? 'Summer (hot; head to the hills)' :
+    (m >= 7 && m <= 9)  ? 'Monsoon (rain; great for Sundarbans & greenery)' :
+    (m >= 10 && m <= 11)? 'Autumn (festival season; ideal weather everywhere)' :
+                          'Winter (cool & dry; best for most of Bengal)';
+  const ctxLines = [
+    `Today is ${monthName} ${now.getDate()}, ${now.getFullYear()} — current season: ${season}.`,
+    context.userName ? `The user is signed in as "${context.userName}". You may greet them by name and use the personalization tools (get_my_wishlist, get_my_trip_plans, get_recently_viewed).`
+                     : `The user is NOT signed in. If they ask about "my wishlist/trips", invite them to sign in first.`,
+    context.page ? `They are currently on the "${context.page}" page of the site — tailor suggestions to that when relevant.` : null,
+  ].filter(Boolean).join('\n');
+
   return `You are Bengal Trails, an expert AI travel assistant for West Bengal, India.
 
-You have access to a live database via TOOLS. Always use the tools to ground your answers in real data — never invent destinations, festivals, or food items.
+You have access to a LIVE database and live services via TOOLS. Always use the tools to ground your answers in real data — never invent destinations, festivals, food, hotels, transport, prices or weather.
+
+CURRENT CONTEXT:
+${ctxLines}
 
 Available tools:
-- search_destinations: Find destinations by region/category/query (structured filter)
-- get_destination_details: Get full info for one place by slug
-- list_festivals: Find festivals by month/category/location (structured filter)
-- list_food: Get Bengali food items (structured filter)
-- suggest_itinerary: Plan a multi-day trip
-- semantic_search: Search by MEANING across all 232 destinations + 100 festivals + 17 foods.
-  Use for conceptual/thematic queries that structured filters can't express well —
-  "Buddhist meditation places", "literary sites", "spots for solo female travellers",
-  "places connected to Tagore", "Instagram-worthy sunsets", etc.
+- search_destinations — find destinations by region/category/query
+- get_destination_details — full info for one place by slug
+- list_festivals / whats_on — festivals by month/category/location (whats_on defaults to the current month and can find festivals near a place)
+- list_food — Bengali dishes
+- suggest_itinerary — order destinations into a multi-day route
+- semantic_search — search by MEANING ("Buddhist meditation spots", "places connected to Tagore", "instagrammable sunsets")
+- get_weather — CURRENT live weather + best time to visit for a destination
+- get_transport — how to REACH a place (trains/flights/jeeps, durations, costs, tips)
+- find_stays — hotels/homestays at a place (price range, type, rating)
+- estimate_budget — trip cost estimate (days, style, party size) with a breakdown
+- get_my_wishlist / get_my_trip_plans / get_recently_viewed — the SIGNED-IN user's own data
 
-Tool usage guidelines:
-- For "places in X" or "X destinations" → call search_destinations
-- For "tell me about [place]" → call get_destination_details
-- For "festivals in [month]" or "festivals at [place]" → call list_festivals
-- For "what to eat" or "Bengali food" → call list_food
-- For "plan a N-day trip" → call suggest_itinerary
-- For conceptual/thematic searches → call semantic_search
-- Combine multiple tools when needed (e.g. semantic_search + get_destination_details for deeper info)
+Guidelines:
+- Combine tools to fully answer (e.g. for "plan my Darjeeling trip": get_destination_details + get_weather + get_transport + find_stays + estimate_budget).
+- For "is it a good time to visit X" → call get_weather and compare with its best season.
+- For "how do I get to X" → get_transport. For "where to stay" → find_stays. For "how much" → estimate_budget.
+- For the user's own saved data → the get_my_* tools (only if signed in).
+- HONESTY: if a tool returns no data or an error, say so plainly and offer the closest thing you DO have — never fabricate a substitute. Stay on West-Bengal travel topics.
 
-About West Bengal:
-- 232 destinations across North Bengal (hills, tea gardens), Central Bengal (Kolkata, heritage), and South Bengal (beaches, Sundarbans)
-- 100 festivals across all 12 months
-- 17 signature Bengali dishes
-- Best time: October–March (cool, dry); avoid May–June (very hot)
-- Languages: Bengali, English, Hindi
+About West Bengal: hills & tea gardens (North), Kolkata & heritage (Central), beaches & Sundarbans (South). Best overall: October–March. Languages: Bengali, English, Hindi.
 
 ${langInstruction}
-Keep responses friendly, concise (2-4 sentences), and authentic. End with a practical follow-up suggestion when natural.`;
+Keep replies friendly, concise (2–4 sentences unless asked for a full plan), and authentic. End with a practical follow-up suggestion when natural.`;
 }
 
 // ─── Keyword fallback (used if both Gemini & Groq fail) ────────────────────────
@@ -284,10 +307,17 @@ const MAX_HISTORY_TOTAL_CHARS = 20000; // total chars across kept history
 
 router.post('/chat', optionalAuth, async (req, res) => {
   try {
-    const { message, language = 'en', conversationHistory: rawHistory = [] } = req.body;
+    const { message, language = 'en', conversationHistory: rawHistory = [], page } = req.body;
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'message is required' });
     }
+
+    // Request-scoped context for situational answers + personalization.
+    const context = {
+      userName: req.user?.name || null,
+      page: typeof page === 'string' ? page.slice(0, 40) : null,
+    };
+    const ctx = { userId: req.user?.id || null };
     if (message.length > MAX_MESSAGE_LEN) {
       return res.status(400).json({ error: `Message exceeds ${MAX_MESSAGE_LEN} characters` });
     }
@@ -312,12 +342,12 @@ router.post('/chat', optionalAuth, async (req, res) => {
     let provider = 'fallback';
 
     // Try Gemini with function calling (preferred — gives grounded answers)
-    aiResult = await callGeminiWithTools(message, conversationHistory, language);
+    aiResult = await callGeminiWithTools(message, conversationHistory, language, context, ctx);
     if (aiResult?.text) provider = 'gemini';
 
     // Fall back to Groq if Gemini fails entirely
     if (!aiResult?.text) {
-      const groqText = await callGroq(message, conversationHistory, language);
+      const groqText = await callGroq(message, conversationHistory, language, context);
       if (groqText) {
         aiResult = { text: groqText, destinations: [] };
         provider = 'groq';
