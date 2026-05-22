@@ -176,6 +176,22 @@ export const AITravelAssistant: React.FC = () => {
     return "I'd love to help you explore West Bengal! 🌿 Could you share more details?\n\n• What type of trip? (adventure/cultural/relaxation)\n• How many days?\n• Budget range?\n• Travelling with family/friends/solo?";
   };
 
+  // Allow other parts of the site (e.g. the district "Ask AI" bar) to open the
+  // assistant and ask a question via a global event — keeps them decoupled.
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const msg = (e as CustomEvent)?.detail?.message;
+      setIsOpen(true);
+      setIsMinimized(false);
+      setUnreadCount(0);
+      if (msg) setTimeout(() => sendMessageRef.current(String(msg)), 350);
+    };
+    window.addEventListener('bt:ask-ai', handler as EventListener);
+    return () => window.removeEventListener('bt:ask-ai', handler as EventListener);
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
