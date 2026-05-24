@@ -1,11 +1,11 @@
 import { API_BASE } from '../utils/api';
-import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { MapPin, Star, Users, Calendar, ChevronRight, Navigation, Share2, Facebook, Twitter, MessageCircle, Copy, Camera, Heart, Clock, ExternalLink } from 'lucide-react';
+import { MapPin, Star, Calendar, ChevronRight, Navigation, Share2, Facebook, Twitter, MessageCircle, Copy, Camera, Heart, Clock, Tag } from 'lucide-react';
+import { toast } from 'sonner';
 import { placesData } from '../data/places-full';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { buildSrcSet, DEFAULT_SIZES } from '../utils/responsiveImage';
+import { buildSrcSet } from '../utils/responsiveImage';
 import { LiveWeather } from './LiveWeather';
 import { TransportGuideSection } from './TransportGuideSection';
 import { HotelsSection } from './HotelsSection';
@@ -14,289 +14,192 @@ import { ShareButton } from './ShareButton';
 import { PhotoGalleryLightbox } from './PhotoGalleryLightbox';
 import { ReviewsSystem } from './ReviewsSystem';
 import { BookingSystem } from './BookingSystem';
-import { BookingModal } from './BookingModal';
 import { ReportIssueButton } from './ReportIssueButton';
+import { useWishlistSync } from '../utils/useWishlistSync';
+import { districtSlugForPlace } from '../data/districts';
 
-interface PlaceDetailPageProps {
-  slug: string;
-}
+interface PlaceDetailPageProps { slug: string; }
 
 export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  // ── Hooks (all unconditional, before any early return) ──────────────────────
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistSync();
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-
   const [isLoading, setIsLoading] = useState(true);
   const [apiPlace, setApiPlace] = useState<any | null>(null);
 
   const fetchPlace = () => {
     if (!slug) return;
     fetch(`${API_BASE}/destinations/${slug}`)
-      .then(r => r.ok ? r.json() : null)
+      .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        if (!d?.destination) return;
-        const dest = d.destination;
-        setApiPlace({
-          ...dest,
-          title: dest.name,
-          slug: dest.slug,
-          image: (dest.imageUrl || dest.image_url),
-          heroImage: {
-            url: (dest.imageUrl || dest.image_url) || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200',
-            alt: dest.name || 'Destination photo',
-          },
-          gallery: Array.isArray((dest.galleryImages || dest.gallery_images)) ? (dest.galleryImages || dest.gallery_images) : [],
-          excerpt: (dest.shortDescription || dest.short_description) || dest.description?.slice(0, 160) || '',
-          description: dest.description || '',
-          region: dest.region || 'Bengal',
-          district: dest.district || dest.region || 'West Bengal',
-          coordinates: (dest.latitude && dest.longitude)
-            ? { lat: parseFloat(dest.latitude), lng: parseFloat(dest.longitude) }
-            : { lat: 22.5726, lng: 88.3639 },
-          tags: Array.isArray(dest.highlights) && dest.highlights.length ? dest.highlights
-                : Array.isArray(dest.activities) ? dest.activities
-                : (dest.category ? [dest.category] : []),
-          priceFrom: (dest.priceRange || dest.price_range) || ((dest.priceFrom || dest.price_from) ? `₹${(dest.priceFrom || dest.price_from).toLocaleString('en-IN')}` : 'Free'),
-          rating: parseFloat(dest.rating) || 0,
-          reviewsCount: (dest.reviewCount || dest.review_count) || 0,
-          bestTime: (dest.bestTimeToVisit || dest.best_time_to_visit) || 'Oct–Mar',
-          nearbyRestaurants: Array.isArray(dest.nearbyRestaurants) ? dest.nearbyRestaurants : [],
-        });
+        const dest = d?.destination;
+        if (dest) {
+          setApiPlace({
+            ...dest,
+            title: dest.name, slug: dest.slug,
+            image: dest.imageUrl || dest.image_url,
+            heroImage: { url: (dest.imageUrl || dest.image_url) || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200', alt: dest.name || 'Destination photo' },
+            gallery: Array.isArray(dest.galleryImages || dest.gallery_images) ? (dest.galleryImages || dest.gallery_images) : [],
+            excerpt: (dest.shortDescription || dest.short_description) || dest.description?.slice(0, 160) || '',
+            description: dest.description || '',
+            region: dest.region || 'Bengal',
+            district: dest.district || dest.region || 'West Bengal',
+            coordinates: (dest.latitude && dest.longitude) ? { lat: parseFloat(dest.latitude), lng: parseFloat(dest.longitude) } : { lat: 22.5726, lng: 88.3639 },
+            tags: Array.isArray(dest.highlights) && dest.highlights.length ? dest.highlights : Array.isArray(dest.activities) ? dest.activities : (dest.category ? [dest.category] : []),
+            priceFrom: (dest.priceRange || dest.price_range) || ((dest.priceFrom || dest.price_from) ? `₹${(dest.priceFrom || dest.price_from).toLocaleString('en-IN')}` : 'Free'),
+            rating: parseFloat(dest.rating) || 0,
+            reviewsCount: (dest.reviewCount || dest.review_count) || 0,
+            bestTime: (dest.bestTimeToVisit || dest.best_time_to_visit) || 'Oct–Mar',
+            category: dest.category || '',
+            nearbyRestaurants: Array.isArray(dest.nearbyRestaurants) ? dest.nearbyRestaurants : [],
+          });
+        }
       })
-      .catch(() => { setIsLoading(false); });
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
   };
 
-  useEffect(() => { fetchPlace(); }, [slug]);
+  useEffect(() => { setIsLoading(true); fetchPlace(); /* eslint-disable-next-line */ }, [slug]);
 
-  // Refresh rating + review count when ANY review changes on this page
+  // Refresh rating/review count when a review changes for this place
   useEffect(() => {
-    const handler = (e: any) => {
-      // Only refresh if the change relates to this destination (or no slug = unknown source)
-      if (!e?.detail?.slug || e.detail.slug === slug) fetchPlace();
-    };
+    const handler = (e: any) => { if (!e?.detail?.slug || e.detail.slug === slug) fetchPlace(); };
     window.addEventListener('bt:review-changed', handler);
     return () => window.removeEventListener('bt:review-changed', handler);
+    // eslint-disable-next-line
   }, [slug]);
+
   const staticPlace = placesData.find(p => p.slug === slug);
-  // Clear loading once we have either API or static data
-  if ((apiPlace || staticPlace) && isLoading) setIsLoading(false);
   const place = apiPlace || staticPlace;
 
-  // Skeleton while fetching
+  // Recently viewed (hook stays unconditional; guards on `place`)
+  useEffect(() => {
+    if (!place) return;
+    try {
+      const rv = JSON.parse(localStorage.getItem('recentlyViewed') || '[]').filter((i: any) => i.slug !== slug);
+      const updated = [{ slug, title: place.title, image: place.heroImage?.url, region: place.region }, ...rv].slice(0, 10);
+      localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+    } catch { /* ignore */ }
+  }, [slug, place]);
+
+  // ── Early states ────────────────────────────────────────────────────────────
   if (isLoading && !place) {
     return (
       <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-24 pb-16 animate-pulse">
         <div className="h-72 sm:h-[440px] bg-gray-200 rounded-3xl mb-8" />
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-3">
-            <div className="h-8  bg-gray-200 rounded-xl w-2/3" />
-            <div className="h-4  bg-gray-200 rounded-xl w-1/3" />
-            <div className="h-4  bg-gray-200 rounded-xl w-full mt-4" />
-            <div className="h-4  bg-gray-200 rounded-xl w-5/6" />
-            <div className="h-4  bg-gray-200 rounded-xl w-4/6" />
+            <div className="h-8 bg-gray-200 rounded-xl w-2/3" />
+            <div className="h-4 bg-gray-200 rounded-xl w-1/3" />
+            <div className="h-4 bg-gray-200 rounded-xl w-full mt-4" />
+            <div className="h-4 bg-gray-200 rounded-xl w-5/6" />
           </div>
           <div className="h-56 bg-gray-200 rounded-2xl" />
         </div>
       </div>
     );
   }
-
   if (!place) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-3xl mb-4">Place not found</h2>
-          <p className="text-gray-600 mb-4">Sorry, we couldn't find the destination you're looking for.</p>
-          <a href="#/explore" className="text-purple-600 hover:underline text-lg">
-            ← Back to Explore
-          </a>
+          <h2 className="text-3xl mb-4 font-poppins">Place not found</h2>
+          <p className="text-gray-600 mb-4">Sorry, we couldn't find that destination.</p>
+          <a href="#/explore" className="text-purple-600 hover:underline text-lg">← Back to Explore</a>
         </div>
       </div>
     );
   }
 
-  // Track recently viewed
-  useEffect(() => {
-    const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-    const filtered = recentlyViewed.filter((item: any) => item.slug !== slug);
-    const updated = [{ slug, title: place.title, image: place.heroImage.url, region: place.region }, ...filtered].slice(0, 10);
-    localStorage.setItem('recentlyViewed', JSON.stringify(updated));
-  }, [slug, place]);
+  // ── Derived (non-hook) ──────────────────────────────────────────────────────
+  const districtSlug = districtSlugForPlace(place as any);
+  const saved = isInWishlist(place.slug);
+  const toggleSave = () => {
+    if (saved) removeFromWishlist(place.slug);
+    else addToWishlist({ slug: place.slug, title: place.title, category: place.category || '', region: place.region, image: place.heroImage?.url || '', description: place.excerpt || '' });
+  };
 
-  // Google Maps deep link function
   const openGoogleMaps = () => {
     const { lat, lng } = place.coordinates;
-    // Using coordinates for precise location
-    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${encodeURIComponent(place.title)}`;
-    window.open(mapsUrl, '_blank');
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank', 'noopener,noreferrer');
   };
+  const url = typeof window !== 'undefined' ? window.location.href : '';
+  const shareOnFacebook = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+  const shareOnTwitter = () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out ${place.title} on Bengal Trails`)}`, '_blank');
+  const shareOnWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out ${place.title} on Bengal Trails: ${url}`)}`, '_blank');
+  const copyLink = () => { navigator.clipboard.writeText(url); toast.success('Link copied!'); setShowShareMenu(false); };
 
-  // Social Share Functions
-  const shareOnFacebook = () => {
-    const url = window.location.href;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-  };
+  const nearbyPlaces = placesData.filter(p => p.slug !== slug && p.region === place.region).slice(0, 4);
 
-  const shareOnTwitter = () => {
-    const url = window.location.href;
-    const text = `Check out ${place.title} - ${place.excerpt}`;
-    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
-  };
+  // REAL gallery only — hero + any gallery images from the data. No fake stock fillers.
+  const galleryImages: Array<{ src: string; alt: string }> = [
+    { src: place.heroImage.url, alt: place.heroImage.alt || place.title },
+    ...((place.gallery || []) as string[]).filter(Boolean).map((u: string) => ({ src: u, alt: place.title })),
+  ].filter((img, i, arr) => arr.findIndex(x => x.src === img.src) === i);
+  const showGallery = galleryImages.length >= 2;
 
-  const shareOnWhatsApp = () => {
-    const url = window.location.href;
-    const text = `Check out ${place.title} on Bengal Trails: ${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
+  const restaurants = (place.nearbyRestaurants || []).map((name: string) => ({ name }));
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Link copied to clipboard!');
-    setShowShareMenu(false);
-  };
-
-  // Find nearby places (same region)
-  const nearbyPlaces = placesData
-    .filter(p => p.slug !== slug && p.region === place.region)
-    .slice(0, 4);
-
-  // Generate gallery images from place data
-  const galleryImages = [
-    { src: place.heroImage.url, alt: place.heroImage.alt },
-    { src: `https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800`, alt: `${place.title} landscape view` },
-    { src: `https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800`, alt: `${place.title} scenic beauty` },
-    { src: `https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800`, alt: `${place.title} nature` },
-    { src: `https://images.unsplash.com/photo-1605640840605-14ac1855827b?w=800`, alt: `${place.title} attractions` },
-    { src: `https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800`, alt: `${place.title} local culture` },
-    { src: `https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=800`, alt: `${place.title} heritage` },
-    { src: `https://images.unsplash.com/photo-1590906424086-3dbc808fd54b?w=800`, alt: `${place.title} festivals` },
-    { src: `https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800`, alt: `${place.title} architecture` }
+  const navSections = [
+    { id: 'about', label: 'Overview' },
+    ...(showGallery ? [{ id: 'photos', label: 'Photos' }] : []),
+    { id: 'getting-there', label: 'Getting there' },
+    { id: 'stay', label: 'Stay' },
+    { id: 'reviews', label: 'Reviews' },
+    { id: 'nearby', label: 'Nearby' },
   ];
-
-  // Nearby restaurants — we only have the real names from our data, so we show
-  // exactly that. Previously this fabricated rating/price/distance with
-  // Math.random() (which also flickered on every re-render) — removed.
-  const restaurants = place.nearbyRestaurants.map((name) => ({
-    name,
-    image: 'https://images.unsplash.com/photo-1588644525273-f37b60d78512?w=800',
-  }));
-
-  // Mock current festivals (if tags include festival-related)
-  const hasFestival = place.tags.some(tag => 
-    tag.toLowerCase().includes('festival') || 
-    tag.toLowerCase().includes('puja') || 
-    tag.toLowerCase().includes('mela')
-  );
-
-  const festivals = hasFestival ? [
-    {
-      name: 'Durga Puja',
-      date: 'October 2024',
-      description: 'Grand celebration with elaborate pandals and cultural performances',
-      image: 'https://images.unsplash.com/photo-1590906424086-3dbc808fd54b?w=800'
-    }
-  ] : [];
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative h-[70vh] overflow-hidden">
-        <ImageWithFallback
-          src={place.heroImage.url}
-          alt={place.heroImage.alt}
-          className="w-full h-full object-cover"
-          loading="eager"
-          decoding="async"
-          srcSet={buildSrcSet(place.heroImage.url)}
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-        
-        {/* Hero Content */}
+      {/* ── Immersive hero ───────────────────────────────────────────────────── */}
+      <div className="relative h-[72vh] min-h-[440px] overflow-hidden">
+        <ImageWithFallback src={place.heroImage.url} alt={place.heroImage.alt} className="w-full h-full object-cover" loading="eager" decoding="async" srcSet={buildSrcSet(place.heroImage.url)} sizes="100vw" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
         <div className="absolute inset-0 flex items-end">
-          <div className="max-w-7xl mx-auto w-full px-6 pb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
+          <div className="max-w-7xl mx-auto w-full px-5 sm:px-8 pb-12">
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               {/* Breadcrumb */}
-              <div className="flex items-center gap-2 text-white/80 mb-4">
-                <a href="#/" className="hover:text-white">Home</a>
-                <ChevronRight className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-white/80 text-sm font-poppins mb-4 flex-wrap">
                 <a href="#/explore" className="hover:text-white">Explore</a>
+                <ChevronRight className="w-4 h-4" />
+                <a href={`#/explore/district/${districtSlug}`} className="hover:text-white">{place.district}</a>
                 <ChevronRight className="w-4 h-4" />
                 <span className="text-white">{place.title}</span>
               </div>
 
-              {/* Title */}
-              <h1 className="text-5xl md:text-6xl text-white mb-4">{place.title}</h1>
-              
-              {/* Meta Info */}
-              <div className="flex flex-wrap items-center gap-6 text-white/90 mb-6">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  <span>{place.district}, {place.region}</span>
-                </div>
-                {place.rating && (
-                  <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                    <span>{place.rating} ({place.reviewsCount?.toLocaleString()} reviews)</span>
-                  </div>
+              <h1 className="font-poppins text-4xl md:text-6xl font-bold text-white mb-4">{place.title}</h1>
+
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-white/90 font-poppins mb-6">
+                <span className="flex items-center gap-2"><MapPin className="w-5 h-5" />{place.district}, {place.region}</span>
+                {place.rating > 0 && (
+                  <span className="flex items-center gap-2"><Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />{place.rating} {place.reviewsCount ? `(${place.reviewsCount.toLocaleString()} reviews)` : ''}</span>
                 )}
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>Best: {place.bestTime}</span>
-                </div>
+                <span className="flex items-center gap-2"><Calendar className="w-5 h-5" />Best: {place.bestTime}</span>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setIsFavorite(!isFavorite)}
-                  className={`px-6 py-3 rounded-full backdrop-blur-md transition-all ${
-                    isFavorite 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-                >
-                  <Heart className={`w-5 h-5 inline mr-2 ${isFavorite ? 'fill-white' : ''}`} />
-                  {isFavorite ? 'Saved' : 'Save'}
+              <div className="flex flex-wrap gap-3">
+                <button onClick={toggleSave}
+                  className={`px-6 py-3 rounded-full backdrop-blur-md transition-all font-poppins font-medium ${saved ? 'bg-rose-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}>
+                  <Heart className={`w-5 h-5 inline mr-2 ${saved ? 'fill-white' : ''}`} />{saved ? 'Saved' : 'Save'}
                 </button>
                 <div className="relative">
-                  <button 
-                    onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="px-6 py-3 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-all"
-                  >
-                    <Share2 className="w-5 h-5 inline mr-2" />
-                    Share
+                  <button onClick={() => setShowShareMenu(!showShareMenu)} className="px-6 py-3 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-all font-poppins font-medium">
+                    <Share2 className="w-5 h-5 inline mr-2" />Share
                   </button>
                   {showShareMenu && (
-                    <div className="absolute top-full mt-2 right-0 bg-white rounded-2xl shadow-2xl p-3 z-50 min-w-[200px]">
-                      <button onClick={shareOnFacebook} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl transition-colors text-gray-700">
-                        <Facebook className="w-5 h-5 text-blue-600" />
-                        <span>Facebook</span>
-                      </button>
-                      <button onClick={shareOnTwitter} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl transition-colors text-gray-700">
-                        <Twitter className="w-5 h-5 text-sky-500" />
-                        <span>Twitter</span>
-                      </button>
-                      <button onClick={shareOnWhatsApp} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl transition-colors text-gray-700">
-                        <MessageCircle className="w-5 h-5 text-green-600" />
-                        <span>WhatsApp</span>
-                      </button>
-                      <button onClick={copyLink} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl transition-colors text-gray-700">
-                        <Copy className="w-5 h-5 text-purple-600" />
-                        <span>Copy Link</span>
-                      </button>
+                    <div className="absolute top-full mt-2 left-0 bg-white rounded-2xl shadow-2xl p-3 z-50 min-w-[200px]">
+                      <button onClick={shareOnFacebook} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl text-gray-700"><Facebook className="w-5 h-5 text-blue-600" />Facebook</button>
+                      <button onClick={shareOnTwitter} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl text-gray-700"><Twitter className="w-5 h-5 text-sky-500" />Twitter</button>
+                      <button onClick={shareOnWhatsApp} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl text-gray-700"><MessageCircle className="w-5 h-5 text-green-600" />WhatsApp</button>
+                      <button onClick={copyLink} className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 rounded-xl text-gray-700"><Copy className="w-5 h-5 text-purple-600" />Copy Link</button>
                     </div>
                   )}
                 </div>
-                <button className="px-6 py-3 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-all" onClick={openGoogleMaps}>
-                  <Navigation className="w-5 h-5 inline mr-2" />
-                  Directions
+                <button onClick={openGoogleMaps} className="px-6 py-3 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-all font-poppins font-medium">
+                  <Navigation className="w-5 h-5 inline mr-2" />Directions
                 </button>
               </div>
             </motion.div>
@@ -304,357 +207,143 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
         </div>
       </div>
 
-      {/* Content Section */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      {/* ── Sticky section nav ───────────────────────────────────────────────── */}
+      <div className="sticky top-16 z-20 bg-white/95 backdrop-blur border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex gap-1 overflow-x-auto">
+          {navSections.map(s => (
+            <button key={s.id} onClick={() => scrollTo(s.id)} className="shrink-0 px-4 py-4 font-poppins text-sm font-medium text-gray-600 hover:text-purple-600 border-b-2 border-transparent hover:border-purple-300 transition-colors">
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Content ──────────────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 py-10">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            {/* Tabs */}
-            <div className="flex gap-4 mb-8 border-b border-gray-200 overflow-x-auto">
-              {['overview', 'photos', 'reviews', 'transport', 'nearby', 'hotels', 'restaurants'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-4 px-2 capitalize transition-colors whitespace-nowrap ${
-                    activeTab === tab
-                      ? 'border-b-2 border-purple-600 text-purple-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
+          {/* Main */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* About */}
+            <section id="about" className="scroll-mt-32">
+              <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-4">About {place.title}</h2>
+              {place.description && <p className="text-gray-600 text-lg leading-relaxed mb-4">{place.description}</p>}
+              {place.excerpt && place.excerpt !== place.description && <p className="text-gray-600 leading-relaxed">{place.excerpt}</p>}
 
-            {/* Overview Tab */}
-            {activeTab === 'overview' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8"
-              >
-                {/* Description */}
-                <div>
-                  <h2 className="text-3xl mb-4">About {place.title}</h2>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-4">{place.description}</p>
-                  <p className="text-gray-600 leading-relaxed">{place.excerpt}</p>
-                </div>
-
-                {/* Tags */}
-                <div>
-                  <h3 className="text-xl mb-3">Highlights</h3>
-                  <div className="flex flex-wrap gap-3">
-                    {place.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-4 py-2 bg-purple-50 text-purple-600 rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+              {place.tags?.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="font-poppins text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-purple-600" /> Highlights</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {place.tags.map((t: string) => <span key={t} className="px-4 py-2 bg-purple-50 text-purple-700 rounded-full font-poppins text-sm">{t}</span>)}
                   </div>
                 </div>
+              )}
+            </section>
 
-                {/* Current Festivals */}
-                {festivals.length > 0 && (
-                  <div>
-                    <h3 className="text-xl mb-4">🎉 Upcoming Festivals</h3>
-                    {festivals.map((festival) => (
-                      <div key={festival.name} className="bg-white rounded-2xl p-6 shadow-lg">
-                        <div className="flex gap-6">
-                          <ImageWithFallback
-                            src={festival.image}
-                            alt={festival.name}
-                            className="w-32 h-32 rounded-xl object-cover"
-                          />
-                          <div className="flex-1">
-                            <h4 className="text-2xl mb-2">{festival.name}</h4>
-                            <p className="text-purple-600 mb-2">{festival.date}</p>
-                            <p className="text-gray-600">{festival.description}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* Photos Tab */}
-            {activeTab === 'photos' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <div>
-                  <h2 className="text-3xl mb-6">Photo Gallery</h2>
-                  <p className="text-gray-600 mb-6">Explore beautiful views and moments from {place.title}</p>
-                </div>
-
-                <PhotoGalleryLightbox
-                  images={galleryImages}
-                  open={lightboxOpen}
-                  index={lightboxIndex}
-                  onClose={() => setLightboxOpen(false)}
-                />
-                
-                <div className="grid md:grid-cols-3 gap-4">
+            {/* Photos (real only) */}
+            {showGallery && (
+              <section id="photos" className="scroll-mt-32">
+                <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-5">Photos</h2>
+                <PhotoGalleryLightbox images={galleryImages} open={lightboxOpen} index={lightboxIndex} onClose={() => setLightboxOpen(false)} />
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {galleryImages.map((img, idx) => (
-                    <div 
-                      key={idx} 
-                      className="relative group cursor-pointer overflow-hidden rounded-xl"
-                      onClick={() => {
-                        setLightboxOpen(true);
-                        setLightboxIndex(idx);
-                      }}
-                    >
-                      <ImageWithFallback
-                        src={img.src}
-                        alt={img.alt}
-                        className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Camera className="w-12 h-12 text-white" />
-                      </div>
-                      <div className="absolute bottom-3 left-3 right-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                        {img.alt}
+                    <div key={idx} className="relative group cursor-pointer overflow-hidden rounded-2xl" onClick={() => { setLightboxOpen(true); setLightboxIndex(idx); }}>
+                      <ImageWithFallback src={img.src} alt={img.alt} className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                        <Camera className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </section>
             )}
 
-            {/* Reviews Tab */}
-            {activeTab === 'reviews' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                
-              </motion.div>
+            {/* Getting there */}
+            <section id="getting-there" className="scroll-mt-32">
+              <TransportGuideSection destinationSlug={place.slug} />
+            </section>
+
+            {/* Stay */}
+            <section id="stay" className="scroll-mt-32">
+              <HotelsSection destinationSlug={place.slug} />
+            </section>
+
+            {/* Nearby restaurants (names are real; image is a neutral placeholder) */}
+            {restaurants.length > 0 && (
+              <section className="scroll-mt-32">
+                <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5">Where to eat nearby</h2>
+                <div className="flex flex-wrap gap-2">
+                  {restaurants.map((r: { name: string }) => (
+                    <span key={r.name} className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full font-poppins text-sm text-gray-700">
+                      <MapPin className="w-3.5 h-3.5 text-rose-500" />{r.name}
+                    </span>
+                  ))}
+                </div>
+              </section>
             )}
 
-            {/* Transportation Tab */}
-            {activeTab === 'transport' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-             <TransportGuideSection destinationSlug={place.slug} />
-              </motion.div>
-            )}
+            {/* Reviews */}
+            <section id="reviews" className="scroll-mt-32">
+              <ReviewsSystem destinationSlug={place.slug} destinationName={place.title} />
+            </section>
 
-            {/* Nearby Places Tab */}
-            {activeTab === 'nearby' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <NearbyPlacesSection destinationSlug={place.slug} />
-                <h2 className="text-3xl mb-4 mt-8">More in this region</h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {nearbyPlaces.map((nearbyPlace) => (
-                    <a
-                      key={nearbyPlace.slug}
-                      href={`#/explore/${nearbyPlace.slug}`}
-                      className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
-                    >
-                      <ImageWithFallback
-                        src={nearbyPlace.heroImage.url}
-                        alt={nearbyPlace.heroImage.alt}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="p-4">
-                        <h3 className="text-xl mb-2">{nearbyPlace.title}</h3>
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{nearbyPlace.excerpt}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-purple-600">{nearbyPlace.priceFrom || 'Free'}</span>
-                          {nearbyPlace.rating && (
-                            <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                              <span className="text-sm">{nearbyPlace.rating}</span>
-                            </div>
-                          )}
+            {/* Nearby */}
+            <section id="nearby" className="scroll-mt-32">
+              <NearbyPlacesSection destinationSlug={place.slug} />
+              {nearbyPlaces.length > 0 && (
+                <>
+                  <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5 mt-8">More in {place.region}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {nearbyPlaces.map((np) => (
+                      <a key={np.slug} href={`#/explore/${np.slug}`} className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <ImageWithFallback src={np.heroImage.url} alt={np.heroImage.alt} className="w-full h-44 object-cover" />
+                        <div className="p-4">
+                          <h3 className="font-poppins text-lg font-semibold text-slate-900 mb-1">{np.title}</h3>
+                          <p className="text-gray-600 text-sm line-clamp-2">{np.excerpt}</p>
                         </div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Hotels Tab */}
-            {activeTab === 'hotels' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <HotelsSection destinationSlug={place.slug} />
-              </motion.div>
-            )}
-
-            {/* Restaurants Tab */}
-            {activeTab === 'restaurants' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <h2 className="text-3xl mb-4">Nearby Restaurants</h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {restaurants.map((restaurant) => (
-                    <div key={restaurant.name} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all">
-                      <ImageWithFallback
-                        src={restaurant.image}
-                        alt={restaurant.name}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="p-5">
-                        <h3 className="text-xl mb-1">{restaurant.name}</h3>
-                        <p className="text-gray-600 text-sm flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4 text-purple-600" />
-                          Near {place.title}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+            </section>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Live Weather Widget — real data from Open-Meteo */}
-            <LiveWeather
-              lat={place.coordinates.lat}
-              lon={place.coordinates.lng}
-              cityName={place.title}
-              bestTime={place.bestTime}
-            />
+            <LiveWeather lat={place.coordinates.lat} lon={place.coordinates.lng} cityName={place.title} bestTime={place.bestTime} />
 
-            {/* Quick Info Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg sticky top-24">
-              <h3 className="text-xl mb-4">Quick Info</h3>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 sticky top-32">
+              <h3 className="font-poppins text-lg font-bold text-slate-900 mb-4">Quick info</h3>
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-purple-600 mt-1" />
-                  <div>
-                    <div className="text-sm text-gray-500">Location</div>
-                    <div>{place.district}, {place.region}</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-purple-600 mt-1" />
-                  <div>
-                    <div className="text-sm text-gray-500">Best Time</div>
-                    <div>{place.bestTime}</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-purple-600 mt-1" />
-                  <div>
-                    <div className="text-sm text-gray-500">Entry Fee</div>
-                    <div className="text-purple-600">{place.priceFrom || 'Free'}</div>
-                  </div>
-                </div>
+                <div className="flex items-start gap-3"><MapPin className="w-5 h-5 text-purple-600 mt-0.5" /><div><div className="text-xs text-gray-500 font-poppins">Location</div><div className="font-poppins text-sm text-slate-800">{place.district}, {place.region}</div></div></div>
+                <div className="flex items-start gap-3"><Calendar className="w-5 h-5 text-purple-600 mt-0.5" /><div><div className="text-xs text-gray-500 font-poppins">Best time</div><div className="font-poppins text-sm text-slate-800">{place.bestTime}</div></div></div>
+                <div className="flex items-start gap-3"><Clock className="w-5 h-5 text-purple-600 mt-0.5" /><div><div className="text-xs text-gray-500 font-poppins">From</div><div className="font-poppins text-sm text-purple-600 font-semibold">{place.priceFrom || 'Free'}</div></div></div>
               </div>
-
-              <button
-                onClick={() => document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })}
-                className="w-full mt-5 bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition-colors font-poppins font-medium text-sm"
-              >
-                Plan Your Visit
-              </button>
-              <button 
-                onClick={openGoogleMaps}
-                className="w-full mt-2 border border-gray-200 text-gray-700 py-3 rounded-full hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-poppins text-sm"
-              >
-                <Navigation className="w-5 h-5" />
-                Get Directions
-              </button>
-              <ShareButton
-                title={place.title}
-                description={place.excerpt}
-                className="mt-3 w-full flex justify-center"
-              />
+              <button onClick={() => scrollTo('booking-section')} className="w-full mt-5 bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition-colors font-poppins font-medium text-sm">Plan your visit</button>
+              <button onClick={openGoogleMaps} className="w-full mt-2 border border-gray-200 text-gray-700 py-3 rounded-full hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-poppins text-sm"><Navigation className="w-4 h-4" /> Get directions</button>
+              <ShareButton title={place.title} description={place.excerpt} className="mt-3 w-full flex justify-center" />
             </div>
 
-            {/* Popular Tags */}
-            <div className="bg-gradient-to-br from-purple-50 to-orange-50 rounded-2xl p-6">
-              <h3 className="text-xl mb-4">Experience</h3>
-              <div className="flex flex-wrap gap-2">
-                {place.tags.slice(0, 6).map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 bg-white rounded-full text-sm text-gray-700 shadow-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
+            {place.tags?.length > 0 && (
+              <div className="bg-gradient-to-br from-purple-50 to-orange-50 rounded-3xl p-6 border border-purple-100">
+                <h3 className="font-poppins text-lg font-bold text-slate-900 mb-3">Experience</h3>
+                <div className="flex flex-wrap gap-2">
+                  {place.tags.slice(0, 6).map((t: string) => <span key={t} className="px-3 py-1 bg-white rounded-full text-sm text-gray-700 shadow-sm font-poppins">{t}</span>)}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Reviews & Ratings Section */}
-        <div className="max-w-7xl mx-auto px-6 mt-12">
-          <ReviewsSystem
-            destinationSlug={place.slug}
-            destinationName={place.title}
-          />
+        {/* Booking */}
+        <div id="booking-section" className="mt-14 scroll-mt-32">
+          <BookingSystem destinationSlug={place.slug} destinationName={place.title} destinationImage={place.heroImage.url} basePrice={parseInt(String(place.priceFrom).replace(/[^0-9]/g, '') || '2500')} />
         </div>
 
-        {/* Booking Section */}
-        <div id="booking-section" className="max-w-7xl mx-auto px-6 mt-12 scroll-mt-20">
-          <BookingSystem
-            destinationSlug={place.slug}
-            destinationName={place.title}
-            destinationImage={place.heroImage.url}
-            basePrice={parseInt(place.priceFrom?.replace(/[^0-9]/g, '') || '2500')}
-          />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 mt-10 mb-4">
-          <ReportIssueButton slug={place.slug} />
-        </div>
+        <div className="mt-10 mb-4"><ReportIssueButton slug={place.slug} /></div>
       </div>
-
-      {/* Similar Destinations */}
-      {nearbyPlaces.length > 0 && (
-        <div className="bg-white py-16">
-          <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-3xl mb-8">More in {place.region}</h2>
-            <div className="grid md:grid-cols-4 gap-6">
-              {nearbyPlaces.map((nearbyPlace) => (
-                <a
-                  key={nearbyPlace.slug}
-                  href={`#/explore/${nearbyPlace.slug}`}
-                  className="group"
-                >
-                  <div className="relative h-48 rounded-xl overflow-hidden mb-3">
-                    <ImageWithFallback
-                      src={nearbyPlace.heroImage.url}
-                      alt={nearbyPlace.heroImage.alt}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <h3 className="absolute bottom-3 left-3 text-white text-lg">{nearbyPlace.title}</h3>
-                  </div>
-                  <p className="text-gray-600 text-sm line-clamp-2">{nearbyPlace.excerpt}</p>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+
+export default PlaceDetailPage;
