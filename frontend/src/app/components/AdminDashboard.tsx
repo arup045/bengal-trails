@@ -1,13 +1,14 @@
 import { authFetch } from '../utils/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Shield, Users, MapPin, Eye, Heart, LayoutDashboard, BarChart3, Mail, Settings, Activity, TrendingUp, Search, Bookmark, Star, FileEdit, Image as ImageIcon } from 'lucide-react';
+import { Shield, Users, MapPin, Eye, Heart, LayoutDashboard, BarChart3, Mail, Settings, Activity, TrendingUp, Search, Bookmark, Star, FileEdit, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AnalyticsDashboard } from './admin/AnalyticsDashboard';
 import { AdminEnquiries }     from './admin/AdminEnquiries';
 import { AdminVendors }       from './admin/AdminVendors';
 import { ContentManagement }  from './admin/ContentManagement';
 import { AdminPlaceImages }    from './admin/AdminPlaceImages';
+import { AdminEmbeddings }     from './admin/AdminEmbeddings';
 // Charts: most chart logic now lives in AnalyticsDashboard, but the
 // Overview tab still renders inline charts in this file (lines ~175-540),
 // so we keep recharts imports here.
@@ -18,7 +19,7 @@ import {
 
 export function AdminDashboard() {
   const { user, isAdmin, loading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics' | 'enquiries' | 'vendors' | 'content' | 'images'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'destinations' | 'users' | 'searches' | 'analytics' | 'enquiries' | 'vendors' | 'content' | 'images' | 'aisearch'>('overview');
   // Stat keys mirror the real /admin/stats response (camelCased by the API middleware).
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -154,6 +155,7 @@ export function AdminDashboard() {
     { id: 'enquiries',     label: 'Enquiries',    icon: Mail            },
     { id: 'vendors',       label: 'Partners',     icon: Star            },
     { id: 'images',        label: 'Card Images',  icon: ImageIcon       },
+    { id: 'aisearch',      label: 'AI Search',    icon: Sparkles        },
   ];
 
   return (
@@ -550,6 +552,12 @@ export function AdminDashboard() {
         {activeTab === 'images' && (
           <div className="space-y-4">
             <AdminPlaceImages />
+          </div>
+        )}
+
+        {activeTab === 'aisearch' && (
+          <div className="space-y-4">
+            <AdminEmbeddings />
           </div>
         )}
       </div>

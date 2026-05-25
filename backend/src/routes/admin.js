@@ -4,6 +4,8 @@ const pool = require('../db/pool');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { cache } = require('../utils/cache');
 const { limiters } = require('../middleware/rateLimit');
+const { generateEmbeddings } = require('../services/embedGenerator');
+const { checkPgvector } = require('../services/embeddingsService');
 
 // All admin routes require auth + admin role
 router.use(authenticate, requireAdmin);
@@ -484,6 +486,36 @@ router.delete('/place-images', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
   }
+});
+
+// ── Semantic-search embeddings (one-click, free-tier friendly) ─────────────────
+// POST /admin/embed         → start generation in the background (returns immediately)
+// GET  /admin/embed/status  → live progress + how many embeddings are stored
+let embedState = { running: false, processed: 0, total: 0, ok: 0, failed: 0, startedAt: null, finishedAt: null, error: null };
+
+router.post('/embed', async (req, res) => {
+  if (embedState.running) return res.json({ started: false, message: 'Already running', state: embedState });
+  if (!process.env.GEMINI_API_KEY) return res.status(400).json({ error: 'GEMINI_API_KEY is not set on the server' });
+  if (!(await checkPgvector())) return res.status(400).json({ error: 'pgvector is not available on this database' });
+
+  const force = !!(req.body && req.body.force);
+  embedState = { running: true, processed: 0, total: 0, ok: 0, failed: 0, startedAt: Date.now(), finishedAt: null, error: null };
+
+  // Fire-and-forget: runs in the event loop; the admin polls /embed/status.
+  generateEmbeddings({
+    force,
+    onProgress: (p) => { embedState.processed = p.processed; embedState.total = p.total; embedState.ok = p.ok; embedState.failed = p.failed; },
+  })
+    .then((summary) => { embedState = { ...embedState, ...summary, running: false, finishedAt: Date.now() }; })
+    .catch((err) => { embedState.running = false; embedState.error = err.message; embedState.finishedAt = Date.now(); });
+
+  writeAuditLog(req.user.id, 'embed.started', 'embeddings', force ? 'all(force)' : 'all', req);
+  return res.json({ started: true, state: embedState });
+});
+
+router.get('/embed/status', async (req, res) => {
+  const cnt = await pool.query("SELECT COUNT(*)::int AS c FROM content_embeddings").catch(() => ({ rows: [{ c: 0 }] }));
+  return res.json({ ...embedState, storedCount: cnt.rows[0].c, hasKey: !!process.env.GEMINI_API_KEY });
 });
 
 // ── Internal audit log writer ─────────────────────────────────────────────────
