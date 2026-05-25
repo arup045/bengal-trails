@@ -1,4 +1,4 @@
-import { Heart, Navigation, ArrowRight, Star } from 'lucide-react';
+import { Heart, Navigation, ArrowRight, Star, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 
@@ -21,11 +21,13 @@ interface Props {
   excerpt?: string;
   href?: string;      // detail-page link (real places only)
   rating?: number;
+  type?: string;      // admin-set label, e.g. "Stadium", "Hindu temple"
+  hours?: string;     // admin-set, e.g. "Open · Closes 8:30 PM"
   saved: boolean;
   onToggleSave: () => void;
 }
 
-export function ItemCard({ name, section, districtName, image, excerpt, href, rating, saved, onToggleSave }: Props) {
+export function ItemCard({ name, section, districtName, image, excerpt, href, rating, type, hours, saved, onToggleSave }: Props) {
   const meta = SECTION_META[section];
 
   const openDirections = (e?: React.MouseEvent) => {
@@ -55,7 +57,7 @@ export function ItemCard({ name, section, districtName, image, excerpt, href, ra
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
         <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-purple-700 text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full shadow-sm">
-          {meta.pill}
+          {type || meta.pill}
         </span>
         <div className="absolute top-3 right-3 flex gap-2">
           <button onClick={toggle} aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
@@ -79,6 +81,9 @@ export function ItemCard({ name, section, districtName, image, excerpt, href, ra
             </span>
           ) : null}
         </div>
+        {hours ? (
+          <p className="text-gray-500 text-xs font-poppins flex items-center gap-1.5 mb-2"><Clock className="w-3.5 h-3.5 text-gray-400" />{hours}</p>
+        ) : null}
         {excerpt ? <p className="text-gray-600 text-sm font-poppins line-clamp-2 mb-4 min-h-[2.5rem]">{excerpt}</p> : <div className="mb-3" />}
         <button
           onClick={(e) => { e.stopPropagation(); go(); }}

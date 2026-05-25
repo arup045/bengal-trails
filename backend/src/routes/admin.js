@@ -420,28 +420,50 @@ router.get('/check-exists', async (req, res) => {
 router.get('/place-images/:districtSlug', async (req, res) => {
   try {
     const { rows } = await pool.query(
-      'SELECT item_name, image_url, section FROM place_images WHERE district_slug = $1',
+      'SELECT item_name, image_url, item_type, rating, hours FROM place_images WHERE district_slug = $1',
       [String(req.params.districtSlug).toLowerCase()]
     );
-    const images = {};
-    rows.forEach((r) => { images[r.item_name] = r.image_url; });
-    return res.json({ images });
+    const items = {};
+    rows.forEach((r) => {
+      items[r.item_name] = {
+        image: r.image_url || undefined,
+        type: r.item_type || undefined,
+        rating: r.rating != null ? Number(r.rating) : undefined,
+        hours: r.hours || undefined,
+      };
+    });
+    return res.json({ items });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
   }
 });
 
+// Upsert only the fields that were actually sent, so an image upload never
+// wipes the type/rating/hours and vice-versa. Empty string clears a field.
 router.post('/place-images', async (req, res) => {
   try {
-    const { districtSlug, itemName, section, imageUrl } = req.body || {};
-    if (!districtSlug || !itemName || !imageUrl)
-      return res.status(400).json({ error: 'districtSlug, itemName and imageUrl are required' });
+    const b = req.body || {};
+    const { districtSlug, itemName, section } = b;
+    if (!districtSlug || !itemName) return res.status(400).json({ error: 'districtSlug and itemName are required' });
+
+    const fields = {};
+    if ('imageUrl' in b) fields.image_url = b.imageUrl || null;
+    if ('itemType' in b) fields.item_type = b.itemType || null;
+    if ('hours'    in b) fields.hours     = b.hours || null;
+    if ('rating'   in b) {
+      const r = b.rating === '' || b.rating == null ? null : Number(b.rating);
+      fields.rating = Number.isFinite(r) ? Math.min(Math.max(r, 0), 5) : null;
+    }
+
+    const cols = ['district_slug', 'item_name', 'section', ...Object.keys(fields)];
+    const vals = [String(districtSlug).toLowerCase(), itemName, section || null, ...Object.values(fields)];
+    const placeholders = vals.map((_, i) => `$${i + 1}`);
+    const updates = [...Object.keys(fields).map((k) => `${k} = EXCLUDED.${k}`), 'section = EXCLUDED.section', 'updated_at = NOW()'];
+
     await pool.query(
-      `INSERT INTO place_images (district_slug, item_name, section, image_url)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (district_slug, item_name)
-       DO UPDATE SET image_url = $4, section = $3, updated_at = NOW()`,
-      [String(districtSlug).toLowerCase(), itemName, section || null, imageUrl]
+      `INSERT INTO place_images (${cols.join(', ')}) VALUES (${placeholders.join(', ')})
+       ON CONFLICT (district_slug, item_name) DO UPDATE SET ${updates.join(', ')}`,
+      vals
     );
     writeAuditLog(req.user.id, 'place_image.set', 'place_image', `${districtSlug}/${itemName}`, req);
     return res.json({ success: true });

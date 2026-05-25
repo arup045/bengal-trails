@@ -22,20 +22,22 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistSync();
 
   const [aiQuery, setAiQuery] = useState('');
-  const [images, setImages] = useState<Record<string, string>>({});
+  const [items, setItems] = useState<Record<string, { image?: string; type?: string; rating?: number; hours?: string }>>({});
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [faqPoweredByAI, setFaqPoweredByAI] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Per-item admin-uploaded images (keyed by item name).
+  // Per-item admin-set details (image, type, rating, hours), keyed by item name.
   useEffect(() => {
     let alive = true;
     fetch(`${API_BASE}/place-images/${slug}`)
-      .then((r) => (r.ok ? r.json() : { images: {} }))
-      .then((d) => { if (alive) setImages(d.images || {}); })
+      .then((r) => (r.ok ? r.json() : { items: {} }))
+      .then((d) => { if (alive) setItems(d.items || {}); })
       .catch(() => {});
     return () => { alive = false; };
   }, [slug]);
+
+  const meta = (name: string) => items[name] || {};
 
   // AI travel-tips FAQ.
   useEffect(() => {
@@ -52,11 +54,11 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
   const toggleContent = (name: string, label: string) => {
     const s = contentSlug(name);
     if (isInWishlist(s)) removeFromWishlist(s);
-    else addToWishlist({ slug: s, title: name, category: label, region: district?.region || '', image: images[name] || '', description: '' });
+    else addToWishlist({ slug: s, title: name, category: label, region: district?.region || '', image: meta(name).image || '', description: '' });
   };
   const togglePlace = (p: any) => {
     if (isInWishlist(p.slug)) removeFromWishlist(p.slug);
-    else addToWishlist({ slug: p.slug, title: p.title, category: p.category || '', region: p.region, image: images[p.title] || p.heroImage?.url || '', description: p.excerpt || '' });
+    else addToWishlist({ slug: p.slug, title: p.title, category: p.category || '', region: p.region, image: meta(p.title).image || p.heroImage?.url || '', description: p.excerpt || '' });
   };
 
   const askAI = (q?: string) => {
@@ -68,12 +70,14 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
 
   // ── Merge landmarks into Top Places (dedupe against real places) ────────────
   const topPlaces = useMemo(() => {
-    const cards: Array<{ key: string; name: string; image?: string; excerpt?: string; href?: string; rating?: number; wishSlug: string }> = [];
+    const cards: Array<{ key: string; name: string; image?: string; excerpt?: string; href?: string; rating?: number; type?: string; hours?: string; wishSlug: string }> = [];
     const placeTitlesLower = places.map((p) => p.title.toLowerCase());
     for (const p of places) {
+      const m = items[p.title] || {};
       cards.push({
-        key: `place-${p.slug}`, name: p.title, image: images[p.title] || p.heroImage?.url,
-        excerpt: p.excerpt, href: `#/explore/${p.slug}`, rating: (p as any).rating, wishSlug: p.slug,
+        key: `place-${p.slug}`, name: p.title, image: m.image || p.heroImage?.url,
+        excerpt: p.excerpt, href: `#/explore/${p.slug}`, rating: m.rating ?? (p as any).rating,
+        type: m.type, hours: m.hours, wishSlug: p.slug,
       });
     }
     const landmarks = content?.landmarks || [];
@@ -81,11 +85,12 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
       const ll = l.toLowerCase();
       const dup = placeTitlesLower.some((t) => ll.includes(t) || t.includes(ll));
       if (dup) continue;
-      cards.push({ key: `lm-${slugify(l)}`, name: l, image: images[l], wishSlug: contentSlug(l) });
+      const m = items[l] || {};
+      cards.push({ key: `lm-${slugify(l)}`, name: l, image: m.image, rating: m.rating, type: m.type, hours: m.hours, wishSlug: contentSlug(l) });
     }
     return cards;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [places, content, images, slug]);
+  }, [places, content, items, slug]);
 
   if (!district) {
     return (
@@ -192,7 +197,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {topPlaces.map((c) => (
                 <ItemCard key={c.key} name={c.name} section="places" districtName={district.name}
-                  image={c.image} excerpt={c.excerpt} href={c.href} rating={c.rating}
+                  image={c.image} excerpt={c.excerpt} href={c.href} rating={c.rating} type={c.type} hours={c.hours}
                   saved={isInWishlist(c.wishSlug)}
                   onToggleSave={() => (c.href ? togglePlace({ slug: c.wishSlug, title: c.name, region: district.region, heroImage: { url: c.image }, excerpt: c.excerpt }) : toggleContent(c.name, 'Landmark'))}
                 />
@@ -202,22 +207,26 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
         )}
 
         {content && CONTENT_SECTIONS.map((key) => {
-          const items = content[key];
-          if (!items || items.length === 0) return null;
-          const meta = SECTION_META[key];
+          const list = content[key];
+          if (!list || list.length === 0) return null;
+          const sm = SECTION_META[key];
           return (
             <section key={key} id={`sec-${key}`}>
               <div className="flex items-center gap-2 mb-5">
-                <span className="text-2xl">{meta.emoji}</span>
-                <h2 className="font-poppins text-2xl font-bold text-slate-900">{meta.label}</h2>
-                <span className="font-poppins text-sm text-gray-400">({items.length})</span>
+                <span className="text-2xl">{sm.emoji}</span>
+                <h2 className="font-poppins text-2xl font-bold text-slate-900">{sm.label}</h2>
+                <span className="font-poppins text-sm text-gray-400">({list.length})</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {items.map((name) => (
-                  <ItemCard key={name} name={name} section={key} districtName={district.name}
-                    image={images[name]} saved={isInWishlist(contentSlug(name))}
-                    onToggleSave={() => toggleContent(name, meta.label)} />
-                ))}
+                {list.map((name) => {
+                  const m = meta(name);
+                  return (
+                    <ItemCard key={name} name={name} section={key} districtName={district.name}
+                      image={m.image} type={m.type} rating={m.rating} hours={m.hours}
+                      saved={isInWishlist(contentSlug(name))}
+                      onToggleSave={() => toggleContent(name, sm.label)} />
+                  );
+                })}
               </div>
             </section>
           );
