@@ -148,21 +148,39 @@ export function FoodGuidePage() {
 
   const dishesGridRef = useRef<HTMLDivElement>(null);
 
+  const [waking, setWaking] = useState(false);
+
   useEffect(() => {
     const ctrl = new AbortController();
     setLoading(true);
     setError(null);
+    setWaking(false);
 
-    // Resilient loader: each request is independent (allSettled), and parsing is
-    // guarded so a non-JSON response (e.g. an HTML error page) can't blank the
-    // whole screen. We only surface an error if the DISHES truly failed to load.
-    const safeJson = async (path: string, key: string) => {
-      try {
-        const r = await fetch(`${API_BASE}${path}`, { signal: ctrl.signal });
-        if (!r.ok) return null;
-        const data = await r.json();
-        return Array.isArray(data?.[key]) ? data[key] : null;
-      } catch { return null; }
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    // Cold-start-resilient loader. The API runs on Render's free tier, which
+    // sleeps after inactivity and can return a transient 502/503 (or be slow)
+    // on the first request while it wakes. So we retry with backoff on 5xx /
+    // network errors before giving up, and parsing is guarded so a non-JSON
+    // response can't blank the screen. 4xx → give up immediately (real error).
+    const safeJson = async (path: string, key: string, retries = 3): Promise<any[] | null> => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const r = await fetch(`${API_BASE}${path}`, { signal: ctrl.signal });
+          if (r.ok) {
+            const data = await r.json();
+            return Array.isArray(data?.[key]) ? data[key] : null;
+          }
+          if (r.status < 500) return null; // 4xx — not worth retrying
+        } catch (e: any) {
+          if (e?.name === 'AbortError') return null;
+        }
+        if (attempt < retries) {
+          if (attempt >= 1) setWaking(true); // tell the user the server is waking
+          await sleep(1500 * (attempt + 1)); // 1.5s, 3s, 4.5s
+        }
+      }
+      return null;
     };
 
     Promise.allSettled([safeJson('/bengal/food', 'food'), safeJson('/bengal/food/streets', 'streets')])
@@ -174,7 +192,7 @@ export function FoodGuidePage() {
         setStreets(streets || []);
         if (!food) setError('Could not load food data. Please check your connection and refresh.');
       })
-      .finally(() => { if (!ctrl.signal.aborted) setLoading(false); });
+      .finally(() => { if (!ctrl.signal.aborted) { setLoading(false); setWaking(false); } });
 
     return () => ctrl.abort();
   }, []);
@@ -616,11 +634,18 @@ export function FoodGuidePage() {
             </button>
           </div>
         ) : loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-3xl h-80 animate-pulse" aria-hidden="true" />
-            ))}
-          </div>
+          <>
+            {waking && (
+              <div className="text-center mb-6 text-sm font-poppins text-gray-500">
+                Waking up the server (free tier) — this can take a few seconds on the first visit…
+              </div>
+            )}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-gray-100 rounded-3xl h-80 animate-pulse" aria-hidden="true" />
+              ))}
+            </div>
+          </>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 bg-purple-50/30 rounded-3xl border border-purple-100">
             <div className="text-6xl mb-4" aria-hidden="true">🍽️</div>
