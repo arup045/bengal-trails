@@ -2,6 +2,8 @@ import { Menu, Heart, User, LogOut, Shield, Users, MapPin, ChevronDown } from 'l
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { SmartSearchBar } from './SmartSearchBar';
 import { NotificationSystem } from './NotificationSystem';
 import {
@@ -14,13 +16,13 @@ import {
 
 
 
-interface NavItem { label: string; href: string; }
+interface NavItem { label: string; href: string; tKey?: string; }
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Home',      href: '/'          },
-  { label: 'Explore',   href: '/explore'   },
-  { label: 'Festivals', href: '/festivals' },
-  { label: 'Food',      href: '/food'      },
-  { label: 'About Us',  href: '/about'     },
+  { label: 'Home',      href: '/',          tKey: 'nav.home'      },
+  { label: 'Explore',   href: '/explore',   tKey: 'nav.explore'   },
+  { label: 'Festivals', href: '/festivals', tKey: 'nav.festivals' },
+  { label: 'Food',      href: '/food',      tKey: 'nav.food'      },
+  { label: 'About Us',  href: '/about',     tKey: 'nav.about'     },
 ];
 
 export function Header() {
@@ -29,6 +31,7 @@ export function Header() {
   const [scrolled,      setScrolled]      = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const { user, signOut, isAdmin } = useAuth();
+  const { t } = useLanguage();
   const userRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -89,16 +92,17 @@ export function Header() {
 
           {/* NAV LINKS — Poppins 500 / 14px / slate-800 / pill hover */}
           <nav className="hidden lg:flex items-center gap-0.5 shrink-0">
-            {NAV_ITEMS.map(({ label, href }) => (
+            {NAV_ITEMS.map(({ label, href, tKey }) => (
               <a key={label} href={href}
                 className="font-poppins text-sm font-medium text-slate-800 px-3.5 py-2 rounded-full hover:bg-gray-100 hover:text-slate-900 transition-colors duration-150 whitespace-nowrap">
-                {label}
+                {tKey ? t(tKey) : label}
               </a>
             ))}
           </nav>
 
           {/* Right actions */}
           <div className="flex items-center gap-2 shrink-0">
+            <div className="hidden md:block"><LanguageSwitcher /></div>
             <div className="hidden md:block"><NotificationSystem /></div>
 
             {/* Sign In (logged out) */}
@@ -213,12 +217,13 @@ export function Header() {
                   </div>
                 )}
                 <nav className="flex flex-col gap-0.5">
-                  {[...NAV_ITEMS, { label: 'Plan Trip', href: '/planner' }].map(({ label, href }) => (
+                  {[...NAV_ITEMS, { label: 'Plan Trip', href: '/planner', tKey: 'nav.planner' }].map(({ label, href, tKey }) => (
                     <a key={label} href={href} onClick={() => setMenuOpen(false)}
                       className="font-poppins text-sm font-medium text-slate-800 px-3.5 py-2.5 rounded-xl hover:bg-gray-100 hover:text-slate-900 transition-colors duration-150">
-                      {label}
+                      {tKey ? t(tKey) : label}
                     </a>
                   ))}
+                  <div className="mt-4"><LanguageSwitcher variant="sheet" /></div>
                   {user && (
                     <>
                       <div className="mt-4 mb-1.5 px-3.5 font-poppins text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Account</div>

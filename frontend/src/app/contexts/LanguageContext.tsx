@@ -53,6 +53,16 @@ const translations: Translations = {
     bn: 'প্রোফাইল',
     hi: 'प्रोफ़ाइल',
   },
+  'nav.festivals': {
+    en: 'Festivals',
+    bn: 'উৎসব',
+    hi: 'त्योहार',
+  },
+  'nav.about': {
+    en: 'About Us',
+    bn: 'আমাদের সম্পর্কে',
+    hi: 'हमारे बारे में',
+  },
 
   // Hero Section
   'hero.title': {
