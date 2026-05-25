@@ -30,6 +30,7 @@ import { installGlobalErrorHandlers } from './utils/errorReporter';
 import { setPageMeta, PAGE_META } from './utils/seo';
 import { SITE_URL } from './utils/siteConfig';
 import { toPath, isAuthFragment, navigate } from './utils/navigation';
+import { getDistrict } from './data/districts';
 
 
 installGlobalErrorHandlers();
@@ -288,6 +289,32 @@ export default function App() {
           description: place.excerpt || place.description?.slice(0, 160) || '',
           image: place.heroImage?.url,
           url: `${SITE_URL}/explore/${place.slug}`,
+        };
+      }
+    }
+    // District landing page — use the district's hero image for rich previews.
+    if (currentPage === 'district' && currentSlug) {
+      const d = getDistrict(currentSlug);
+      if (d) {
+        return {
+          title: `${d.name} Travel Guide – ${d.region} | Bengal Trails`,
+          description: `Explore ${d.name}, ${d.region}: top places, food, activities, stays and travel tips. Plan your ${d.name} trip with Bengal Trails.`,
+          image: d.image,
+          url: `${SITE_URL}/explore/district/${d.slug}`,
+        };
+      }
+    }
+    // Spot detail page (activity/food/stay/etc.) — path is "district/section/item".
+    if (currentPage === 'spot' && currentSlug) {
+      const [dSlug, , itemSlug] = currentSlug.split('/');
+      const d = getDistrict(dSlug);
+      const itemName = (itemSlug || '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      if (d) {
+        return {
+          title: `${itemName} – ${d.name} | Bengal Trails`,
+          description: `${itemName} in ${d.name}, ${d.region}. Get directions, timings, ratings and tips on Bengal Trails.`,
+          image: d.image,
+          url: `${SITE_URL}/explore/district/${currentSlug}`,
         };
       }
     }
