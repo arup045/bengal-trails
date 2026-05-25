@@ -250,7 +250,7 @@ export function Footer() {
                 <li><a href="#/phrasebook" className="hover:text-white transition-colors">Bengali Phrasebook</a></li>
                 <li><a href="#/emergency" className="hover:text-white transition-colors">Emergency Info</a></li>
                 <li><a href="#/partners" className="hover:text-white transition-colors">Our Partners</a></li>
-                <li><a href="#/vendor" className="hover:text-white transition-colors">Become a Partner</a></li>
+                <li><a href="#/vendor-onboarding" className="hover:text-white transition-colors">Become a Partner</a></li>
                 <li><a href="#/contact" className="hover:text-white transition-colors">Contact Us</a></li>
               </ul>
             </div>
