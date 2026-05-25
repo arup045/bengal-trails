@@ -17,6 +17,28 @@ const router        = require('express').Router();
 const crypto        = require('crypto');
 const pool          = require('../db/pool');
 const { authenticate } = require('../middleware/auth');
+const { sendBookingConfirmationEmail } = require('../utils/email');
+
+// Fire-and-forget: email the user their booking confirmation. Looks up the
+// booking + user email by bookingId. Never throws into the request path.
+async function notifyBookingConfirmed(bookingId) {
+  try {
+    const { rows } = await pool.query(
+      `SELECT b.destination_name, b.check_in, b.check_out,
+              COALESCE(b.total_amount, b.total) AS total,
+              u.email, u.name
+         FROM bookings b JOIN users u ON u.id = b.user_id
+        WHERE b.booking_id = $1`,
+      [bookingId]
+    );
+    if (!rows.length || !rows[0].email) return;
+    const r = rows[0];
+    await sendBookingConfirmationEmail(r.email, r.name, {
+      bookingId, destinationName: r.destination_name,
+      checkIn: r.check_in, checkOut: r.check_out, total: r.total,
+    });
+  } catch (e) { console.error('[payments] booking email failed:', e.message); }
+}
 
 // ── Razorpay lazy-load ────────────────────────────────────────────────────────
 let razorpay = null;
@@ -142,6 +164,7 @@ router.post('/verify', authenticate, async (req, res) => {
       );
       if (r.rowCount === 0) return res.json({ success: true, alreadyConfirmed: true, devMode: true });
       await logEvent(bookingId, req.user.id, 'payment_captured_dev', { devMode: true });
+      notifyBookingConfirmed(bookingId);
       return res.json({ success: true, devMode: true });
     }
 
@@ -188,6 +211,7 @@ router.post('/verify', authenticate, async (req, res) => {
     }
 
     await logEvent(bookingId, req.user.id, 'payment_captured', { razorpay_payment_id, razorpay_order_id });
+    notifyBookingConfirmed(bookingId);
     return res.json({ success: true, paymentId: razorpay_payment_id });
   } catch (err) {
     console.error('[payments] verify error:', err.message);
@@ -222,12 +246,14 @@ router.post('/webhook', async (req, res) => {
     if (!orderId) return res.status(200).json({ ok: true, skipped: 'no order_id' });
 
     if (event.event === 'payment.captured') {
-      await pool.query(
+      const upd = await pool.query(
         `UPDATE bookings
             SET status = 'confirmed', razorpay_payment_id = $1, paid_at = COALESCE(paid_at, NOW())
-          WHERE razorpay_order_id = $2 AND status IN ('pending','created')`,
+          WHERE razorpay_order_id = $2 AND status IN ('pending','created')
+          RETURNING booking_id`,
         [payment.id, orderId]
       );
+      if (upd.rows[0]?.booking_id) notifyBookingConfirmed(upd.rows[0].booking_id);
       await logEvent(null, null, 'webhook_payment_captured', { orderId, paymentId: payment.id });
     } else if (event.event === 'payment.failed') {
       await pool.query(

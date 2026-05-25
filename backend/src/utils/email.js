@@ -161,4 +161,58 @@ async function sendNewsletterConfirmEmail(email, rawToken, name) {
   }
 }
 
-module.exports = { sendPasswordResetEmail, sendWelcomeEmail, sendNewsletterEmail, sendNewsletterConfirmEmail };
+// ── Send booking confirmation email ───────────────────────────────────────────
+// `booking` = { bookingId, destinationName, checkIn, checkOut, total, guests }
+async function sendBookingConfirmationEmail(email, name, booking) {
+  const b = booking || {};
+  const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
+  const amount = b.total != null ? `₹${Number(b.total).toLocaleString('en-IN')}` : '—';
+  const bookingsUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/profile`;
+
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log(`📧 BOOKING CONFIRMATION (no SMTP): To: ${email}, Booking: ${b.bookingId}, ${b.destinationName}, ${amount}`);
+    return { success: true, dev: true };
+  }
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || `"Bengal Trails Travel" <noreply@bengaltrails.com>`,
+      to: email,
+      subject: `Booking confirmed — ${b.destinationName || 'your Bengal trip'} ✅`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f9f6f2">
+          <div style="background:linear-gradient(135deg,#7c3aed,#9333ea);padding:24px;text-align:center">
+            <h1 style="color:#fff;margin:0;font-size:26px;letter-spacing:1px">Bengal Trails</h1>
+            <p style="color:#e9d5ff;margin:6px 0 0;font-size:13px">Booking Confirmed</p>
+          </div>
+          <div style="background:#fff;padding:32px 28px;line-height:1.6;color:#1a1a1a">
+            <p>Hi${name ? ' ' + name : ''},</p>
+            <p>Your booking is confirmed — we can't wait to welcome you to West Bengal! 🌿</p>
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px">
+              <tr><td style="padding:8px 0;color:#888">Booking ID</td><td style="padding:8px 0;text-align:right;font-weight:600">${b.bookingId || '—'}</td></tr>
+              <tr><td style="padding:8px 0;color:#888">Destination</td><td style="padding:8px 0;text-align:right;font-weight:600">${b.destinationName || '—'}</td></tr>
+              <tr><td style="padding:8px 0;color:#888">Check-in</td><td style="padding:8px 0;text-align:right;font-weight:600">${fmt(b.checkIn)}</td></tr>
+              <tr><td style="padding:8px 0;color:#888">Check-out</td><td style="padding:8px 0;text-align:right;font-weight:600">${fmt(b.checkOut)}</td></tr>
+              ${b.guests ? `<tr><td style="padding:8px 0;color:#888">Guests</td><td style="padding:8px 0;text-align:right;font-weight:600">${b.guests}</td></tr>` : ''}
+              <tr><td style="padding:12px 0 0;color:#888;border-top:1px solid #eee">Total paid</td><td style="padding:12px 0 0;text-align:right;font-weight:700;color:#7c3aed;border-top:1px solid #eee">${amount}</td></tr>
+            </table>
+            <p style="text-align:center;margin:24px 0">
+              <a href="${bookingsUrl}" style="display:inline-block;background:#e85d24;color:#fff;padding:12px 28px;border-radius:9999px;text-decoration:none;font-weight:600">
+                View my bookings
+              </a>
+            </p>
+            <p style="color:#666;font-size:13px">Need to make changes? Just reply to this email and our team will help.</p>
+          </div>
+          <div style="padding:18px;text-align:center;color:#aaa;font-size:12px">© Bengal Trails — Discover West Bengal</div>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (err) {
+    console.error('booking confirmation email failed:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+module.exports = { sendPasswordResetEmail, sendWelcomeEmail, sendNewsletterEmail, sendNewsletterConfirmEmail, sendBookingConfirmationEmail };
