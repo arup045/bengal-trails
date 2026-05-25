@@ -67,6 +67,7 @@ const schemas = {
     title: z.string().max(255).optional(),
     content: z.string().min(10).max(2000).transform(stripHtml),
     visitDate: z.string().optional(),
+    photos: z.array(z.string().url().max(500)).max(6).optional(),
   }),
 
   booking: z.object({

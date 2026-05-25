@@ -12,6 +12,9 @@ const { validate, schemas } = require('../middleware/validate');
 const MODERATION_PENDING = process.env.REVIEW_MODERATION_MODE === 'pending';
 const NEW_REVIEW_STATUS  = MODERATION_PENDING ? 'pending' : 'published';
 
+// Photo reviews: ensure the column exists (idempotent — safe on every boot).
+pool.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb`).catch(() => {});
+
 // ── GET /reviews/:slug ─────────────────────────────────────────────────────────
 router.get('/:slug', optionalAuth, async (req, res) => {
   try {
@@ -52,14 +55,16 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 // (an edit endpoint would be the natural follow-up — separate ticket).
 router.post('/', authenticate, validate(schemas.review), async (req, res) => {
   try {
-    const { destinationSlug, rating, title, content, visitDate } = req.body;
+    const { destinationSlug, rating, title, content, visitDate, photos } = req.body;
     if (!destinationSlug || !rating || !content)
       return res.status(400).json({ error: 'destinationSlug, rating and content required' });
 
+    const photoList = Array.isArray(photos) ? photos.slice(0, 6) : [];
+
     const { rows } = await pool.query(
-      `INSERT INTO reviews (user_id, destination_slug, rating, title, content, visit_date, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [req.user.id, destinationSlug, rating, title, content, visitDate || null, NEW_REVIEW_STATUS]
+      `INSERT INTO reviews (user_id, destination_slug, rating, title, content, visit_date, status, photos)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb) RETURNING *`,
+      [req.user.id, destinationSlug, rating, title, content, visitDate || null, NEW_REVIEW_STATUS, JSON.stringify(photoList)]
     );
 
     // Update destination stats — derive both count and average from published

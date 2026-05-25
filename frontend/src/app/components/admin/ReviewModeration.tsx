@@ -303,6 +303,16 @@ export const ReviewModeration: React.FC = () => {
                     <span>{new Date(review.createdAt).toLocaleDateString()}</span>
                   </div>
                   <p className="text-gray-700 mb-4">{review.content}</p>
+                  {Array.isArray(review.photos) && review.photos.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {review.photos.map((p, i) => (
+                        <a key={i} href={p} target="_blank" rel="noopener noreferrer"
+                          className="block w-16 h-16 rounded-lg overflow-hidden border border-gray-300 hover:opacity-90">
+                          <img src={p} alt={`Review photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

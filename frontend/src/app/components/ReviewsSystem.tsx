@@ -491,6 +491,16 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
                   Visited: {new Date(review.visitDate).toLocaleDateString()}
                 </p>
               )}
+              {Array.isArray(review.photos) && review.photos.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {review.photos.map((p, i) => (
+                    <a key={i} href={p} target="_blank" rel="noopener noreferrer"
+                      className="block w-20 h-20 rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity">
+                      <img src={p} alt={`Review photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => markHelpful(review.id)}
