@@ -6,6 +6,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { API_BASE } from '../utils/api';
+import { setApiDown, setApiUp } from '../utils/connection';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface Dish {
@@ -190,7 +191,8 @@ export function FoodGuidePage() {
         const streets = streetsRes.status === 'fulfilled' ? streetsRes.value : null;
         setDishes(food || []);
         setStreets(streets || []);
-        if (!food) setError('Could not load food data. Please check your connection and refresh.');
+        if (!food) { setError('Could not load food data. Please check your connection and refresh.'); setApiDown(); }
+        else setApiUp();
       })
       .finally(() => { if (!ctrl.signal.aborted) { setLoading(false); setWaking(false); } });
 

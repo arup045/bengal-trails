@@ -18,6 +18,8 @@
 // site down. On a deployed (https) page we IGNORE a missing / localhost / http://
 // value (those cause "Failed to fetch" via mixed-content or an unreachable host)
 // and use the production API instead. Dev still uses localhost.
+import { setApiDown as markApiDown, setApiUp as markApiUp } from './connection';
+
 const PROD_API = 'https://gobro-api.onrender.com/api';
 function resolveApiBase(): string {
   let env = (import.meta.env.VITE_API_BASE as string | undefined)?.trim().replace(/\/+$/, '');
@@ -118,7 +120,14 @@ export async function authFetch(path: string, init: RequestInit = {}): Promise<R
   };
   if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
 
-  let res = await fetch(url, { ...init, headers, credentials: 'include' });
+  let res: Response;
+  try {
+    res = await fetch(url, { ...init, headers, credentials: 'include' });
+    markApiUp(); // a response (even an error status) means the server is reachable
+  } catch (e) {
+    markApiDown(); // network failure → show the global "reconnecting" banner
+    throw e;
+  }
 
   // On 401 — silently try to refresh once, then retry
   if (res.status === 401) {

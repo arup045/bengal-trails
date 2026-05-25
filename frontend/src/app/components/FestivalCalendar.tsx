@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { API_BASE } from '../utils/api';
+import { setApiDown, setApiUp } from '../utils/connection';
 
 interface Festival {
   id: string;
@@ -415,8 +416,9 @@ export function FestivalCalendar() {
           image: f.image,
         }));
         setFestivals(list);
+        setApiUp();
       })
-      .catch((e) => setError(e.message || 'Could not load festivals'))
+      .catch((e) => { setError(e.message || 'Could not load festivals'); setApiDown(); })
       .finally(() => setLoading(false));
   }, []);
 
