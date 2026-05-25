@@ -23,6 +23,7 @@ import { GoogleAnalytics, trackPageView } from './components/Analytics';
 import { AITravelAssistant } from './components/AITravelAssistant';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { ConnectionBanner } from './components/ConnectionBanner';
+import { ScrollProgress } from './components/ScrollProgress';
 // NOTE: places-full is ~490 KB. It is ONLY needed to build JSON-LD structured
 // data on place-detail pages, so we lazy-load it on demand (see the effect in
 // App) instead of importing it eagerly — that alone keeps it out of the initial
@@ -484,6 +485,9 @@ export default function App() {
         <div className="min-h-screen bg-white">
           {/* Global "reconnecting" banner — shows only when the API is unreachable */}
           <ConnectionBanner />
+
+          {/* Scroll progress bar */}
+          <ScrollProgress />
 
           {/* Google Analytics */}
           <GoogleAnalytics />

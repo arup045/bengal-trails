@@ -342,6 +342,27 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
         <div className="mt-10 mb-4"><ReportIssueButton slug={place.slug} /></div>
       </div>
+
+      {/* Spacer so content isn't hidden behind the mobile CTA bar */}
+      <div className="h-20 lg:hidden" />
+
+      {/* Sticky mobile CTA bar — always-visible Book / Save */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 flex items-center gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <div className="shrink-0">
+          <p className="text-[11px] text-gray-500 font-poppins leading-none mb-0.5">From</p>
+          <p className="text-base font-poppins font-bold text-slate-900 leading-none">{place.priceFrom || 'Contact'}</p>
+        </div>
+        <button onClick={toggleSave} aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
+          className="w-11 h-11 rounded-full border border-gray-200 flex items-center justify-center shrink-0 active:scale-95 transition-transform">
+          <Heart className={`w-5 h-5 ${saved ? 'fill-rose-500 text-rose-500' : 'text-gray-600'}`} />
+        </button>
+        <button
+          onClick={() => document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })}
+          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-poppins font-semibold text-sm py-3 rounded-full active:scale-[0.98] transition-transform"
+        >
+          Book now
+        </button>
+      </div>
     </div>
   );
 }
