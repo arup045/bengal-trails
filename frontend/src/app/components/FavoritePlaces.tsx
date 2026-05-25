@@ -3,7 +3,6 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { buildSrcSet } from '../utils/responsiveImage';
 import { API_BASE } from '../utils/api';
 
-import { OptimizedImage } from './OptimizedImage';
 const PlaceCardMemo = memo(({ place }: { place: { name: string; slug: string; image: string } }) => (
   <a 
     href={`#/explore/${place.slug}`}

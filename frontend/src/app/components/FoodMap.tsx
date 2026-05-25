@@ -3,10 +3,30 @@ import { motion } from 'motion/react';
 import { MapPin, Star, DollarSign, UtensilsCrossed, Leaf, Search, ChevronRight } from 'lucide-react';
 import { restaurants } from '../data/restaurants';
 
+// Map a restaurant's free-form `categories` tags to one of our filter buckets.
+// Order matters: sweets/bakery/street are checked before the generic fallback so
+// those filter buttons actually match real data (they previously never did).
+function deriveCategory(cats: string[]): string {
+  const has = (s: string) => cats.some((c) => c.toLowerCase().includes(s));
+  if (has('sweet'))                              return 'sweets';
+  if (has('bakery') || has('pastr'))             return 'bakery';
+  if (has('street'))                             return 'street';
+  if (has('cafe') || has('café') || has('coffee') || has('continental')) return 'cafe';
+  return 'restaurant';
+}
+
+const CATEGORY_META: { id: string; name: string; icon: string }[] = [
+  { id: 'all',        name: 'All',         icon: '🍽️' },
+  { id: 'street',     name: 'Street Food', icon: '🍡' },
+  { id: 'restaurant', name: 'Restaurants', icon: '🏪' },
+  { id: 'cafe',       name: 'Cafés',       icon: '☕' },
+  { id: 'bakery',     name: 'Bakeries',    icon: '🥐' },
+  { id: 'sweets',     name: 'Sweet Shops', icon: '🍬' },
+];
+
 export function FoodMap() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRestaurant, setSelectedRestaurant] = useState<typeof restaurants[0] | null>(null);
 
   // Convert restaurants to food spots format
   const foodSpots = restaurants.map(restaurant => ({
@@ -18,8 +38,7 @@ export function FoodMap() {
     price: restaurant.priceRange,
     rating: restaurant.rating,
     veg: restaurant.categories.includes('Veg'),
-    category: restaurant.categories.includes('Street Food') ? 'street' : 
-              restaurant.categories.includes('Bakery') || restaurant.categories.includes('Continental') ? 'cafe' : 'restaurant',
+    category: deriveCategory(restaurant.categories),
     mustTry: restaurant.mustTry,
     timings: restaurant.timings,
     description: restaurant.description,
@@ -29,14 +48,14 @@ export function FoodMap() {
     coordinates: restaurant.coordinates
   }));
 
-  const categories = [
-    { id: 'all', name: 'All', icon: '🍽️' },
-    { id: 'street', name: 'Street Food', icon: '🍡' },
-    { id: 'restaurant', name: 'Restaurants', icon: '🏪' },
-    { id: 'cafe', name: 'Cafés', icon: '☕' },
-    { id: 'bakery', name: 'Bakeries', icon: '🥐' },
-    { id: 'sweets', name: 'Sweet Shops', icon: '🍬' },
-  ];
+  // Only show filter buttons that actually have matches, with live counts —
+  // so no filter ever lands on an empty "no results" state.
+  const counts = foodSpots.reduce<Record<string, number>>((acc, s) => {
+    acc[s.category] = (acc[s.category] || 0) + 1; return acc;
+  }, {});
+  const categories = CATEGORY_META
+    .filter((c) => c.id === 'all' || counts[c.id] > 0)
+    .map((c) => ({ ...c, count: c.id === 'all' ? foodSpots.length : counts[c.id] }));
 
   const filteredSpots = foodSpots
     .filter(spot => selectedCategory === 'all' || spot.category === selectedCategory)
@@ -95,6 +114,7 @@ export function FoodMap() {
               >
                 <span className="mr-2">{cat.icon}</span>
                 {cat.name}
+                <span className={`ml-2 text-xs ${selectedCategory === cat.id ? 'text-white/80' : 'text-gray-400'}`}>{cat.count}</span>
               </button>
             ))}
           </div>
