@@ -14,12 +14,27 @@
  * calls POST /auth/refresh with the refresh token to silently restore the session.
  */
 
-// API base URL. Prefer the VITE_API_BASE env var; otherwise fall back to
-// localhost in dev and the production Render API in any production/preview build.
-// This keeps preview deployments (which may not have the env var) working instead
-// of silently calling localhost and failing every request.
-export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '')
-  || (import.meta.env.DEV ? 'http://localhost:3000/api' : 'https://gobro-api.onrender.com/api');
+// API base URL — hardened so a misconfigured VITE_API_BASE can't take the whole
+// site down. On a deployed (https) page we IGNORE a missing / localhost / http://
+// value (those cause "Failed to fetch" via mixed-content or an unreachable host)
+// and use the production API instead. Dev still uses localhost.
+const PROD_API = 'https://gobro-api.onrender.com/api';
+function resolveApiBase(): string {
+  let env = (import.meta.env.VITE_API_BASE as string | undefined)?.trim().replace(/\/+$/, '');
+  const onHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  if (onHttps && (!env || env.startsWith('http://') || /localhost|127\.0\.0\.1/.test(env))) {
+    return PROD_API; // broken/unsafe value on a live site → force the real API
+  }
+  if (!env) return import.meta.env.DEV ? 'http://localhost:3000/api' : PROD_API;
+  if (/onrender\.com$/.test(env)) env += '/api'; // forgot the /api suffix
+  return env;
+}
+export const API_BASE = resolveApiBase();
+// One-time visibility so any misconfig is obvious in DevTools → Console.
+if (typeof window !== 'undefined' && !import.meta.env.DEV) {
+  // eslint-disable-next-line no-console
+  console.info('[Bengal Trails] API base:', API_BASE);
+}
 
 const REFRESH_TOKEN_KEY = 'bt_refresh_token';
 

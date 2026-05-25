@@ -379,8 +379,24 @@ export function FestivalCalendar() {
   const [calYear, setCalYear] = useState(now.getFullYear());
 
   useEffect(() => {
-    fetch(`${API_BASE}/bengal/festivals`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Failed to load'))))
+    // Cold-start-resilient: the Render free tier can return a transient error or
+    // be slow on the first request while it wakes — retry on network/5xx errors.
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const fetchWithRetry = async (retries = 3): Promise<any> => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const r = await fetch(`${API_BASE}/bengal/festivals`);
+          if (r.ok) return r.json();
+          if (r.status < 500) throw new Error('Failed to load');
+        } catch (e) {
+          if (attempt === retries) throw e;
+        }
+        await sleep(1500 * (attempt + 1));
+      }
+      throw new Error('Failed to load');
+    };
+
+    fetchWithRetry()
       .then((data) => {
         const list: Festival[] = (data?.festivals || []).map((f: any) => ({
           id: f.id,
