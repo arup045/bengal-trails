@@ -108,6 +108,23 @@ export function DestinationManagement() {
     setIsAddModalOpen(true);
   };
 
+  const [aiDrafting, setAiDrafting] = useState(false);
+  const draftWithAI = async () => {
+    if (!formData.name) { toast.error('Enter a name first'); return; }
+    setAiDrafting(true);
+    try {
+      const res = await authFetch('/admin/ai/draft-description', {
+        method: 'POST',
+        body: JSON.stringify({ name: formData.name, category: formData.category, region: formData.region }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || 'Could not draft'); return; }
+      setFormData((f) => ({ ...f, description: data.description }));
+      toast.success('Draft added — review and edit before saving');
+    } catch { toast.error('Network error'); }
+    finally { setAiDrafting(false); }
+  };
+
   const handleSave = async () => {
     // Backend requires name, category, region, description.
     if (!formData.name || !formData.category || !formData.region || !formData.description) {
@@ -381,7 +398,18 @@ export function DestinationManagement() {
 
                 {/* Full Description */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Description *</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-semibold text-gray-700">Full Description *</label>
+                    <button
+                      type="button"
+                      onClick={draftWithAI}
+                      disabled={aiDrafting || !formData.name}
+                      title={!formData.name ? 'Enter a name first' : 'Generate a draft with AI'}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
+                    >
+                      {aiDrafting ? '✨ Drafting…' : '✨ Draft with AI'}
+                    </button>
+                  </div>
                   <textarea
                     value={formData.description || ''}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}

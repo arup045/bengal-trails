@@ -518,6 +518,31 @@ router.get('/embed/status', async (req, res) => {
   return res.json({ ...embedState, storedCount: cnt.rows[0].c, hasKey: !!process.env.GEMINI_API_KEY });
 });
 
+// ── POST /admin/ai/draft-description ──────────────────────────────────────────
+// Generates a short, factual destination description with Gemini for the admin
+// to review/edit before saving. Never auto-publishes.
+router.post('/ai/draft-description', async (req, res) => {
+  if (!process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'AI not configured (GEMINI_API_KEY missing)' });
+  const { name, category, region } = req.body || {};
+  if (!name) return res.status(400).json({ error: 'name required' });
+  try {
+    const prompt = `Write a vivid, factual 2-3 sentence travel description (~50 words) for "${name}", a ${category || 'destination'} in ${region || 'West Bengal'}, India. Focus on what makes it worth visiting. Plain text only — no markdown, no quotes.`;
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 200 } }) }
+    );
+    if (!r.ok) return res.status(502).json({ error: 'AI request failed' });
+    const data = await r.json();
+    const text = (data?.candidates?.[0]?.content?.parts || []).map((p) => p.text).join('').trim();
+    if (!text) return res.status(502).json({ error: 'No description generated' });
+    return res.json({ description: text });
+  } catch (e) {
+    console.error('[admin] draft-description error:', e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ── Internal audit log writer ─────────────────────────────────────────────────
 // Non-blocking — logs admin actions for compliance and incident response.
 // Called at every sensitive operation (role/status changes, deletions, newsletter).
