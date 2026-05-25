@@ -226,6 +226,9 @@ function harvestDestinations(toolName, result, out) {
       if (out.find((x) => x.slug === r.id)) continue;
       out.push({ name: r.name, slug: r.id, image: r.image });
     }
+  } else if ((toolName === 'add_to_wishlist' || toolName === 'start_booking') && result.slug && (result.added || result.name)) {
+    // Surface the acted-on place as a clickable chip.
+    if (!out.find((x) => x.slug === result.slug)) out.push({ name: result.added || result.name, slug: result.slug });
   } else if (
     (toolName === 'get_my_wishlist' || toolName === 'get_recently_viewed') &&
     Array.isArray(result.results)
@@ -314,8 +317,10 @@ Available tools:
 - find_stays — hotels/homestays at a place (price range, type, rating)
 - estimate_budget — trip cost estimate (days, style, party size) with a breakdown
 - get_my_wishlist / get_my_trip_plans / get_recently_viewed — the SIGNED-IN user's own data
+- add_to_wishlist / save_itinerary / start_booking — ACTIONS that change the user's data (signed-in only)
 
 Guidelines:
+- ACTIONS (add_to_wishlist, save_itinerary, start_booking): if the user clearly asked ("add Darjeeling to my wishlist", "save this trip", "book the Sundarbans tour"), perform it and confirm afterwards. If their intent is ambiguous, ask a one-line confirmation BEFORE calling. If they're not signed in, the tool returns not_signed_in — invite them to sign in. You only have slugs via the other tools, so resolve a name to a slug with search_destinations before add_to_wishlist/start_booking. start_booking never charges — it opens the booking page where they pick dates and pay.
 - Combine tools to fully answer (e.g. for "plan my Darjeeling trip": get_destination_details + get_weather + get_transport + find_stays + estimate_budget).
 - For "is it a good time to visit X" → call get_weather and compare with its best season.
 - For "how do I get to X" → get_transport. For "where to stay" → find_stays. For "how much" → estimate_budget.

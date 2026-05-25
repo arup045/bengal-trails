@@ -228,6 +228,40 @@ const toolDeclarations = [
       "Get destinations the SIGNED-IN user recently viewed. Use for 'where was I looking', personalized follow-ups, or to continue the conversation about places they showed interest in. Only works when logged in.",
     parameters: { type: 'object', properties: {} },
   },
+  {
+    name: 'add_to_wishlist',
+    description:
+      "ACTION: Save a destination to the SIGNED-IN user's wishlist. Call this when the user clearly asks to save/add/bookmark a place (e.g. 'add Darjeeling to my wishlist', 'save this'). Pass the destination's slug (resolve it with search_destinations first if you only have a name). Confirm the action in your reply afterwards. Only works when logged in — if not, tell them to sign in.",
+    parameters: {
+      type: 'object',
+      properties: { slug: { type: 'string', description: "The destination slug to save, e.g. 'darjeeling'." } },
+      required: ['slug'],
+    },
+  },
+  {
+    name: 'save_itinerary',
+    description:
+      "ACTION: Save a trip plan / itinerary to the SIGNED-IN user's account. Call this when the user asks to 'save this trip/itinerary/plan'. Provide a short name and the list of destination slugs (and optional number of days). Confirm afterwards. Only works when logged in.",
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'A short name for the trip, e.g. "3-day Darjeeling & Kalimpong".' },
+        destination_slugs: { type: 'array', items: { type: 'string' }, description: 'Destination slugs to include.' },
+        days: { type: 'number', description: 'Optional trip length in days.' },
+      },
+      required: ['name'],
+    },
+  },
+  {
+    name: 'start_booking',
+    description:
+      "ACTION: Begin booking a destination for the user. This does NOT charge anything — it returns the destination page where the user picks dates and completes payment securely. Call when the user says 'book X', 'I want to book this'. Always tell the user you've opened the booking page and that they choose dates + pay there.",
+    parameters: {
+      type: 'object',
+      properties: { slug: { type: 'string', description: "The destination slug to book, e.g. 'sundarbans-national-park'." } },
+      required: ['slug'],
+    },
+  },
 ];
 
 // ─── Tool executors ─────────────────────────────────────────────────────────────
@@ -694,6 +728,43 @@ async function get_recently_viewed(_args, ctx) {
   };
 }
 
+// ─── Write actions (auth-gated — change the signed-in user's data) ──────────────
+
+async function add_to_wishlist({ slug }, ctx) {
+  if (!ctx || !ctx.userId) return { error: 'not_signed_in', note: 'Tell the user to sign in to save places.' };
+  if (!slug || typeof slug !== 'string') return { error: 'missing_slug', note: 'Resolve the destination slug first with search_destinations.' };
+  const { rows } = await pool.query("SELECT name FROM destinations WHERE slug = $1 AND status = 'published'", [slug]).catch(() => ({ rows: [] }));
+  if (!rows.length) return { error: 'not_found', note: 'No published destination with that slug — search first.' };
+  await pool.query('INSERT INTO wishlists (user_id, destination_slug) VALUES ($1, $2) ON CONFLICT DO NOTHING', [ctx.userId, slug]).catch(() => {});
+  return { success: true, added: rows[0].name, slug, note: 'Saved to wishlist. Confirm this to the user.' };
+}
+
+async function save_itinerary({ name, destination_slugs = [], days }, ctx) {
+  if (!ctx || !ctx.userId) return { error: 'not_signed_in', note: 'Tell the user to sign in to save trips.' };
+  const planName = String(name || 'My Bengal Trip').slice(0, 120);
+  const slugs = Array.isArray(destination_slugs) ? destination_slugs.filter((s) => typeof s === 'string').slice(0, 20) : [];
+  const description = days ? `${days}-day plan` : null;
+  const { rows } = await pool.query(
+    `INSERT INTO trip_plans (user_id, name, description, destinations, status)
+     VALUES ($1, $2, $3, $4, 'planning') RETURNING id, name`,
+    [ctx.userId, planName, description, JSON.stringify(slugs)]
+  ).catch((e) => { console.error('save_itinerary:', e.message); return { rows: [] }; });
+  if (!rows.length) return { error: 'save_failed', note: 'Could not save the trip — ask them to try from the Trip Planner.' };
+  return { success: true, saved: rows[0].name, tripId: rows[0].id, count: slugs.length, note: 'Saved. They can see it under My Profile → Trips.' };
+}
+
+async function start_booking({ slug }) {
+  if (!slug || typeof slug !== 'string') return { error: 'missing_slug' };
+  const { rows } = await pool.query("SELECT name, slug FROM destinations WHERE slug = $1 AND status = 'published'", [slug]).catch(() => ({ rows: [] }));
+  if (!rows.length) return { error: 'not_found', note: 'Search for the destination first.' };
+  // SECURITY: never create a paid booking from chat — hand off to the real
+  // booking UI where the user picks dates and pays via Razorpay.
+  return {
+    success: true, name: rows[0].name, slug: rows[0].slug, action: 'open_booking', url: `/explore/${rows[0].slug}`,
+    note: 'Tell the user you opened the booking page; they choose dates and pay securely there.',
+  };
+}
+
 // ─── Dispatcher ────────────────────────────────────────────────────────────────
 
 const executors = {
@@ -711,6 +782,9 @@ const executors = {
   get_my_wishlist,
   get_my_trip_plans,
   get_recently_viewed,
+  add_to_wishlist,
+  save_itinerary,
+  start_booking,
 };
 
 /**
