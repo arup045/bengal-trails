@@ -1,7 +1,7 @@
 import { API_BASE } from '../utils/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { MapPin, Star, Calendar, ChevronRight, Navigation, Share2, Facebook, Twitter, MessageCircle, Copy, Camera, Heart, Clock, Tag } from 'lucide-react';
+import { MapPin, Star, Calendar, ChevronRight, Navigation, Share2, Facebook, Twitter, MessageCircle, Copy, Camera, Heart, Clock, Tag, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { placesData } from '../data/places-full';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -321,6 +321,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               </div>
               <button onClick={() => scrollTo('booking-section')} className="w-full mt-5 bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition-colors font-poppins font-medium text-sm">Plan your visit</button>
               <button onClick={openGoogleMaps} className="w-full mt-2 border border-gray-200 text-gray-700 py-3 rounded-full hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-poppins text-sm"><Navigation className="w-4 h-4" /> Get directions</button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('bt:ask-ai', { detail: { message: `Tell me about ${place.title} in ${place.district}, West Bengal — best time to visit, how to reach, what to see nearby, and tips for visiting.` } }))}
+                className="w-full mt-2 border border-purple-200 text-purple-700 py-3 rounded-full hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 font-poppins text-sm font-medium">
+                <Sparkles className="w-4 h-4" /> Ask AI about this place
+              </button>
               <ShareButton title={place.title} description={place.excerpt} className="mt-3 w-full flex justify-center" />
             </div>
 
