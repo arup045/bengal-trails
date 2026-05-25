@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Search, MapPin, Compass, ArrowRight, X, Navigation, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
+import { Search, MapPin, Compass, ArrowRight, X, Navigation, Loader2, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { getDistrictsWithMeta, type BengalRegion, type DistrictWithMeta } from '../data/districts';
@@ -10,6 +10,9 @@ import { useWishlistSync } from '../utils/useWishlistSync';
 import { getCurrentLocation, calculateDistance, type LocationCoords } from '../utils/location';
 
 const REGION_TABS: Array<'All' | BengalRegion> = ['All', 'North Bengal', 'Central Bengal', 'South Bengal'];
+
+// Lazy: Leaflet + its CSS only load when the user opens map view (keeps it out of the bundle).
+const DistrictsMap = lazy(() => import('./explore/DistrictsMap'));
 
 const readQueryParam = () => {
   try { return new URLSearchParams(window.location.search).get('q') || ''; } catch { return ''; }
@@ -22,6 +25,7 @@ export function ExplorePage() {
   const [region, setRegion] = useState<'All' | BengalRegion>('All');
   const [userLoc, setUserLoc] = useState<LocationCoords | null>(null);
   const [locLoading, setLocLoading] = useState(false);
+  const [view, setView] = useState<'grid' | 'map'>('grid');
 
   // "Near me": geolocate (browser API — free, no map key) then sort by distance.
   const findNearMe = async () => {
@@ -147,6 +151,19 @@ export function ExplorePage() {
             {locLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
             {userLoc ? 'Nearest first' : 'Near me'}
           </button>
+
+          {/* Grid / Map view toggle */}
+          <span className="hidden sm:block w-px h-6 bg-gray-200 mx-1" />
+          <div className="flex items-center bg-gray-100 rounded-full p-0.5">
+            <button onClick={() => setView('grid')} aria-label="Grid view"
+              className={`px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 font-poppins text-sm font-medium ${view === 'grid' ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-500'}`}>
+              <LayoutGrid className="w-4 h-4" /> Grid
+            </button>
+            <button onClick={() => setView('map')} aria-label="Map view"
+              className={`px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 font-poppins text-sm font-medium ${view === 'map' ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-500'}`}>
+              <MapIcon className="w-4 h-4" /> Map
+            </button>
+          </div>
         </div>
       </div>
 
@@ -183,7 +200,11 @@ export function ExplorePage() {
           {filtered.length} district{filtered.length !== 1 ? 's' : ''}{region !== 'All' ? ` in ${region}` : ''}
         </div>
 
-        {filtered.length === 0 ? (
+        {view === 'map' ? (
+          <Suspense fallback={<div className="h-[70vh] min-h-[420px] rounded-3xl bg-gray-100 animate-pulse flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-400 animate-spin" /></div>}>
+            <DistrictsMap userLoc={userLoc} />
+          </Suspense>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-gray-400 font-poppins">No districts match your search.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
