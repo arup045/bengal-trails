@@ -309,8 +309,7 @@ html {
 }
 /* ── Bengal Trails Global Enhancements ─────────────────────────────── */
 
-/* Import Poppins for logo/headings */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+/* Poppins is loaded via a <link> in index.html (with preconnect). */
 
 /* Smooth scrolling */
 html {
