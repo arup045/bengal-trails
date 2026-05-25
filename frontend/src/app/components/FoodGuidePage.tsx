@@ -847,7 +847,7 @@ export function FoodGuidePage() {
               <p className="font-poppins text-sm text-gray-600 leading-relaxed flex-1 mb-5">{r.desc}</p>
               <div className="flex items-center justify-between text-xs font-poppins text-gray-500">
                 <span className="inline-flex items-center gap-1"><Clock className="w-3.5 h-3.5" aria-hidden="true" />{r.time}</span>
-                <span className="text-purple-600 font-medium">Coming soon</span>
+                <span className="inline-flex items-center gap-1 text-purple-600 font-medium"><ChefHat className="w-3.5 h-3.5" aria-hidden="true" />{r.difficulty}</span>
               </div>
             </div>
           ))}
