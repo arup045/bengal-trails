@@ -176,7 +176,13 @@ const searchLimiter = rateLimit({
 });
 
 // ── Health Check ──────────────────────────────────────────────────────────────
-app.get('/health', (req, res) => res.json({ status: 'ok', service: 'bengal-trails-api' }));
+// DB-free + tiny on purpose: fast to answer and safe for an external uptime
+// monitor (e.g. UptimeRobot/cron-job.org) to ping every ~10 min. On Render's
+// free tier an EXTERNAL pinger is what reliably prevents cold-start sleeps —
+// the internal self-ping below only keeps an already-awake instance warm.
+const health = (req, res) => res.json({ status: 'ok', service: 'bengal-trails-api', uptime: Math.round(process.uptime()) });
+app.get('/health', health);
+app.get('/healthz', health);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ROUTES

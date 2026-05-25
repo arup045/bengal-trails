@@ -278,6 +278,7 @@ export const AITravelAssistant: React.FC = () => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => { setIsOpen(true); setUnreadCount(0); }}
+            aria-label="Open AI travel assistant"
             className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 text-white rounded-full shadow-2xl hover:shadow-purple-500/40 flex items-center justify-center group"
             style={{ boxShadow: '0 8px 32px rgba(124, 58, 237, 0.45)' }}
           >
