@@ -114,6 +114,92 @@ async function callGeminiWithTools(message, conversationHistory, language, conte
   return { text: "Let me think — could you ask that another way?", destinations: surfacedDestinations };
 }
 
+// ─── Streaming variant (Server-Sent Events) ────────────────────────────────────
+// Same agentic tool loop as callGeminiWithTools, but the model's text is produced
+// with :streamGenerateContent and forwarded token-by-token via the onToken
+// callback so the UI can render it ChatGPT-style as it arrives. Tool-calling hops
+// emit functionCalls (no user text) and are handled internally. Returns the same
+// { text, destinations } shape. Returns null on any failure so the caller can
+// fall back to the non-streaming path.
+async function streamGeminiWithTools(message, conversationHistory, language, context = {}, ctx = {}, onToken) {
+  if (!process.env.GEMINI_API_KEY) return null;
+
+  const systemPrompt = buildSystemPrompt(language, context);
+  const contents = [
+    { role: 'user',  parts: [{ text: systemPrompt }] },
+    { role: 'model', parts: [{ text: "Understood. I'm Bengal Trails, ready to help travellers explore West Bengal using live data from your database." }] },
+    ...conversationHistory.slice(-4).map((m) => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }],
+    })),
+    { role: 'user', parts: [{ text: message }] },
+  ];
+
+  const surfacedDestinations = [];
+
+  for (let hop = 0; hop < MAX_TOOL_HOPS; hop++) {
+    const reqBody = {
+      contents,
+      tools: [{ functionDeclarations: toolDeclarations }],
+      toolConfig: hop === MAX_TOOL_HOPS - 1
+        ? { functionCallingConfig: { mode: 'NONE' } }
+        : { functionCallingConfig: { mode: 'AUTO' } },
+      generationConfig: { temperature: 0.6, maxOutputTokens: 800 },
+    };
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${process.env.GEMINI_API_KEY}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reqBody) }
+    );
+    if (!res.ok || !res.body) {
+      const errText = await res.text?.().catch(() => '') || '';
+      console.error(`Gemini stream ${res.status}: ${String(errText).slice(0, 200)}`);
+      return null;
+    }
+
+    // Parse the SSE stream: each `data: {json}` line is a partial GenerateContentResponse.
+    const collectedParts = [];
+    let hopText = '';
+    let buffer = '';
+    const decoder = new TextDecoder();
+    for await (const chunk of res.body) {
+      buffer += decoder.decode(chunk, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!line.startsWith('data:')) continue;
+        const jsonStr = line.slice(5).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
+        let data; try { data = JSON.parse(jsonStr); } catch { continue; }
+        const parts = data?.candidates?.[0]?.content?.parts || [];
+        for (const p of parts) {
+          if (p.text) { hopText += p.text; try { onToken && onToken(p.text); } catch { /* client gone */ } }
+          if (p.functionCall) collectedParts.push(p);
+        }
+      }
+    }
+
+    if (collectedParts.length === 0) {
+      // No tool calls — this hop's text is the final answer (already streamed).
+      return { text: hopText.trim(), destinations: surfacedDestinations };
+    }
+
+    // Tool-calling hop: replay model turn, execute tools, append results, loop.
+    contents.push({ role: 'model', parts: collectedParts });
+    const functionResponses = [];
+    for (const fc of collectedParts) {
+      const { name, args } = fc.functionCall;
+      const { result, error } = await executeTool(name, args, ctx);
+      if (result) harvestDestinations(name, result, surfacedDestinations);
+      functionResponses.push({ functionResponse: { name, response: error ? { error } : { content: result } } });
+    }
+    contents.push({ role: 'function', parts: functionResponses });
+  }
+
+  return { text: '', destinations: surfacedDestinations };
+}
+
 /**
  * Extract destinations from tool results into the frontend-facing payload.
  * Frontend expects `[{name, slug, image?, price?}]`.
@@ -379,6 +465,64 @@ router.post('/chat', optionalAuth, async (req, res) => {
       destinations: [],
       provider: 'error-fallback',
     });
+  }
+});
+
+// ─── POST /api/ai-assistant/chat/stream  (Server-Sent Events) ──────────────────
+// Streams the assistant's reply token-by-token for a live, ChatGPT-style feel.
+// Events:  token {t}  → text delta   |   done {suggestions,destinations,provider}
+//          error {}   → client should fall back to the non-streaming /chat endpoint
+// The non-streaming /chat above is the guaranteed fallback, so any issue here is
+// non-fatal to the assistant.
+router.post('/chat/stream', optionalAuth, async (req, res) => {
+  const { message, language = 'en', conversationHistory: rawHistory = [], page } = req.body || {};
+  if (!message || typeof message !== 'string' || message.length > MAX_MESSAGE_LEN) {
+    return res.status(400).json({ error: 'invalid message' });
+  }
+
+  // SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // disable proxy buffering (nginx/Render)
+  if (typeof res.flushHeaders === 'function') res.flushHeaders();
+  const send = (event, data) => { try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch { /* closed */ } };
+
+  try {
+    const context = { userName: req.user?.name || null, page: typeof page === 'string' ? page.slice(0, 40) : null };
+    const ctx = { userId: req.user?.id || null };
+
+    // Normalize + cap history (same rules as /chat)
+    let conversationHistory = [];
+    if (Array.isArray(rawHistory)) {
+      let total = 0;
+      for (const m of rawHistory.slice(-MAX_HISTORY_MSGS)) {
+        if (!m || typeof m.content !== 'string') continue;
+        const c = m.content.slice(0, MAX_MESSAGE_LEN);
+        if (total + c.length > MAX_HISTORY_TOTAL_CHARS) break;
+        total += c.length;
+        conversationHistory.push({ role: m.role === 'user' ? 'user' : 'assistant', content: c });
+      }
+    }
+
+    const result = await streamGeminiWithTools(
+      message, conversationHistory, language, context, ctx,
+      (delta) => send('token', { t: delta })
+    );
+
+    if (!result || !result.text) { send('error', { reason: 'no_text' }); return res.end(); }
+
+    send('done', {
+      suggestions: generateSuggestions(message, result.text),
+      destinations: result.destinations || [],
+      provider: 'gemini',
+      full: result.text,
+    });
+    res.end();
+  } catch (err) {
+    console.error('AI stream error:', err.message);
+    send('error', { reason: 'exception' });
+    res.end();
   }
 });
 

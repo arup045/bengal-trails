@@ -112,48 +112,112 @@ export const AITravelAssistant: React.FC = () => {
     setInput('');
     setLoading(true);
 
-    try {
-      // Current page (from the hash route) lets the AI tailor answers; the auth
-      // token lets it use the personalization tools (my wishlist / trips / etc.).
-      const token = getToken();
-      const page = (window.location.hash || '').replace(/^#\/?/, '').split('?')[0] || 'home';
-      const res = await fetch(`${API_BASE}/ai-assistant/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          message: text,
-          language,
-          page,
-          conversationHistory: messages.slice(-6).map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+    // Shared request payload. Current page lets the AI tailor answers; the auth
+    // token lets it use personalization tools (my wishlist / trips / etc.).
+    const token = getToken();
+    const page = (window.location.hash || '').replace(/^#\/?/, '').split('?')[0] || 'home';
+    const reqBody = JSON.stringify({
+      message: text,
+      language,
+      page,
+      conversationHistory: messages.slice(-6).map((m) => ({ role: m.role, content: m.content })),
+    });
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
 
-      if (res.ok) {
-        const data = await res.json();
-        const assistantMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: data.message || data.response || "I'm here to help you explore West Bengal! Could you tell me more about what you're looking for?",
-          timestamp: new Date(),
-          suggestions: data.suggestions || [],
-          destinations: data.destinations || [],
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
-        if (!isOpen) setUnreadCount((c) => c + 1);
-      } else {
-        throw new Error('API error');
+    const assistantId = (Date.now() + 1).toString();
+
+    // ── Attempt 1: Server-Sent Events streaming (ChatGPT-style live typing) ──────
+    try {
+      const res = await fetch(`${API_BASE}/ai-assistant/chat/stream`, {
+        method: 'POST', headers, credentials: 'include', body: reqBody,
+      });
+      if (!res.ok || !res.body) throw new Error('no stream');
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let acc = '';
+      let placed = false;
+      let doneData: any = null;
+      let errored = false;
+
+      const ensurePlaceholder = () => {
+        if (placed) return;
+        placed = true;
+        setLoading(false); // hide the typing dots; the streaming bubble takes over
+        setMessages((prev) => [...prev, { id: assistantId, role: 'assistant', content: '', timestamp: new Date() }]);
+      };
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let sep;
+        while ((sep = buffer.indexOf('\n\n')) !== -1) {
+          const rawEvent = buffer.slice(0, sep);
+          buffer = buffer.slice(sep + 2);
+          let evt = 'message';
+          let dataStr = '';
+          for (const line of rawEvent.split('\n')) {
+            if (line.startsWith('event:')) evt = line.slice(6).trim();
+            else if (line.startsWith('data:')) dataStr += line.slice(5).trim();
+          }
+          if (!dataStr) continue;
+          let payload: any;
+          try { payload = JSON.parse(dataStr); } catch { continue; }
+          if (evt === 'token') {
+            ensurePlaceholder();
+            acc += payload.t || '';
+            setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m)));
+          } else if (evt === 'done') {
+            doneData = payload;
+          } else if (evt === 'error') {
+            errored = true;
+          }
+        }
       }
+
+      if (errored || (!placed && !doneData)) throw new Error('stream failed');
+
+      // Finalize with the authoritative full text + suggestions/destinations.
+      ensurePlaceholder();
+      const finalText = (doneData?.full || acc || '').trim();
+      if (!finalText) throw new Error('empty stream');
+      setMessages((prev) => prev.map((m) => (m.id === assistantId
+        ? { ...m, content: finalText, suggestions: doneData?.suggestions || [], destinations: doneData?.destinations || [] }
+        : m)));
+      if (!isOpen) setUnreadCount((c) => c + 1);
+      return;
     } catch {
-      // Fallback: intelligent local response
+      // Drop any empty placeholder we may have added, then fall through to JSON.
+      setMessages((prev) => prev.filter((m) => !(m.id === assistantId && !m.content)));
+    }
+
+    // ── Attempt 2: non-streaming JSON endpoint (guaranteed fallback) ────────────
+    try {
+      const res = await fetch(`${API_BASE}/ai-assistant/chat`, {
+        method: 'POST', headers, credentials: 'include', body: reqBody,
+      });
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      const assistantMsg: Message = {
+        id: assistantId,
+        role: 'assistant',
+        content: data.message || data.response || "I'm here to help you explore West Bengal! Could you tell me more about what you're looking for?",
+        timestamp: new Date(),
+        suggestions: data.suggestions || [],
+        destinations: data.destinations || [],
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+      if (!isOpen) setUnreadCount((c) => c + 1);
+    } catch {
+      // ── Attempt 3: intelligent local fallback ────────────────────────────────
       const fallbackMsg: Message = {
-        id: (Date.now() + 1).toString(),
+        id: assistantId,
         role: 'assistant',
         content: getFallbackResponse(text),
         timestamp: new Date(),
