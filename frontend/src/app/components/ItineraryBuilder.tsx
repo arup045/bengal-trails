@@ -43,6 +43,33 @@ export function ItineraryBuilder() {
     else { navigator.clipboard.writeText(text); toast.success('Link copied!'); }
   };
 
+  const [saving, setSaving] = useState(false);
+  const saveToTrips = async () => {
+    if (!itinerary) return;
+    setSaving(true);
+    try {
+      // Flatten unique destinations across all days for the saved plan.
+      const seen = new Set<string>();
+      const places: { name: string; slug: string }[] = [];
+      itinerary.days?.forEach((d) => d.destinations?.forEach((x) => {
+        if (x.slug && !seen.has(x.slug)) { seen.add(x.slug); places.push({ name: x.name, slug: x.slug }); }
+      }));
+      const res = await authFetch('/trip-plans', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: itinerary.title,
+          description: `${itinerary.summary} · Est. ${itinerary.totalEstimatedCost}`,
+          destinations: places,
+          status: 'planning',
+        }),
+      });
+      if (res.status === 401) { toast.error('Please sign in to save this trip'); return; }
+      if (!res.ok) { toast.error('Could not save. Try again.'); return; }
+      toast.success('Saved to My Trips!', { description: 'Find it under your profile → My Trips.' });
+    } catch { toast.error('Network error. Please try again.'); }
+    finally { setSaving(false); }
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-5 sm:px-8 py-10">
       {/* Header */}
@@ -142,7 +169,11 @@ export function ItineraryBuilder() {
                   <Star className="w-3.5 h-3.5" />Best: {itinerary.bestMonths?.join(', ')}
                 </span>
               </div>
-              <div className="flex gap-3 mt-5">
+              <div className="flex flex-wrap gap-3 mt-5">
+                <button onClick={saveToTrips} disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 hover:bg-purple-50 rounded-xl text-sm font-poppins font-semibold transition-colors disabled:opacity-60">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className="w-4 h-4" />}Save to My Trips
+                </button>
                 <button onClick={share}
                   className="flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 rounded-xl text-sm font-poppins font-medium transition-colors">
                   <Share2 className="w-4 h-4" />Share

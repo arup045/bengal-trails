@@ -72,6 +72,7 @@ export function UserProfilePage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirm,   setDeleteConfirm]   = useState('');
   const [bookings,        setBookings]        = useState<any[]>([]);
+  const [tripPlans,       setTripPlans]       = useState<any[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [myReviews,       setMyReviews]       = useState<any[]>([]);
   const [reviewsLoading,  setReviewsLoading]  = useState(false);
@@ -106,10 +107,15 @@ export function UserProfilePage() {
   useEffect(() => {
     if (activeTab === 'trips') {
       setBookingsLoading(true);
-      authFetch('/bookings')
-        .then(r => r.ok ? r.json() : { bookings: [] })
-        .then(d => setBookings(d.bookings || []))
-        .catch(() => setBookings([]))
+      Promise.allSettled([
+        authFetch('/bookings').then(r => r.ok ? r.json() : { bookings: [] }),
+        authFetch('/trip-plans').then(r => r.ok ? r.json() : { tripPlans: [] }),
+      ])
+        .then(([bk, tp]) => {
+          setBookings(bk.status === 'fulfilled' ? (bk.value.bookings || []) : []);
+          const plans = tp.status === 'fulfilled' ? (tp.value.tripPlans || tp.value.trip_plans || tp.value.plans || []) : [];
+          setTripPlans(Array.isArray(plans) ? plans : []);
+        })
         .finally(() => setBookingsLoading(false));
     }
     if (activeTab === 'reviews') {
@@ -518,6 +524,39 @@ export function UserProfilePage() {
           {/* ── TRIPS TAB ───────────────────────────────────────────── */}
           {activeTab === 'trips' && (
             <motion.div key="trips" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              {/* Saved AI itineraries */}
+              {tripPlans.length > 0 && (
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7 mb-6">
+                  <h2 className="font-poppins text-xl font-semibold text-slate-900 mb-6">Saved itineraries</h2>
+                  <div className="space-y-4">
+                    {tripPlans.map((p: any) => {
+                      const dests = Array.isArray(p.destinations) ? p.destinations
+                        : (() => { try { return JSON.parse(p.destinations || '[]'); } catch { return []; } })();
+                      return (
+                        <div key={p.id} className="p-4 rounded-2xl border border-gray-100 bg-purple-50/40">
+                          <div className="flex items-start justify-between gap-3 mb-1">
+                            <p className="font-poppins font-semibold text-slate-900 text-sm">{p.name}</p>
+                            <span className="font-poppins text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 capitalize shrink-0">{p.status || 'planning'}</span>
+                          </div>
+                          {p.description && <p className="font-poppins text-xs text-gray-500 mb-2 line-clamp-2">{p.description}</p>}
+                          {dests.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {dests.slice(0, 6).map((d: any, i: number) => (
+                                <a key={i} href={d.slug ? `/explore/${d.slug}` : undefined}
+                                  className="text-xs font-poppins text-purple-700 bg-white border border-purple-200 rounded-full px-2.5 py-0.5 hover:bg-purple-100 transition-colors">
+                                  {d.name || d.slug}
+                                </a>
+                              ))}
+                              {dests.length > 6 && <span className="text-xs font-poppins text-gray-400 self-center">+{dests.length - 6} more</span>}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
                 <h2 className="font-poppins text-xl font-semibold text-slate-900 mb-6">My Bookings & Trips</h2>
                 {bookingsLoading ? (
