@@ -152,18 +152,30 @@ export function FoodGuidePage() {
     const ctrl = new AbortController();
     setLoading(true);
     setError(null);
-    Promise.all([
-      fetch(`${API_BASE}/bengal/food`,         { signal: ctrl.signal }).then(r => r.ok ? r.json() : { food: [] }),
-      fetch(`${API_BASE}/bengal/food/streets`, { signal: ctrl.signal }).then(r => r.ok ? r.json() : { streets: [] }),
-    ])
-      .then(([f, s]) => {
-        setDishes(Array.isArray(f.food) ? f.food : []);
-        setStreets(Array.isArray(s.streets) ? s.streets : []);
+
+    // Resilient loader: each request is independent (allSettled), and parsing is
+    // guarded so a non-JSON response (e.g. an HTML error page) can't blank the
+    // whole screen. We only surface an error if the DISHES truly failed to load.
+    const safeJson = async (path: string, key: string) => {
+      try {
+        const r = await fetch(`${API_BASE}${path}`, { signal: ctrl.signal });
+        if (!r.ok) return null;
+        const data = await r.json();
+        return Array.isArray(data?.[key]) ? data[key] : null;
+      } catch { return null; }
+    };
+
+    Promise.allSettled([safeJson('/bengal/food', 'food'), safeJson('/bengal/food/streets', 'streets')])
+      .then(([foodRes, streetsRes]) => {
+        if (ctrl.signal.aborted) return;
+        const food    = foodRes.status === 'fulfilled' ? foodRes.value : null;
+        const streets = streetsRes.status === 'fulfilled' ? streetsRes.value : null;
+        setDishes(food || []);
+        setStreets(streets || []);
+        if (!food) setError('Could not load food data. Please check your connection and refresh.');
       })
-      .catch((e) => {
-        if (e?.name !== 'AbortError') setError('Could not load food data. Please refresh.');
-      })
-      .finally(() => setLoading(false));
+      .finally(() => { if (!ctrl.signal.aborted) setLoading(false); });
+
     return () => ctrl.abort();
   }, []);
 

@@ -14,8 +14,12 @@
  * calls POST /auth/refresh with the refresh token to silently restore the session.
  */
 
+// API base URL. Prefer the VITE_API_BASE env var; otherwise fall back to
+// localhost in dev and the production Render API in any production/preview build.
+// This keeps preview deployments (which may not have the env var) working instead
+// of silently calling localhost and failing every request.
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '')
-  || 'http://localhost:3000/api';
+  || (import.meta.env.DEV ? 'http://localhost:3000/api' : 'https://gobro-api.onrender.com/api');
 
 const REFRESH_TOKEN_KEY = 'bt_refresh_token';
 
