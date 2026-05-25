@@ -486,6 +486,33 @@ export function FestivalCalendar() {
           </div>
         </header>
 
+        {/* Happening this month — uses real festival dates */}
+        {!loading && !error && thisMonthFestivals.length > 0 && (
+          <div className="mb-6 rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-300" />
+                <h2 className="font-bold text-lg">Happening in {MONTH_NAMES[thisMonth - 1]}</h2>
+                <span className="text-white/80 text-sm">· {thisMonthFestivals.length} festival{thisMonthFestivals.length > 1 ? 's' : ''}</span>
+              </div>
+              <button
+                onClick={() => setSelectedMonth(selectedMonth === thisMonth ? null : thisMonth)}
+                className="text-sm font-medium bg-white/15 hover:bg-white/25 px-4 py-1.5 rounded-full transition-colors"
+              >
+                {selectedMonth === thisMonth ? 'Showing this month — clear' : `Show only ${MONTH_NAMES[thisMonth - 1]}`}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {thisMonthFestivals.slice(0, 8).map((f) => (
+                <span key={f.id} className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1 text-sm">
+                  {f.name}
+                  {f.typicalDates && <span className="text-white/70 text-xs">· {f.typicalDates}</span>}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* View mode toggle */}
         <div className="flex items-center justify-end gap-2 mb-4">
           <span className="text-xs text-slate-500">View:</span>
