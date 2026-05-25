@@ -76,7 +76,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
       const m = items[p.title] || {};
       cards.push({
         key: `place-${p.slug}`, name: p.title, image: m.image || p.heroImage?.url,
-        excerpt: p.excerpt, href: `#/explore/${p.slug}`, rating: m.rating ?? (p as any).rating,
+        excerpt: p.excerpt, href: `/explore/${p.slug}`, rating: m.rating ?? (p as any).rating,
         type: m.type, hours: m.hours, wishSlug: p.slug,
       });
     }
@@ -86,7 +86,8 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
       const dup = placeTitlesLower.some((t) => ll.includes(t) || t.includes(ll));
       if (dup) continue;
       const m = items[l] || {};
-      cards.push({ key: `lm-${slugify(l)}`, name: l, image: m.image, rating: m.rating, type: m.type, hours: m.hours, wishSlug: contentSlug(l) });
+      cards.push({ key: `lm-${slugify(l)}`, name: l, image: m.image, rating: m.rating, type: m.type, hours: m.hours,
+        href: `/explore/district/${slug}/landmarks/${slugify(l)}`, wishSlug: contentSlug(l) });
     }
     return cards;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -223,6 +224,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                   return (
                     <ItemCard key={name} name={name} section={key} districtName={district.name}
                       image={m.image} type={m.type} rating={m.rating} hours={m.hours}
+                      href={`/explore/district/${slug}/${key}/${slugify(name)}`}
                       saved={isInWishlist(contentSlug(name))}
                       onToggleSave={() => toggleContent(name, sm.label)} />
                   );

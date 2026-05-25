@@ -37,6 +37,7 @@ installGlobalErrorHandlers();
 // Lazy load heavy components for better performance
 const ExplorePage = lazy(() => import('./components/ExplorePage').then(m => ({ default: m.ExplorePage })));
 const DistrictDetailPage = lazy(() => import('./components/DistrictDetailPage').then(m => ({ default: m.DistrictDetailPage })));
+const SpotDetailPage = lazy(() => import('./components/SpotDetailPage').then(m => ({ default: m.SpotDetailPage })));
 const PlaceDetailPage = lazy(() => import('./components/PlaceDetailPage').then(m => ({ default: m.PlaceDetailPage })));
 const SignInPage = lazy(() => import('./components/SignInPage').then(m => ({ default: m.SignInPage })));
 const UserProfilePage = lazy(() => import('./components/UserProfilePage').then(m => ({ default: m.UserProfilePage })));
@@ -125,7 +126,7 @@ const PAGE_TITLES: Partial<Record<string, string>> = {
 // that lived inside the routing useEffect. Adding a new page is now a
 // single line in this table.
 type RouteId =
-  | 'home' | 'explore' | 'district' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist'
+  | 'home' | 'explore' | 'district' | 'spot' | 'place' | 'signin' | 'profile' | 'planner' | 'wishlist'
   | 'food' | 'map' | 'phrasebook' | 'itinerary' | 'compare' | 'festivals'
   | 'budget' | 'advisor' | 'weather' | 'instagram-spots' | 'food-map' | 'tools'
   | 'debug' | 'check' | 'slugs' | 'admin' | 'admin-login' | 'admin-setup'
@@ -190,7 +191,14 @@ function resolveRoute(hash: string): { id: RouteId; slug?: string; path: string;
   }
   // Dynamic routes — district detail must be matched BEFORE the generic place route.
   if (hash.startsWith('/explore/district/')) {
-    const slug = hash.replace('/explore/district/', '').split('?')[0];
+    const rest = hash.replace('/explore/district/', '').split('?')[0];
+    const parts = rest.split('/').filter(Boolean);
+    // /explore/district/:district/:section/:item  → individual spot detail page
+    if (parts.length >= 3) {
+      const spot = parts.slice(0, 3).join('/');
+      return { id: 'spot', slug: spot, path: `/explore/district/${spot}`, title: `Spot: ${parts[2]}` };
+    }
+    const slug = parts[0] || '';
     return { id: 'district', slug, path: `/explore/district/${slug}`, title: `District: ${slug}` };
   }
   if (hash.startsWith('/explore/')) {
@@ -352,7 +360,7 @@ export default function App() {
       const path = window.location.pathname;
       const r = resolveRoute(path);
       setCurrentPage(r.id);
-      if ((r.id === 'place' || r.id === 'district') && r.slug) setCurrentSlug(r.slug);
+      if ((r.id === 'place' || r.id === 'district' || r.id === 'spot') && r.slug) setCurrentSlug(r.slug);
       // oauth-success handles its own scroll behavior; all other pages reset.
       if (r.id !== 'oauth-success') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -513,6 +521,8 @@ export default function App() {
               {currentPage === 'explore' && <ExplorePage />}
 
               {currentPage === 'district' && <DistrictDetailPage slug={currentSlug} />}
+
+              {currentPage === 'spot' && <SpotDetailPage path={currentSlug} />}
 
               {currentPage === 'place' && <PlaceDetailPage slug={currentSlug} />}
               

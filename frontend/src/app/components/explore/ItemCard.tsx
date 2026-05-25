@@ -1,6 +1,7 @@
 import { Heart, Navigation, ArrowRight, Star, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { navigate } from '../../utils/navigation';
 
 export type SectionKey = 'places' | 'parks' | 'activities' | 'foods' | 'foodZones' | 'stays';
 
@@ -35,7 +36,7 @@ export function ItemCard({ name, section, districtName, image, excerpt, href, ra
     const q = encodeURIComponent(`${name}, ${districtName}, West Bengal, India`);
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${q}`, '_blank', 'noopener,noreferrer');
   };
-  const go = () => { if (href) window.location.hash = href; else openDirections(); };
+  const go = () => { if (href) navigate(href); else openDirections(); };
   const toggle = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onToggleSave(); };
 
   return (
