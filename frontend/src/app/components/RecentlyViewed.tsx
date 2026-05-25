@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import { Clock, ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
-import { OptimizedImage } from './OptimizedImage';
 export function RecentlyViewed() {
   const [recentPlaces, setRecentPlaces] = useState<any[]>([]);
 
