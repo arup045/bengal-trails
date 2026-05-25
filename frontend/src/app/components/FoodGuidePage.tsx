@@ -264,6 +264,12 @@ export function FoodGuidePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60" />
 
         <div className="relative max-w-6xl mx-auto px-6 py-20 sm:py-24 text-white">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-white/75 text-sm font-poppins mb-5 flex-wrap" aria-label="Breadcrumb">
+            <a href="/" className="hover:text-white">Home</a>
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
+            <span className="text-white">Food Guide</span>
+          </nav>
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-poppins font-medium mb-6">
             <Sparkles className="w-4 h-4 text-amber-300" aria-hidden="true" />
             <span>A taste journey across 23 districts</span>
