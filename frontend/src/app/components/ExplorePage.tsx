@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, MapPin, Compass, ArrowRight, X } from 'lucide-react';
+import { Search, MapPin, Compass, ArrowRight, X, Navigation, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
 import { getDistrictsWithMeta, type BengalRegion, type DistrictWithMeta } from '../data/districts';
 import { placesData } from '../data/places-full';
 import { DistrictCard } from './explore/DistrictCard';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useWishlistSync } from '../utils/useWishlistSync';
+import { getCurrentLocation, calculateDistance, type LocationCoords } from '../utils/location';
 
 const REGION_TABS: Array<'All' | BengalRegion> = ['All', 'North Bengal', 'Central Bengal', 'South Bengal'];
 
@@ -18,6 +20,22 @@ export function ExplorePage() {
   // Seed from ?q= so the global search bar (header/hero) carries its query here.
   const [query, setQuery] = useState(readQueryParam);
   const [region, setRegion] = useState<'All' | BengalRegion>('All');
+  const [userLoc, setUserLoc] = useState<LocationCoords | null>(null);
+  const [locLoading, setLocLoading] = useState(false);
+
+  // "Near me": geolocate (browser API — free, no map key) then sort by distance.
+  const findNearMe = async () => {
+    if (userLoc) { setUserLoc(null); return; } // toggle off
+    setLocLoading(true);
+    try {
+      const loc = await getCurrentLocation();
+      setUserLoc(loc);
+      setRegion('All');
+      toast.success('Showing districts nearest to you');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not get your location');
+    } finally { setLocLoading(false); }
+  };
 
   // Keep in sync if the user searches again from the header (URL changes, page stays).
   useEffect(() => {
@@ -52,11 +70,17 @@ export function ExplorePage() {
   }, [q]);
 
   const filtered = useMemo(() => {
-    return districts.filter((d) =>
+    let list: Array<DistrictWithMeta & { _distance?: number }> = districts.filter((d) =>
       (region === 'All' || d.region === region) &&
       (!q || d.name.toLowerCase().includes(q) || d.region.toLowerCase().includes(q) || d.blurb.toLowerCase().includes(q)),
     );
-  }, [districts, q, region]);
+    if (userLoc) {
+      list = list
+        .map((d) => ({ ...d, _distance: calculateDistance(userLoc, { latitude: d.lat, longitude: d.lng }) }))
+        .sort((a, b) => (a._distance ?? 0) - (b._distance ?? 0));
+    }
+    return list;
+  }, [districts, q, region, userLoc]);
 
   const totalPlaces = useMemo(() => districts.reduce((s, d) => s + d.placeCount, 0), [districts]);
 
@@ -102,17 +126,27 @@ export function ExplorePage() {
 
       {/* ── Region filter ──────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-5 sm:px-8 -mt-6 relative z-10">
-        <div className="bg-white rounded-2xl shadow-md p-2 flex flex-wrap justify-center gap-2">
+        <div className="bg-white rounded-2xl shadow-md p-2 flex flex-wrap justify-center items-center gap-2">
           {REGION_TABS.map((r) => (
             <button
               key={r}
-              onClick={() => setRegion(r)}
+              onClick={() => { setRegion(r); if (userLoc) setUserLoc(null); }}
               className={`px-5 py-2 rounded-full font-poppins text-sm font-medium transition-all
-                ${region === r ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+                ${region === r && !userLoc ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
             >
               {r}
             </button>
           ))}
+          <span className="hidden sm:block w-px h-6 bg-gray-200 mx-1" />
+          <button
+            onClick={findNearMe}
+            disabled={locLoading}
+            className={`px-5 py-2 rounded-full font-poppins text-sm font-medium transition-all flex items-center gap-1.5
+              ${userLoc ? 'bg-emerald-500 text-white shadow-sm' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
+          >
+            {locLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+            {userLoc ? 'Nearest first' : 'Near me'}
+          </button>
         </div>
       </div>
 
@@ -159,6 +193,7 @@ export function ExplorePage() {
                 district={d}
                 saved={isInWishlist(wishlistSlug(d))}
                 onToggleSave={() => onToggleSave(d)}
+                distanceKm={userLoc ? d._distance : undefined}
               />
             ))}
           </div>

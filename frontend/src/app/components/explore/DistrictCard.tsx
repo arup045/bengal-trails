@@ -7,9 +7,10 @@ interface Props {
   district: DistrictWithMeta;
   saved: boolean;
   onToggleSave: () => void;
+  distanceKm?: number;   // set when "Near me" is active
 }
 
-export function DistrictCard({ district, saved, onToggleSave }: Props) {
+export function DistrictCard({ district, saved, onToggleSave, distanceKm }: Props) {
   const go = () => { window.location.hash = `#/explore/district/${district.slug}`; };
 
   const openDirections = (e: React.MouseEvent) => {
@@ -45,6 +46,14 @@ export function DistrictCard({ district, saved, onToggleSave }: Props) {
         <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-purple-700 text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full shadow-sm">
           {district.region}
         </span>
+
+        {/* Distance pill (when "Near me" is active) */}
+        {distanceKm != null && (
+          <span className="absolute top-11 left-3 bg-emerald-500/90 backdrop-blur-sm text-white text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+            <Navigation className="w-3 h-3" />
+            {distanceKm < 100 ? `${distanceKm.toFixed(0)} km` : `${Math.round(distanceKm)} km`} away
+          </span>
+        )}
 
         {/* Actions */}
         <div className="absolute top-3 right-3 flex gap-2">
