@@ -44,7 +44,7 @@ const DEFAULTS: SiteContent = {
   hero: {
     title: 'Discover the Heart\nof West Bengal',
     subtitle: '232+ destinations, 100 festivals, authentic Bengali food and curated journeys — all in one place, always free.',
-    backgroundImage: 'https://i1-c.pinimg.com/1200x/0b/e5/5f/0be55f42f18168dfc304f2985cf03f94.jpg',
+    backgroundImage: 'https://images.unsplash.com/photo-1679418536818-7a7fb2db49bc?q=80&w=1600&auto=format&fit=crop',
     ctaText: 'Explore Now',
     ctaLink: '#/explore',
     badgeText: 'West Bengal, India',
