@@ -14,6 +14,11 @@
     <link rel="preconnect" href="https://res.cloudinary.com" />
     <link rel="preconnect" href="https://images.unsplash.com" />
     <link rel="preconnect" href="https://gobro-api.onrender.com" />
+    <link rel="preconnect" href="https://i1-c.pinimg.com" />
+    <!-- LCP: preload the homepage hero so it starts downloading during HTML parse,
+         before the JS bundle. Must match the <img> src in Hero.tsx (default hero). -->
+    <link rel="preload" as="image" fetchpriority="high"
+      href="https://i1-c.pinimg.com/1200x/0b/e5/5f/0be55f42f18168dfc304f2985cf03f94.jpg" />
     <!-- Fonts loaded here (not via CSS @import) so the browser discovers them
          during HTML parse instead of after the CSS bundle downloads. -->
     <link

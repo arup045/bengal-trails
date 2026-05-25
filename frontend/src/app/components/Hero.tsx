@@ -39,10 +39,18 @@ export function Hero() {
   return (
     <section className="relative min-h-[92vh] sm:min-h-[88vh] flex flex-col overflow-hidden">
 
-      {/* Layer 1 — Hero photo from CMS */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('${hero.backgroundImage}')` }}
+      {/* Layer 1 — Hero photo from CMS.
+          Rendered as an <img> (not a CSS background) with fetchPriority="high" +
+          eager loading so it's the LCP element and paints ASAP. It's also
+          preloaded in index.html, so the fetch starts before the JS bundle. */}
+      <img
+        src={hero.backgroundImage}
+        alt="Scenic landscape of West Bengal"
+        // @ts-ignore — fetchPriority supported by React 18.3+; DOM types may lag
+        fetchPriority="high"
+        loading="eager"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover object-center"
       />
       {/* Layer 2 — Very subtle dark scrim at top only so nav/text stays readable */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent" />

@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ArrowLeft, MapPin, Navigation, Compass, Sparkles, Star, Clock, Heart, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { API_BASE } from '../utils/api';
 import { getDistrict } from '../data/districts';
 import { getDistrictContent, type DistrictContent } from '../data/districtContent';
 import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { navigate } from '../utils/navigation';
+import { usePlaceImages } from '../lib/queries';
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -35,16 +35,10 @@ export function SpotDetailPage({ path }: { path: string }) {
   const district = useMemo(() => getDistrict(districtSlug), [districtSlug]);
   const content = useMemo(() => getDistrictContent(districtSlug), [districtSlug]);
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistSync();
-  const [items, setItems] = useState<Record<string, ItemMeta>>({});
-
-  useEffect(() => {
-    let alive = true;
-    fetch(`${API_BASE}/place-images/${districtSlug}`)
-      .then((r) => (r.ok ? r.json() : { items: {} }))
-      .then((d) => { if (alive) setItems(d.items || {}); })
-      .catch(() => {});
-    return () => { alive = false; };
-  }, [districtSlug]);
+  // Cached via React Query — shared with DistrictDetailPage, so navigating
+  // district ↔ spot reuses the same data instead of refetching.
+  const { data: placeImageData } = usePlaceImages(districtSlug);
+  const items: Record<string, ItemMeta> = placeImageData?.items || {};
 
   // Resolve the real item name from its slug within the section's list.
   const list: string[] = (content && (content as DistrictContent)[section as keyof DistrictContent] as string[]) || [];

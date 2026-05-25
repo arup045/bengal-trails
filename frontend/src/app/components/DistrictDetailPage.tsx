@@ -7,6 +7,7 @@ import { getDistrict, placesForDistrict } from '../data/districts';
 import { getDistrictContent } from '../data/districtContent';
 import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
+import { usePlaceImages } from '../lib/queries';
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -22,20 +23,14 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistSync();
 
   const [aiQuery, setAiQuery] = useState('');
-  const [items, setItems] = useState<Record<string, { image?: string; type?: string; rating?: number; hours?: string }>>({});
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [faqPoweredByAI, setFaqPoweredByAI] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   // Per-item admin-set details (image, type, rating, hours), keyed by item name.
-  useEffect(() => {
-    let alive = true;
-    fetch(`${API_BASE}/place-images/${slug}`)
-      .then((r) => (r.ok ? r.json() : { items: {} }))
-      .then((d) => { if (alive) setItems(d.items || {}); })
-      .catch(() => {});
-    return () => { alive = false; };
-  }, [slug]);
+  // Cached via React Query so district ↔ spot navigation doesn't refetch.
+  const { data: placeImageData } = usePlaceImages(slug);
+  const items: Record<string, { image?: string; type?: string; rating?: number; hours?: string }> = placeImageData?.items || {};
 
   const meta = (name: string) => items[name] || {};
 

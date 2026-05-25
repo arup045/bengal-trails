@@ -52,6 +52,22 @@ export function useSuggestions(query: string) {
   });
 }
 
+// ── Per-district item images/details (admin-uploaded) ──────────────────────────
+// Shared by DistrictDetailPage and SpotDetailPage so navigating district ↔ spot
+// (and back) reuses the cache instead of refetching the same map every time.
+export function usePlaceImages(districtSlug: string) {
+  return useQuery({
+    queryKey: ['place-images', districtSlug],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/place-images/${districtSlug}`);
+      if (!res.ok) return { items: {}, images: {} };
+      return res.json();
+    },
+    enabled:   !!districtSlug,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 // ── Reviews for a destination ─────────────────────────────────────────────────
 export function useReviews(slug: string) {
   return useQuery({
