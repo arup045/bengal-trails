@@ -26,6 +26,11 @@ export function ExplorePage() {
   const [userLoc, setUserLoc] = useState<LocationCoords | null>(null);
   const [locLoading, setLocLoading] = useState(false);
   const [view, setView] = useState<'grid' | 'map'>('grid');
+  // Place-level filters (beyond region).
+  const [category, setCategory] = useState('all');
+  const [minRating, setMinRating] = useState(0);
+  const [budget, setBudget] = useState<'all' | '$' | '$$' | '$$$'>('all');
+  const [kidFriendly, setKidFriendly] = useState(false);
 
   // "Near me": geolocate (browser API — free, no map key) then sort by distance.
   const findNearMe = async () => {
@@ -60,18 +65,44 @@ export function ExplorePage() {
 
   const q = query.trim().toLowerCase();
 
-  // Matching individual places (so searching "Victoria Memorial" surfaces the
-  // place itself, not just its district). placesData is already loaded via districts.ts.
-  const matchingPlaces = useMemo(() => {
-    if (q.length < 2) return [];
-    return placesData
-      .filter((p: any) =>
-        p.title?.toLowerCase().includes(q) ||
-        p.excerpt?.toLowerCase().includes(q) ||
-        p.district?.toLowerCase().includes(q) ||
-        p.region?.toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [q]);
+  // Category list derived from the real data.
+  const placeCategories = useMemo(() => {
+    const set = new Set<string>();
+    placesData.forEach((p: any) => p.category && set.add(p.category));
+    return Array.from(set).sort();
+  }, []);
+
+  const priceBand = (priceFrom?: string): '$' | '$$' | '$$$' => {
+    const n = parseInt(String(priceFrom || '').replace(/[^0-9]/g, ''), 10) || 0;
+    if (n <= 1500) return '$';
+    if (n <= 4000) return '$$';
+    return '$$$';
+  };
+  const isKidFriendly = (p: any) => {
+    const hay = `${(p.tags || []).join(' ')} ${p.category || ''} ${p.excerpt || ''}`.toLowerCase();
+    return /family|kid|child|zoo|park|beach|science|amusement/.test(hay);
+  };
+
+  const filtersActive = q.length >= 2 || category !== 'all' || minRating > 0 || budget !== 'all' || kidFriendly;
+
+  // Unified place results: text + category + rating + budget + kid-friendly.
+  const placeResults = useMemo(() => {
+    if (!filtersActive) return [];
+    return placesData.filter((p: any) => {
+      if (q.length >= 2) {
+        const hay = `${p.title} ${p.excerpt} ${p.district} ${p.region}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (category !== 'all' && p.category !== category) return false;
+      if (minRating > 0 && (Number(p.rating) || 0) < minRating) return false;
+      if (budget !== 'all' && priceBand(p.priceFrom) !== budget) return false;
+      if (kidFriendly && !isKidFriendly(p)) return false;
+      return true;
+    }).slice(0, 24);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, category, minRating, budget, kidFriendly, filtersActive]);
+
+  const clearFilters = () => { setCategory('all'); setMinRating(0); setBudget('all'); setKidFriendly(false); setQuery(''); };
 
   const filtered = useMemo(() => {
     let list: Array<DistrictWithMeta & { _distance?: number }> = districts.filter((d) =>
@@ -167,57 +198,102 @@ export function ExplorePage() {
         </div>
       </div>
 
-      {/* ── Matching places (when searching) ───────────────────────────────── */}
-      {q.length >= 2 && matchingPlaces.length > 0 && (
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-10">
-          <div className="flex items-center gap-2 mb-4 text-slate-700 font-poppins text-sm font-semibold">
-            <Search className="w-4 h-4 text-purple-600" />
-            Places matching “{query}”
-            <span className="font-normal text-gray-400">({matchingPlaces.length})</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {matchingPlaces.map((p: any) => (
-              <a key={p.slug} href={`/explore/${p.slug}`}
-                className="group flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-2.5">
-                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-100">
-                  <ImageWithFallback src={p.heroImage?.url || ''} alt={p.title} optimizeWidth={160} className="w-full h-full object-cover" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-poppins text-sm font-semibold text-slate-900 truncate">{p.title}</p>
-                  <p className="font-poppins text-xs text-gray-500 truncate flex items-center gap-1"><MapPin className="w-3 h-3" />{p.district || p.region}</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all shrink-0" />
-              </a>
-            ))}
+      {/* ── Place filters (category / rating / budget / kid-friendly) ──────── */}
+      {view === 'grid' && (
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 mt-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <select value={category} onChange={(e) => setCategory(e.target.value)}
+              className="px-4 py-2 rounded-full bg-white border border-gray-200 font-poppins text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
+              <option value="all">All categories</option>
+              {placeCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+
+            <div className="flex items-center bg-white border border-gray-200 rounded-full p-0.5" role="group" aria-label="Minimum rating">
+              {[0, 3, 4, 4.5].map((r) => (
+                <button key={r} onClick={() => setMinRating(r)}
+                  className={`px-3 py-1.5 rounded-full font-poppins text-xs font-medium transition ${minRating === r ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  {r === 0 ? 'Any ★' : `${r}+ ★`}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center bg-white border border-gray-200 rounded-full p-0.5" role="group" aria-label="Budget">
+              {([['all', 'Any ₹'], ['$', '₹'], ['$$', '₹₹'], ['$$$', '₹₹₹']] as const).map(([k, l]) => (
+                <button key={k} onClick={() => setBudget(k)}
+                  className={`px-3 py-1.5 rounded-full font-poppins text-xs font-medium transition ${budget === k ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+
+            <button onClick={() => setKidFriendly((v) => !v)}
+              className={`px-4 py-2 rounded-full font-poppins text-sm font-medium transition ${kidFriendly ? 'bg-emerald-500 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'}`}>
+              👨‍👩‍👧 Kid-friendly
+            </button>
+
+            {filtersActive && (
+              <button onClick={clearFilters} className="ml-1 font-poppins text-sm font-medium text-purple-600 hover:text-purple-700 underline-offset-2 hover:underline">
+                Clear filters
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* ── District grid ──────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 py-10">
-        <div className="flex items-center gap-2 mb-6 text-gray-500 font-poppins text-sm">
-          <MapPin className="w-4 h-4 text-purple-600" />
-          {filtered.length} district{filtered.length !== 1 ? 's' : ''}{region !== 'All' ? ` in ${region}` : ''}
-        </div>
-
+      {/* ── Results: map / filtered places / district grid ─────────────────── */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 py-8">
         {view === 'map' ? (
           <Suspense fallback={<div className="h-[70vh] min-h-[420px] rounded-3xl bg-gray-100 animate-pulse flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-400 animate-spin" /></div>}>
             <DistrictsMap userLoc={userLoc} />
           </Suspense>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 font-poppins">No districts match your search.</div>
+        ) : filtersActive ? (
+          <>
+            <div className="flex items-center gap-2 mb-6 text-gray-500 font-poppins text-sm">
+              <Search className="w-4 h-4 text-purple-600" />
+              {placeResults.length} place{placeResults.length !== 1 ? 's' : ''} found
+            </div>
+            {placeResults.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-gray-400 font-poppins mb-4">No places match these filters.</p>
+                <button onClick={clearFilters} className="px-5 py-2.5 bg-purple-600 text-white rounded-full font-poppins text-sm font-medium hover:bg-purple-700">Clear filters</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {placeResults.map((p: any) => (
+                  <a key={p.slug} href={`/explore/${p.slug}`}
+                    className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                    <div className="relative h-44 overflow-hidden">
+                      <ImageWithFallback src={p.heroImage?.url || ''} alt={p.title} optimizeWidth={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      {p.category && <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-purple-700 text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full">{p.category}</span>}
+                      {Number(p.rating) > 0 && <span className="absolute top-3 right-3 bg-black/55 text-white text-[11px] font-poppins font-semibold px-2 py-0.5 rounded-full">★ {Number(p.rating).toFixed(1)}</span>}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-poppins text-base font-semibold text-slate-900 leading-tight truncate">{p.title}</h3>
+                      <p className="font-poppins text-xs text-gray-500 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{p.district || p.region}{p.priceFrom ? ` · from ${p.priceFrom}` : ''}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+          </>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filtered.map((d) => (
-              <DistrictCard
-                key={d.slug}
-                district={d}
-                saved={isInWishlist(wishlistSlug(d))}
-                onToggleSave={() => onToggleSave(d)}
-                distanceKm={userLoc ? d._distance : undefined}
-              />
-            ))}
-          </div>
+          <>
+            <div className="flex items-center gap-2 mb-6 text-gray-500 font-poppins text-sm">
+              <MapPin className="w-4 h-4 text-purple-600" />
+              {filtered.length} district{filtered.length !== 1 ? 's' : ''}{region !== 'All' ? ` in ${region}` : ''}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filtered.map((d) => (
+                <DistrictCard
+                  key={d.slug}
+                  district={d}
+                  saved={isInWishlist(wishlistSlug(d))}
+                  onToggleSave={() => onToggleSave(d)}
+                  distanceKm={userLoc ? d._distance : undefined}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
