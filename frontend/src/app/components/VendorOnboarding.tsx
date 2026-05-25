@@ -230,7 +230,7 @@ export function VendorOnboarding() {
             <p className="font-poppins text-gray-500 mb-6 max-w-sm mx-auto">
               We'll review your application within 48 hours and send you an email with the next steps.
             </p>
-            <a href="#/" className="inline-block px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-poppins text-sm font-medium rounded-xl transition-colors">
+            <a href="/" className="inline-block px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-poppins text-sm font-medium rounded-xl transition-colors">
               Back to Home
             </a>
           </motion.div>

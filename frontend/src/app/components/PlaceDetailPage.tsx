@@ -107,7 +107,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
         <div className="text-center">
           <h2 className="text-3xl mb-4 font-poppins">Place not found</h2>
           <p className="text-gray-600 mb-4">Sorry, we couldn't find that destination.</p>
-          <a href="#/explore" className="text-purple-600 hover:underline text-lg">← Back to Explore</a>
+          <a href="/explore" className="text-purple-600 hover:underline text-lg">← Back to Explore</a>
         </div>
       </div>
     );
@@ -163,9 +163,9 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               {/* Breadcrumb */}
               <div className="flex items-center gap-2 text-white/80 text-sm font-poppins mb-4 flex-wrap">
-                <a href="#/explore" className="hover:text-white">Explore</a>
+                <a href="/explore" className="hover:text-white">Explore</a>
                 <ChevronRight className="w-4 h-4" />
-                <a href={`#/explore/district/${districtSlug}`} className="hover:text-white">{place.district}</a>
+                <a href={`/explore/district/${districtSlug}`} className="hover:text-white">{place.district}</a>
                 <ChevronRight className="w-4 h-4" />
                 <span className="text-white">{place.title}</span>
               </div>
@@ -294,7 +294,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                   <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5 mt-8">More in {place.region}</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {nearbyPlaces.map((np) => (
-                      <a key={np.slug} href={`#/explore/${np.slug}`} className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                      <a key={np.slug} href={`/explore/${np.slug}`} className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
                         <ImageWithFallback src={np.heroImage.url} alt={np.heroImage.alt} className="w-full h-44 object-cover" />
                         <div className="p-4">
                           <h3 className="font-poppins text-lg font-semibold text-slate-900 mb-1">{np.title}</h3>

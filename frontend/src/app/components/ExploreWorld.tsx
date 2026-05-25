@@ -146,7 +146,7 @@ export function ExploreWorld() {
             {filtered.slice(0, 24).map((d) => {
               const hasReviews = d.rating > 0 && d.reviews > 0;
               return (
-                <a key={d.slug} href={`#/explore/${d.slug}`}
+                <a key={d.slug} href={`/explore/${d.slug}`}
                   className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   {/* Image */}
                   <div className="relative h-44 overflow-hidden bg-gray-100">

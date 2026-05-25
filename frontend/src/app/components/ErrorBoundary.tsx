@@ -114,7 +114,7 @@ export function NotFoundPage() {
 
         <div className="flex gap-3">
           <a
-            href="#/"
+            href="/"
             className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
           >
             <Home className="w-4 h-4" />
@@ -122,7 +122,7 @@ export function NotFoundPage() {
           </a>
           
           <a
-            href="#/explore"
+            href="/explore"
             className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Explore Destinations

@@ -699,7 +699,7 @@ export function FoodGuidePage() {
                           ))}
                         </div>
                         <a
-                          href="#/food-map"
+                          href="/food-map"
                           className="mt-3 inline-flex items-center gap-1 text-xs font-poppins font-medium text-purple-600 hover:text-purple-700 transition"
                         >
                           Find restaurants on map <ChevronRight className="w-3 h-3" />
@@ -726,7 +726,7 @@ export function FoodGuidePage() {
                 </h2>
               </div>
               <a
-                href="#/explore"
+                href="/explore"
                 className="hidden sm:inline-flex items-center gap-1.5 text-sm font-poppins font-medium text-purple-600 hover:text-purple-700"
               >
                 Explore destinations <ChevronRight className="w-4 h-4" />
@@ -891,7 +891,7 @@ export function FoodGuidePage() {
             </div>
             <div className="flex md:justify-end">
               <a
-                href="#/food-map"
+                href="/food-map"
                 className="inline-flex items-center gap-2 bg-white text-purple-700 hover:bg-amber-100 px-6 py-3.5 rounded-full font-poppins font-semibold text-sm transition shadow-lg"
               >
                 Open the food map <ExternalLink className="w-4 h-4" />
@@ -917,13 +917,13 @@ export function FoodGuidePage() {
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <a
-              href="#/planner"
+              href="/planner"
               className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-7 py-3.5 rounded-full font-poppins font-semibold transition shadow-sm hover:shadow-md"
             >
               Plan a food trip <ArrowRight className="w-4 h-4" />
             </a>
             <a
-              href="#/itinerary-builder"
+              href="/itinerary-builder"
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white ring-1 ring-white/20 px-7 py-3.5 rounded-full font-poppins font-semibold transition"
             >
               AI itinerary builder

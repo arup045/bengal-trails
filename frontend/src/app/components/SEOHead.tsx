@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { SITE_URL } from '../utils/siteConfig';
 
 interface SEOProps {
   title?: string;
@@ -16,7 +17,7 @@ const DEFAULT_SEO = {
   description: 'Explore the authentic beauty of West Bengal with Bengal Trails. Discover 197+ destinations, plan trips, find Bengali cuisine, and experience culture. Your trusted Bengal travel companion.',
   keywords: 'West Bengal tourism, Bengal travel, Darjeeling, Sundarbans, Kolkata tourism, Bengali culture, India travel, heritage tourism, tea gardens, Bengali food, Durga Puja, travel planner',
   image: 'https://images.unsplash.com/photo-1697817665440-f988c6d5080f?w=1200',
-  url: typeof window !== 'undefined' ? window.location.href : 'https://bengaltrails.netlify.app',
+  url: typeof window !== 'undefined' ? window.location.href : SITE_URL,
   type: 'website' as const,
 };
 
@@ -162,8 +163,8 @@ export const getOrganizationSchema = () => ({
   '@type': 'TravelAgency',
   name: 'Bengal Trails',
   alternateName: 'Bengal Trails Travel',
-  url: 'https://bengaltrails.netlify.app',
-  logo: 'https://bengaltrails.netlify.app/logo.png',
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
   description: 'West Bengal\'s premier travel companion offering authentic tourism experiences, trip planning, and cultural insights.',
   address: {
     '@type': 'PostalAddress',
@@ -191,7 +192,7 @@ export const getTouristAttractionSchema = (place: any) => ({
   name: place.title,
   description: place.description,
   image: place.image,
-  url: `https://bengaltrails.netlify.app/#/explore/${place.slug}`,
+  url: `${SITE_URL}/explore/${place.slug}`,
   address: {
     '@type': 'PostalAddress',
     addressLocality: place.district,
@@ -259,10 +260,10 @@ export const getWebsiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Bengal Trails',
-  url: 'https://bengaltrails.netlify.app',
+  url: SITE_URL,
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://bengaltrails.netlify.app/#/explore?search={search_term_string}',
+    target: `${SITE_URL}/explore?search={search_term_string}`,
     'query-input': 'required name=search_term_string',
   },
 });

@@ -104,12 +104,12 @@ export function Hero() {
           <span className="font-poppins text-xs font-medium text-white/40 uppercase tracking-widest self-center mr-1">
             Trending
           </span>
-          <TrendingChip icon={<Mountain className="w-3.5 h-3.5 text-amber-300/80" />}  label="Darjeeling"        href="#/explore/darjeeling" />
-          <TrendingChip icon={<TrendingUp className="w-3.5 h-3.5 text-amber-300/80" />} label="Sundarbans"       href="#/explore/sundarbans-national-park" />
-          <TrendingChip icon={<Camera className="w-3.5 h-3.5 text-amber-300/80" />}     label="Victoria Memorial" href="#/explore/victoria-memorial-kolkata" />
-          <TrendingChip icon={<Utensils className="w-3.5 h-3.5 text-amber-300/80" />}   label="Bengali Food"     href="#/food" />
-          <TrendingChip icon={<Star className="w-3.5 h-3.5 text-amber-300/80" />}       label="Durga Puja"       href="#/festivals" />
-          <TrendingChip icon={<Car className="w-3.5 h-3.5 text-amber-300/80" />}        label="Plan My Trip"     href="#/planner" />
+          <TrendingChip icon={<Mountain className="w-3.5 h-3.5 text-amber-300/80" />}  label="Darjeeling"        href="/explore/darjeeling" />
+          <TrendingChip icon={<TrendingUp className="w-3.5 h-3.5 text-amber-300/80" />} label="Sundarbans"       href="/explore/sundarbans-national-park" />
+          <TrendingChip icon={<Camera className="w-3.5 h-3.5 text-amber-300/80" />}     label="Victoria Memorial" href="/explore/victoria-memorial-kolkata" />
+          <TrendingChip icon={<Utensils className="w-3.5 h-3.5 text-amber-300/80" />}   label="Bengali Food"     href="/food" />
+          <TrendingChip icon={<Star className="w-3.5 h-3.5 text-amber-300/80" />}       label="Durga Puja"       href="/festivals" />
+          <TrendingChip icon={<Car className="w-3.5 h-3.5 text-amber-300/80" />}        label="Plan My Trip"     href="/planner" />
         </div>
       </div>
     </section>

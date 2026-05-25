@@ -194,7 +194,7 @@ export function InteractiveMapPage() {
                 {allDestinations[selectedRegion]?.map((place) => (
                   <a
                     key={place.slug}
-                    href={`#/explore/${place.slug}`}
+                    href={`/explore/${place.slug}`}
                     className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1"
                   >
                     <div className="relative h-48 overflow-hidden">
@@ -280,7 +280,7 @@ export function InteractiveMapPage() {
                     {destinations.slice(0, 4).map((place) => (
                       <a
                         key={place.slug}
-                        href={`#/explore/${place.slug}`}
+                        href={`/explore/${place.slug}`}
                         className="group"
                       >
                         <div className="relative h-32 rounded-xl overflow-hidden mb-2">

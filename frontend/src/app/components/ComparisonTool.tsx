@@ -206,7 +206,7 @@ export function ComparisonTool() {
                           />
                         </div>
                         <a
-                          href={`#/place/${place.slug}`}
+                          href={`/place/${place.slug}`}
                           className="mt-4 flex items-center justify-center gap-2 w-full px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
                         >
                           View Details

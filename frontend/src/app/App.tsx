@@ -29,6 +29,7 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { installGlobalErrorHandlers } from './utils/errorReporter';
 import { setPageMeta, PAGE_META } from './utils/seo';
 import { SITE_URL } from './utils/siteConfig';
+import { toPath, isAuthFragment, navigate } from './utils/navigation';
 
 
 installGlobalErrorHandlers();
@@ -258,10 +259,10 @@ export default function App() {
         }),
         getFaqSchema(getDefaultPlaceFaqs(currentPlace)),
         getBreadcrumbSchema([
-          { name: 'Home',    url: `${SITE_URL}/#/` },
-          { name: 'Explore', url: `${SITE_URL}/#/explore` },
-          { name: currentPlace.region || 'West Bengal', url: `${SITE_URL}/#/explore` },
-          { name: currentPlace.title, url: `${SITE_URL}/#/explore/${currentPlace.slug}` },
+          { name: 'Home',    url: `${SITE_URL}/` },
+          { name: 'Explore', url: `${SITE_URL}/explore` },
+          { name: currentPlace.region || 'West Bengal', url: `${SITE_URL}/explore` },
+          { name: currentPlace.title, url: `${SITE_URL}/explore/${currentPlace.slug}` },
         ]),
       );
     }
@@ -278,7 +279,7 @@ export default function App() {
           title: `${place.title} – ${place.region} | Bengal Trails`,
           description: place.excerpt || place.description?.slice(0, 160) || '',
           image: place.heroImage?.url,
-          url: `${SITE_URL}/#/explore/${place.slug}`,
+          url: `${SITE_URL}/explore/${place.slug}`,
         };
       }
     }
@@ -327,8 +328,29 @@ export default function App() {
   // `as any` casts (tours, blog) which silently bypassed type checking.
   useEffect(() => {
     const handleRouteChange = () => startTransition(() => {
-      const hash = window.location.hash.slice(1);
-      const r = resolveRoute(hash);
+      const rawHash = window.location.hash;
+
+      // Auth flows carry tokens/params in the URL fragment — route by the hash and
+      // let those pages read the fragment themselves (never migrate to a path).
+      if (isAuthFragment(rawHash)) {
+        let r;
+        if (rawHash.includes('access_token') && rawHash.includes('type=recovery')) r = resolveRoute('/reset-password');
+        else if (rawHash.includes('access_token') && rawHash.includes('type=signup')) r = resolveRoute('/verify-email');
+        else if (rawHash.startsWith('#/reset-password')) r = resolveRoute('/reset-password');
+        else if (rawHash.startsWith('#/verify-email'))   r = resolveRoute('/verify-email');
+        else r = resolveRoute('/oauth-success');
+        setCurrentPage(r.id);
+        return;
+      }
+
+      // Backward-compat: rewrite a legacy "#/path" link to a real path in place,
+      // so old shared/bookmarked links keep working under path routing.
+      if (rawHash.startsWith('#/')) {
+        window.history.replaceState({}, '', toPath(rawHash));
+      }
+
+      const path = window.location.pathname;
+      const r = resolveRoute(path);
       setCurrentPage(r.id);
       if ((r.id === 'place' || r.id === 'district') && r.slug) setCurrentSlug(r.slug);
       // oauth-success handles its own scroll behavior; all other pages reset.
@@ -337,14 +359,19 @@ export default function App() {
       }
       // GA pageview — only fire for pages with a public-facing title.
       if (r.title) {
-        const gaPath = hash ? `/#${hash}` : '/';
-        trackPageView(gaPath, r.title);
+        trackPageView(path || '/', r.title);
       }
     });
 
     handleRouteChange();
+    // popstate: navigate() pushes + back/forward.  hashchange: the compat bridge
+    // (any remaining `location.hash = …` assignment) + auth fragments.
+    window.addEventListener('popstate', handleRouteChange);
     window.addEventListener('hashchange', handleRouteChange);
-    return () => window.removeEventListener('hashchange', handleRouteChange);
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener('hashchange', handleRouteChange);
+    };
   }, []);
 
   // Update browser tab title on page change
@@ -362,15 +389,22 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Intercept link clicks for client-side routing
+  // Intercept link clicks for client-side (path) routing. Handles both new
+  // "/path" links and legacy "#/path" links; leaves external links, in-page
+  // anchors (#section), new-tab clicks, and modified clicks alone.
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a');
-      if (anchor && anchor.href.includes('#/')) {
-        e.preventDefault();
-        window.location.hash = anchor.getAttribute('href')?.replace(/^#/, '') || '';
-      }
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const anchor = (e.target as HTMLElement).closest('a');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (!href) return;
+      if (anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+      const isHashRoute    = href.startsWith('#/');
+      const isInternalPath = href.startsWith('/') && !href.startsWith('//');
+      if (!isHashRoute && !isInternalPath) return;
+      e.preventDefault();
+      navigate(href);
     };
 
     document.addEventListener('click', handleClick);

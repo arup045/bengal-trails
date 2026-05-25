@@ -47,7 +47,7 @@ export function RecentlyViewed() {
           {recentPlaces.map((place, index) => (
             <motion.a
               key={place.slug}
-              href={`#/explore/${place.slug}`}
+              href={`/explore/${place.slug}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

@@ -176,7 +176,7 @@ export function ItineraryBuilder() {
                       <p className="font-poppins text-sm text-gray-500 mt-3 mb-4">{day.highlights}</p>
                       <div className="space-y-3 mb-4">
                         {day.destinations?.map((d, j) => (
-                          <a key={j} href={`#/explore/${d.slug}`}
+                          <a key={j} href={`/explore/${d.slug}`}
                             className="flex items-start gap-3 p-3 rounded-xl hover:bg-purple-50 transition-colors group">
                             <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
                               <MapPin className="w-4 h-4 text-purple-600" />

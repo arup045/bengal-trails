@@ -5,7 +5,7 @@ import { API_BASE } from '../utils/api';
 
 const PlaceCardMemo = memo(({ place }: { place: { name: string; slug: string; image: string } }) => (
   <a 
-    href={`#/explore/${place.slug}`}
+    href={`/explore/${place.slug}`}
     className="group cursor-pointer block"
   >
     <div className="relative w-48 h-64 overflow-hidden rounded-[100px] shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">

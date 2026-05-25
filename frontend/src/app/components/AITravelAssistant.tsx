@@ -364,7 +364,7 @@ export const AITravelAssistant: React.FC = () => {
                         {msg.destinations && msg.destinations.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {msg.destinations.map((dest) => (
-                              <a key={dest.slug} href={`#/explore/${dest.slug}`}
+                              <a key={dest.slug} href={`/explore/${dest.slug}`}
                                 className="flex items-center gap-1 text-xs bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-2.5 py-1 hover:bg-purple-100 transition-colors font-medium">
                                 <MapPin className="w-3 h-3" /> {dest.name}
                               </a>

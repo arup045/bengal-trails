@@ -7,7 +7,7 @@ export function ToolsSection() {
       icon: Calendar,
       title: 'Itinerary Builder',
       description: 'Create your perfect day-by-day trip plan with drag-and-drop ease',
-      href: '#/itinerary',
+      href: '/itinerary',
       gradient: 'from-purple-500 to-pink-500',
       iconColor: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -16,7 +16,7 @@ export function ToolsSection() {
       icon: ArrowRightLeft,
       title: 'Compare Destinations',
       description: 'Side-by-side comparison of up to 3 destinations to help you decide',
-      href: '#/compare',
+      href: '/compare',
       gradient: 'from-blue-500 to-cyan-500',
       iconColor: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -25,7 +25,7 @@ export function ToolsSection() {
       icon: DollarSign,
       title: 'Budget Estimator',
       description: 'Calculate trip costs with detailed breakdown for smart planning',
-      href: '#/budget',
+      href: '/budget',
       gradient: 'from-green-500 to-emerald-500',
       iconColor: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -34,7 +34,7 @@ export function ToolsSection() {
       icon: CalendarClock,
       title: 'Festival Calendar',
       description: 'Discover festivals and events happening throughout the year',
-      href: '#/festivals',
+      href: '/festivals',
       gradient: 'from-orange-500 to-red-500',
       iconColor: 'text-orange-600',
       bgColor: 'bg-orange-50',
@@ -43,7 +43,7 @@ export function ToolsSection() {
       icon: Star,
       title: 'Travel Advisor',
       description: 'Take a quiz and get personalized destination recommendations',
-      href: '#/advisor',
+      href: '/advisor',
       gradient: 'from-purple-500 to-indigo-500',
       iconColor: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -52,7 +52,7 @@ export function ToolsSection() {
       icon: MessageSquare,
       title: 'Food Explorer',
       description: 'Discover the best street food and restaurants across West Bengal',
-      href: '#/food-map',
+      href: '/food-map',
       gradient: 'from-orange-500 to-red-500',
       iconColor: 'text-orange-600',
       bgColor: 'bg-orange-50',
@@ -138,13 +138,13 @@ export function ToolsSection() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
-              href="#/tools"
+              href="/tools"
               className="inline-block bg-white border-2 border-purple-600 text-purple-600 px-8 py-4 rounded-full font-semibold hover:bg-purple-50 transition-all"
             >
               View All Tools
             </a>
             <a
-              href="#/explore"
+              href="/explore"
               className="inline-block bg-gradient-to-r from-purple-600 to-orange-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-lg transition-all"
             >
               Start Exploring

@@ -34,14 +34,14 @@ export function NotFoundPage() {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
-            href="#/"
+            href="/"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#7d1f2e] text-white hover:bg-[#5a1621] transition-colors"
           >
             <Home className="w-4 h-4" />
             Go home
           </a>
           <a
-            href="#/explore"
+            href="/explore"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 transition-colors"
           >
             <Search className="w-4 h-4" />

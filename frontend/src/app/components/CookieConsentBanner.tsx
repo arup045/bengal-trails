@@ -49,7 +49,7 @@ export function CookieConsentBanner() {
               <h3 className="text-sm font-semibold text-gray-900 mb-1">We use cookies</h3>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Essential cookies keep you signed in. Analytics cookies help us improve Bengal Trails. Read our{' '}
-                <a href="#/cookies" className="text-[#7d1f2e] underline">
+                <a href="/cookies" className="text-[#7d1f2e] underline">
                   Cookie Policy
                 </a>
                 .

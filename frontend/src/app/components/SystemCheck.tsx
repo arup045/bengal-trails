@@ -197,7 +197,7 @@ export function SystemCheck() {
               <h1 className="text-4xl mb-2 text-purple-600">Bengal Trails System Check</h1>
               <p className="text-gray-600">Comprehensive website functionality test</p>
             </div>
-            <a href="#/" className="text-purple-600 hover:text-purple-700">← Back to Home</a>
+            <a href="/" className="text-purple-600 hover:text-purple-700">← Back to Home</a>
           </div>
 
           {/* Score */}
@@ -285,13 +285,13 @@ export function SystemCheck() {
         {/* Action Buttons */}
         <div className="mt-6 flex gap-4">
           <a 
-            href="#/explore" 
+            href="/explore" 
             className="flex-1 bg-purple-600 text-white text-center px-6 py-3 rounded-xl hover:bg-purple-700 transition-colors"
           >
             Go to Explore Page
           </a>
           <a 
-            href="#/debug" 
+            href="/debug" 
             className="flex-1 bg-gray-200 text-gray-800 text-center px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors"
           >
             View Data Debug

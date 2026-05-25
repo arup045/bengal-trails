@@ -72,22 +72,22 @@ export function Footer() {
 
   const footerLinks = {
     destinations: [
-      { name: 'Darjeeling', href: '#/explore/darjeeling' },
-      { name: 'Sundarbans', href: '#/explore/sundarbans-national-park' },
-      { name: 'Victoria Memorial', href: '#/explore/victoria-memorial-kolkata' },
-      { name: 'All Destinations', href: '#/explore' },
+      { name: 'Darjeeling', href: '/explore/darjeeling' },
+      { name: 'Sundarbans', href: '/explore/sundarbans-national-park' },
+      { name: 'Victoria Memorial', href: '/explore/victoria-memorial-kolkata' },
+      { name: 'All Destinations', href: '/explore' },
     ],
     tools: [
-      { name: 'Itinerary Builder', href: '#/itinerary' },
-      { name: 'Compare Destinations', href: '#/compare' },
-      { name: 'Budget Estimator', href: '#/budget' },
-      { name: 'Festival Calendar', href: '#/festivals' },
+      { name: 'Itinerary Builder', href: '/itinerary' },
+      { name: 'Compare Destinations', href: '/compare' },
+      { name: 'Budget Estimator', href: '/budget' },
+      { name: 'Festival Calendar', href: '/festivals' },
     ],
     support: [
-      { name: 'Interactive Map', href: '#/map' },
-      { name: 'Bengali Phrasebook', href: '#/phrasebook' },
-      { name: 'Food Guide', href: '#/food' },
-      { name: 'Trip Planner', href: '#/planner' },
+      { name: 'Interactive Map', href: '/map' },
+      { name: 'Bengali Phrasebook', href: '/phrasebook' },
+      { name: 'Food Guide', href: '/food' },
+      { name: 'Trip Planner', href: '/planner' },
     ],
   };
 
@@ -147,11 +147,11 @@ export function Footer() {
                   <MapPin className="w-4 h-4 text-orange-400" />
                   <span className="text-sm">Kolkata, West Bengal, India</span>
                 </div>
-                <a href="#/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
+                <a href="/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
                   <Mail className="w-4 h-4 text-orange-400" />
                   <span className="text-sm">hello@bengaltrails.com</span>
                 </a>
-                <a href="#/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
+                <a href="/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
                   <Phone className="w-4 h-4 text-orange-400" />
                   <span className="text-sm">Contact us</span>
                 </a>
@@ -244,14 +244,14 @@ export function Footer() {
             <div>
               <h3 className="text-lg mb-4">Helpful Links</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#/planner" className="hover:text-white transition-colors">Trip Planner</a></li>
-                <li><a href="#/food" className="hover:text-white transition-colors">Food Guide</a></li>
-                <li><a href="#/map" className="hover:text-white transition-colors">Interactive Map</a></li>
-                <li><a href="#/phrasebook" className="hover:text-white transition-colors">Bengali Phrasebook</a></li>
-                <li><a href="#/emergency" className="hover:text-white transition-colors">Emergency Info</a></li>
-                <li><a href="#/partners" className="hover:text-white transition-colors">Our Partners</a></li>
-                <li><a href="#/vendor-onboarding" className="hover:text-white transition-colors">Become a Partner</a></li>
-                <li><a href="#/contact" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="/planner" className="hover:text-white transition-colors">Trip Planner</a></li>
+                <li><a href="/food" className="hover:text-white transition-colors">Food Guide</a></li>
+                <li><a href="/map" className="hover:text-white transition-colors">Interactive Map</a></li>
+                <li><a href="/phrasebook" className="hover:text-white transition-colors">Bengali Phrasebook</a></li>
+                <li><a href="/emergency" className="hover:text-white transition-colors">Emergency Info</a></li>
+                <li><a href="/partners" className="hover:text-white transition-colors">Our Partners</a></li>
+                <li><a href="/vendor-onboarding" className="hover:text-white transition-colors">Become a Partner</a></li>
+                <li><a href="/contact" className="hover:text-white transition-colors">Contact Us</a></li>
               </ul>
             </div>
           </motion.div>
@@ -352,11 +352,11 @@ export function Footer() {
             transition={{ delay: 0.1 }}
             className="flex flex-wrap justify-center gap-6 mt-6 text-sm"
           >
-            <a href="#/privacy" className="text-orange-200 hover:text-white transition-colors">Privacy Policy</a>
+            <a href="/privacy" className="text-orange-200 hover:text-white transition-colors">Privacy Policy</a>
             <span className="text-orange-500/50">•</span>
-            <a href="#/terms" className="text-orange-200 hover:text-white transition-colors">Terms of Service</a>
+            <a href="/terms" className="text-orange-200 hover:text-white transition-colors">Terms of Service</a>
             <span className="text-orange-500/50">•</span>
-            <a href="#/cookies" className="text-orange-200 hover:text-white transition-colors">Cookie Policy</a>
+            <a href="/cookies" className="text-orange-200 hover:text-white transition-colors">Cookie Policy</a>
           </motion.div>
         </div>
       </div>

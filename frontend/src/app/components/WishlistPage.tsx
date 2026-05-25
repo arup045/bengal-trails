@@ -86,7 +86,7 @@ export function WishlistPage() {
             </p>
             
             <a
-              href="#/explore"
+              href="/explore"
               className="inline-flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-purple-700 transition-all hover:scale-105 shadow-lg"
             >
               Explore Destinations
@@ -149,7 +149,7 @@ export function WishlistPage() {
             >
               {/* Image */}
               <div className="relative h-64 overflow-hidden">
-                <a href={`#/explore/${item.slug}`}>
+                <a href={`/explore/${item.slug}`}>
                   <img
                     src={item.image}
                     alt={item.title}
@@ -174,7 +174,7 @@ export function WishlistPage() {
 
               {/* Content */}
               <div className="p-6">
-                <a href={`#/explore/${item.slug}`}>
+                <a href={`/explore/${item.slug}`}>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2 hover:text-purple-600 transition-colors">
                     {item.title}
                   </h3>

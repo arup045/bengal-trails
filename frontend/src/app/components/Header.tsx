@@ -16,11 +16,11 @@ import {
 
 interface NavItem { label: string; href: string; }
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Home',      href: '#/'          },
-  { label: 'Explore',   href: '#/explore'   },
-  { label: 'Festivals', href: '#/festivals' },
-  { label: 'Food',      href: '#/food'      },
-  { label: 'About Us',  href: '#/about'     },
+  { label: 'Home',      href: '/'          },
+  { label: 'Explore',   href: '/explore'   },
+  { label: 'Festivals', href: '/festivals' },
+  { label: 'Food',      href: '/food'      },
+  { label: 'About Us',  href: '/about'     },
 ];
 
 export function Header() {
@@ -54,7 +54,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16 gap-6">
 
           {/* LOGO — Poppins 600 / 32px / tracking-normal */}
-          <a href="#/" className="shrink-0 flex items-center select-none" aria-label="Bengal Trails home">
+          <a href="/" className="shrink-0 flex items-center select-none" aria-label="Bengal Trails home">
             <span className="font-poppins text-[32px] font-semibold tracking-normal leading-none">
               <span className="text-slate-900">Bengal</span>
               <span className="text-purple-600"> Trails</span>
@@ -103,7 +103,7 @@ export function Header() {
 
             {/* Sign In (logged out) */}
             {!user && (
-              <a href="#/signin"
+              <a href="/signin"
                 className="hidden md:inline-block font-poppins text-sm font-medium text-slate-700 px-3.5 py-2 rounded-full hover:bg-gray-100 hover:text-slate-900 transition-colors duration-150">
                 Sign In
               </a>
@@ -136,10 +136,10 @@ export function Header() {
                         <p className="font-poppins text-xs font-normal text-gray-400 truncate mt-0.5">{user.email}</p>
                       </div>
                       {[
-                        { href: '#/profile',   icon: <User  className="w-4 h-4" />,  label: 'My Profile' },
-                        { href: '#/wishlist',  icon: <Heart className="w-4 h-4" />,  label: 'Wishlist'   },
-                        { href: '#/planner',   icon: <MapPin className="w-4 h-4" />, label: 'Plan a Trip'},
-                        { href: '#/about',     icon: <Users className="w-4 h-4" />,  label: 'About Us'   },
+                        { href: '/profile',   icon: <User  className="w-4 h-4" />,  label: 'My Profile' },
+                        { href: '/wishlist',  icon: <Heart className="w-4 h-4" />,  label: 'Wishlist'   },
+                        { href: '/planner',   icon: <MapPin className="w-4 h-4" />, label: 'Plan a Trip'},
+                        { href: '/about',     icon: <Users className="w-4 h-4" />,  label: 'About Us'   },
                       ].map(item => (
                         <a key={item.label} href={item.href} onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 font-poppins text-sm font-medium text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
@@ -147,7 +147,7 @@ export function Header() {
                         </a>
                       ))}
                       {isAdmin && (
-                        <a href="#/admin" onClick={() => setUserMenuOpen(false)}
+                        <a href="/admin" onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 font-poppins text-sm font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border-t border-gray-100 transition-colors">
                           <Shield className="w-4 h-4" /> Admin Dashboard
                         </a>
@@ -163,7 +163,7 @@ export function Header() {
             )}
 
             {/* CTA — Plan Trip — Poppins 500 / rounded-full */}
-            <a href="#/planner"
+            <a href="/planner"
               className="hidden sm:inline-flex items-center gap-1.5 font-poppins text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full transition-all duration-150 hover:shadow-md hover:shadow-purple-200 whitespace-nowrap">
               <MapPin className="w-3.5 h-3.5" />
               Plan Trip
@@ -205,7 +205,7 @@ export function Header() {
                       </div>
                     </div>
                     {isAdmin && (
-                      <a href="#/admin" onClick={() => setMenuOpen(false)}
+                      <a href="/admin" onClick={() => setMenuOpen(false)}
                         className="mt-2 flex items-center gap-2 px-3 py-2.5 font-poppins text-sm font-semibold text-purple-700 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
                         <Shield className="w-4 h-4" /> Admin Dashboard
                       </a>
@@ -213,7 +213,7 @@ export function Header() {
                   </div>
                 )}
                 <nav className="flex flex-col gap-0.5">
-                  {[...NAV_ITEMS, { label: 'Plan Trip', href: '#/planner' }].map(({ label, href }) => (
+                  {[...NAV_ITEMS, { label: 'Plan Trip', href: '/planner' }].map(({ label, href }) => (
                     <a key={label} href={href} onClick={() => setMenuOpen(false)}
                       className="font-poppins text-sm font-medium text-slate-800 px-3.5 py-2.5 rounded-xl hover:bg-gray-100 hover:text-slate-900 transition-colors duration-150">
                       {label}
@@ -222,11 +222,11 @@ export function Header() {
                   {user && (
                     <>
                       <div className="mt-4 mb-1.5 px-3.5 font-poppins text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Account</div>
-                      <a href="#/profile" onClick={() => setMenuOpen(false)}
+                      <a href="/profile" onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-3 px-3.5 py-2.5 font-poppins text-sm font-medium text-slate-700 hover:bg-gray-100 rounded-xl transition-colors">
                         <User className="w-4 h-4 text-purple-400" /> My Profile
                       </a>
-                      <a href="#/wishlist" onClick={() => setMenuOpen(false)}
+                      <a href="/wishlist" onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-3 px-3.5 py-2.5 font-poppins text-sm font-medium text-slate-700 hover:bg-gray-100 rounded-xl transition-colors">
                         <Heart className="w-4 h-4 text-purple-400" /> Wishlist
                       </a>
@@ -234,7 +234,7 @@ export function Header() {
                   )}
                   <div className="mt-5 pt-5 border-t border-gray-100">
                     {!user ? (
-                      <a href="#/signin" onClick={() => setMenuOpen(false)}
+                      <a href="/signin" onClick={() => setMenuOpen(false)}
                         className="block w-full text-center font-poppins text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 py-3 rounded-xl transition-colors">
                         Sign In
                       </a>

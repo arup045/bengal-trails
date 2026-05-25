@@ -177,7 +177,7 @@ export function TripPlanner() {
               <p className="text-gray-600 text-lg">Plan your perfect West Bengal itinerary</p>
             </div>
             <a
-              href="#/"
+              href="/"
               className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
             >
               Back to Home

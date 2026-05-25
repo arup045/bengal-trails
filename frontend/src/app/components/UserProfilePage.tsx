@@ -213,7 +213,7 @@ export function UserProfilePage() {
             <User className="w-10 h-10 text-purple-400" />
           </div>
           <h2 className="font-poppins text-xl font-semibold text-slate-900 mb-2">Sign in to view your profile</h2>
-          <a href="#/signin" className="mt-4 inline-block bg-purple-600 text-white px-6 py-3 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
+          <a href="/signin" className="mt-4 inline-block bg-purple-600 text-white px-6 py-3 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
             Sign In
           </a>
         </div>
@@ -492,8 +492,8 @@ export function UserProfilePage() {
                     <h2 className="font-poppins text-base font-semibold text-slate-900 mb-4">Quick Actions</h2>
                     <div className="grid sm:grid-cols-3 gap-3">
                       {[
-                        { icon: Heart,    label: 'My Wishlist',   href: '#/wishlist',       color: 'text-rose-600  bg-rose-50'    },
-                        { icon: Compass,  label: 'Plan a Trip',   href: '#/planner',        color: 'text-purple-600 bg-purple-50' },
+                        { icon: Heart,    label: 'My Wishlist',   href: '/wishlist',       color: 'text-rose-600  bg-rose-50'    },
+                        { icon: Compass,  label: 'Plan a Trip',   href: '/planner',        color: 'text-purple-600 bg-purple-50' },
                         { icon: Star,     label: 'My Reviews',    onClick: () => setActiveTab('reviews'), color: 'text-amber-600 bg-amber-50' },
                       ].map(({ icon: Icon, label, href, onClick, color }) => {
                         const Tag = href ? 'a' : 'button';
@@ -528,7 +528,7 @@ export function UserProfilePage() {
                       <Compass className="w-8 h-8 text-purple-300" />
                     </div>
                     <p className="font-poppins text-gray-500 mb-4">No trips booked yet</p>
-                    <a href="#/explore" className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
+                    <a href="/explore" className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
                       Explore Destinations
                     </a>
                   </div>
@@ -590,7 +590,7 @@ export function UserProfilePage() {
                     <p className="font-poppins text-sm text-gray-500 mb-5">
                       Share your experiences to help fellow travelers discover Bengal
                     </p>
-                    <a href="#/explore"
+                    <a href="/explore"
                       className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
                       <Compass className="w-4 h-4" /> Explore Destinations
                     </a>
@@ -687,7 +687,7 @@ export function UserProfilePage() {
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
                   <h2 className="font-poppins text-xl font-semibold text-slate-900 mb-5">Account Settings</h2>
                   <div className="space-y-3">
-                    <a href="#/forgot-password"
+                    <a href="/forgot-password"
                       className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group">
                       <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
                         <Shield className="w-5 h-5 text-blue-600" />

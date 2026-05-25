@@ -21,7 +21,7 @@ const FALLBACK: Place[] = [
 function PlaceCard({ place, large = false }: { place: Place; large?: boolean }) {
   const img = place.image_url || place.imageUrl || '';
   return (
-    <a href={`#/explore/${place.slug}`}
+    <a href={`/explore/${place.slug}`}
       className={`group relative overflow-hidden rounded-2xl bg-gray-100 block ${large ? 'col-span-2 row-span-2' : ''}`}
       style={{ minHeight: large ? 340 : 160 }}>
       {img && (
@@ -85,7 +85,7 @@ export function BentoGrid() {
             West Bengal awaits
           </h2>
         </div>
-        <a href="#/explore"
+        <a href="/explore"
           className="hidden sm:flex items-center gap-1.5 font-poppins text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors">
           View all <ArrowRight className="w-4 h-4" />
         </a>
@@ -96,7 +96,7 @@ export function BentoGrid() {
         {rest.map(p => <PlaceCard key={p.slug} place={p} />)}
       </div>
 
-      <a href="#/explore"
+      <a href="/explore"
         className="sm:hidden mt-4 flex items-center justify-center gap-2 w-full py-3
                    border border-purple-200 rounded-xl font-poppins text-sm font-medium
                    text-purple-600 hover:bg-purple-50 transition-colors">

@@ -55,42 +55,42 @@ export const PAGE_META = {
   explore: {
     title: 'Explore West Bengal Destinations',
     description: 'Browse 221+ destinations across West Bengal — hills, beaches, temples, wildlife. Filter by region, category, and budget.',
-    url: `${SITE_URL}/#/explore`,
+    url: `${SITE_URL}/explore`,
   },
   festivals: {
     title: 'West Bengal Festival Calendar — 100 Festivals',
     description: 'Comprehensive calendar of Bengali festivals — Durga Puja, Poush Mela, Kali Puja, Charak, Tusu, Rabindra Jayanti. Dates, places, and rituals.',
-    url: `${SITE_URL}/#/festivals`,
+    url: `${SITE_URL}/festivals`,
   },
   food: {
     title: 'Bengali Food Guide — 17 Iconic Dishes',
     description: 'Discover authentic Bengali cuisine — Kosha Mangsho, Shorshe Ilish, Mishti Doi, Rasgulla. Where to try each dish and what makes it special.',
-    url: `${SITE_URL}/#/food`,
+    url: `${SITE_URL}/food`,
   },
   map: {
     title: 'West Bengal Travel Map',
     description: 'Interactive map of all 221 destinations across North, Central, and South Bengal.',
-    url: `${SITE_URL}/#/map`,
+    url: `${SITE_URL}/map`,
   },
   community: {
     title: 'Travel Community — West Bengal',
     description: 'Connect with fellow Bengal travellers. Read reviews, ask questions, share photos.',
-    url: `${SITE_URL}/#/community`,
+    url: `${SITE_URL}/community`,
   },
   budget: {
     title: 'Bengal Trip Budget Estimator',
     description: 'Estimate your West Bengal trip cost — accommodation, transport, food, activities. For budget, mid-range, and luxury travellers.',
-    url: `${SITE_URL}/#/budget`,
+    url: `${SITE_URL}/budget`,
   },
   itinerary: {
     title: 'Bengal Itinerary Planner',
     description: 'Plan your West Bengal itinerary — 3 days, 5 days, 7 days, and custom durations.',
-    url: `${SITE_URL}/#/itinerary`,
+    url: `${SITE_URL}/itinerary`,
   },
   wishlist: {
     title: 'My Wishlist — Saved Bengal Destinations',
     description: 'Your saved destinations and trip plans.',
-    url: `${SITE_URL}/#/wishlist`,
+    url: `${SITE_URL}/wishlist`,
   },
 };
 
@@ -102,7 +102,7 @@ export function setDestinationMeta(place: { title?: string; name?: string; excer
   setPageMeta({
     title: `${title} — Travel Guide, Photos, Reviews`,
     description: desc,
-    url: `${SITE_URL}/#/explore/${place.slug}`,
+    url: `${SITE_URL}/explore/${place.slug}`,
     image: img,
   });
 }

@@ -219,7 +219,7 @@ export function AboutUsPage() {
                 to the mangrove forests of Sundarbans, from the ruins of Bishnupur to the beaches of Mandarmani.
                 No corner of Bengal is too remote for us to explore.
               </p>
-              <a href="#/explore"
+              <a href="/explore"
                 className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
                 Explore All Destinations
                 <ArrowRight className="w-4 h-4" />
@@ -283,7 +283,7 @@ export function AboutUsPage() {
               <Mail className="w-4 h-4" />
               hello@bengaltrails.com
             </a>
-            <a href="#/explore"
+            <a href="/explore"
               className="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-7 py-3.5 rounded-full font-poppins text-sm font-semibold hover:bg-white/10 transition-colors">
               <Compass className="w-4 h-4" />
               Start Exploring

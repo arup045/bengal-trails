@@ -98,7 +98,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
         <div className="text-center">
           <Compass className="w-14 h-14 text-purple-300 mx-auto mb-4" />
           <h1 className="font-poppins text-2xl font-semibold text-slate-900 mb-2">District not found</h1>
-          <a href="#/explore" className="inline-flex items-center gap-2 mt-2 text-purple-600 font-poppins font-medium">
+          <a href="/explore" className="inline-flex items-center gap-2 mt-2 text-purple-600 font-poppins font-medium">
             <ArrowLeft className="w-4 h-4" /> Back to all districts
           </a>
         </div>
@@ -122,7 +122,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20" />
         <div className="absolute inset-0 flex flex-col justify-end">
           <div className="max-w-7xl mx-auto w-full px-5 sm:px-8 pb-8">
-            <a href="#/explore" className="inline-flex items-center gap-2 text-white/85 hover:text-white font-poppins text-sm mb-4">
+            <a href="/explore" className="inline-flex items-center gap-2 text-white/85 hover:text-white font-poppins text-sm mb-4">
               <ArrowLeft className="w-4 h-4" /> All districts
             </a>
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>

@@ -100,7 +100,7 @@ export function PartnersDirectory() {
         <div className="text-center py-12">
           <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="font-poppins text-gray-500 mb-4">No partners yet in this category.</p>
-          <a href="#/vendor-onboarding" className="inline-block px-5 py-2.5 bg-green-600 hover:bg-green-700
+          <a href="/vendor-onboarding" className="inline-block px-5 py-2.5 bg-green-600 hover:bg-green-700
                                        text-white font-poppins text-sm font-medium rounded-xl transition-colors">
             Become the first partner
           </a>
@@ -175,7 +175,7 @@ export function PartnersDirectory() {
       <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 text-center">
         <h3 className="font-poppins text-xl font-semibold text-slate-900 mb-2">Are you a tour guide, hotel or restaurant?</h3>
         <p className="font-poppins text-sm text-gray-500 mb-5">Join our verified partner network and reach thousands of travellers.</p>
-        <a href="#/vendor-onboarding"
+        <a href="/vendor-onboarding"
           className="inline-block px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-poppins text-sm font-medium rounded-xl transition-colors">
           Become a Partner
         </a>

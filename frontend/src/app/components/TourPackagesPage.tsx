@@ -256,7 +256,7 @@ function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }) {
             </div>
           </div>
 
-          <a href="#/planner"
+          <a href="/planner"
             className="block w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white text-center py-3.5 rounded-2xl font-bold hover:shadow-lg hover:shadow-purple-300/50 transition-all">
             Book This Tour — ₹{tour.price.toLocaleString()}/person
           </a>
@@ -385,7 +385,7 @@ export function TourPackagesPage() {
         <div className="mt-12 bg-gradient-to-r from-purple-600 to-purple-800 rounded-3xl p-8 text-white text-center">
           <h2 className="text-2xl font-black mb-2">Can't find your perfect tour?</h2>
           <p className="text-purple-200 mb-6">We create custom itineraries tailored just for you</p>
-          <a href="#/planner" className="inline-flex items-center gap-2 bg-white text-purple-700 font-black px-6 py-3 rounded-full hover:shadow-lg transition-all">
+          <a href="/planner" className="inline-flex items-center gap-2 bg-white text-purple-700 font-black px-6 py-3 rounded-full hover:shadow-lg transition-all">
             <DollarSign className="w-4 h-4" /> Plan Custom Trip
           </a>
         </div>

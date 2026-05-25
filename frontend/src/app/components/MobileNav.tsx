@@ -3,11 +3,11 @@ import { Home, Compass, CalendarDays, Map, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const TABS = [
-  { label: 'Home',      icon: Home,          href: '#/'                },
-  { label: 'Explore',   icon: Compass,       href: '#/explore'         },
-  { label: 'Festivals', icon: CalendarDays,  href: '#/festivals'       },
-  { label: 'Itinerary', icon: Map,           href: '#/itinerary-builder'},
-  { label: 'Profile',   icon: User,          href: '#/profile'         },
+  { label: 'Home',      icon: Home,          href: '/'                },
+  { label: 'Explore',   icon: Compass,       href: '/explore'         },
+  { label: 'Festivals', icon: CalendarDays,  href: '/festivals'       },
+  { label: 'Itinerary', icon: Map,           href: '/itinerary-builder'},
+  { label: 'Profile',   icon: User,          href: '/profile'         },
 ];
 
 function isActiveHref(href: string, hash: string) {

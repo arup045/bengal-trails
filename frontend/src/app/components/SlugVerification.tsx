@@ -61,7 +61,7 @@ export function SlugVerification() {
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
           <h1 className="text-4xl mb-4 text-purple-600">Slug Verification Report</h1>
           <p className="text-gray-600 mb-6">Checking if all homepage card slugs match database entries</p>
-          <a href="#/" className="text-purple-600 hover:underline">← Back to Home</a>
+          <a href="/" className="text-purple-600 hover:underline">← Back to Home</a>
         </div>
 
         {/* Summary */}
@@ -156,10 +156,10 @@ export function SlugVerification() {
 
         {/* Action Buttons */}
         <div className="mt-6 flex gap-4">
-          <a href="#/" className="flex-1 bg-purple-600 text-white text-center px-6 py-3 rounded-xl hover:bg-purple-700">
+          <a href="/" className="flex-1 bg-purple-600 text-white text-center px-6 py-3 rounded-xl hover:bg-purple-700">
             Go to Homepage
           </a>
-          <a href="#/explore" className="flex-1 bg-orange-600 text-white text-center px-6 py-3 rounded-xl hover:bg-orange-700">
+          <a href="/explore" className="flex-1 bg-orange-600 text-white text-center px-6 py-3 rounded-xl hover:bg-orange-700">
             Go to Explore
           </a>
         </div>
