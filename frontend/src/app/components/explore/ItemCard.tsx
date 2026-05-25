@@ -49,7 +49,7 @@ export function ItemCard({ name, section, districtName, image, excerpt, href, ra
       {/* Image / placeholder */}
       <div className="relative h-44 overflow-hidden">
         {image ? (
-          <ImageWithFallback src={image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+          <ImageWithFallback src={image} alt={name} optimizeWidth={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${meta.gradient} flex items-center justify-center`}>
             <span className="text-5xl opacity-90 drop-shadow">{meta.emoji}</span>

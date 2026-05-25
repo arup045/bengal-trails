@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { getOptimizedSrc, getSrcSet } from '../utils/imageOptimize';
 
 interface OptimizedImageProps {
   src: string;
@@ -7,29 +8,6 @@ interface OptimizedImageProps {
   width?: number;
   height?: number;
   priority?: boolean;
-}
-
-function getOptimizedSrc(src: string, width: number = 800): string {
-  if (!src) return '';
-  if (src.includes('unsplash.com')) {
-    try {
-      const url = new URL(src);
-      url.searchParams.set('w', String(width));
-      url.searchParams.set('q', '75');
-      url.searchParams.set('fm', 'webp');
-      url.searchParams.set('auto', 'format,compress');
-      return url.toString();
-    } catch { return src; }
-  }
-  if (src.includes('res.cloudinary.com')) {
-    return src.replace('/upload/', `/upload/w_${width},q_auto,f_auto/`);
-  }
-  return src;
-}
-
-function getSrcSet(src: string): string {
-  if (src.startsWith('data:')) return '';
-  return [400, 800, 1200, 1600].map(w => `${getOptimizedSrc(src, w)} ${w}w`).join(', ');
 }
 
 export function OptimizedImage({
