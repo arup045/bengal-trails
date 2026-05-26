@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense, startTransition } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ChevronUp } from 'lucide-react';
+import { ChevronUp, CheckCircle2, AlertTriangle, Info, XCircle, Loader2 } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
@@ -24,6 +24,7 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { ConnectionBanner } from './components/ConnectionBanner';
 import { ScrollProgress } from './components/ScrollProgress';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { ImageMorphOverlay } from './components/ImageMorphOverlay';
 // NOTE: places-full is ~490 KB. It is ONLY needed to build JSON-LD structured
 // data on place-detail pages, so we lazy-load it on demand (see the effect in
 // App) instead of importing it eagerly — that alone keeps it out of the initial
@@ -511,14 +512,26 @@ export default function App() {
           {/* Skip to Content Link for Accessibility */}
           <SkipToContent />
 
+          {/* Shared-element card→detail image morph overlay */}
+          <ImageMorphOverlay />
+
           {/* Toast Notifications */}
           <Toaster
             position="top-right"
             richColors
             closeButton
+            icons={{
+              success: <CheckCircle2 className="w-5 h-5" />,
+              error: <XCircle className="w-5 h-5" />,
+              warning: <AlertTriangle className="w-5 h-5" />,
+              info: <Info className="w-5 h-5" />,
+              loading: <Loader2 className="w-5 h-5 animate-spin" />,
+            }}
             toastOptions={{
               style: {
                 padding: '16px',
+                fontFamily: 'Poppins, sans-serif',
+                borderRadius: '14px',
               },
             }}
           />

@@ -18,12 +18,19 @@ const pin = (color: string) =>
   });
 
 const DISTRICT_PIN = pin('#7c3aed');
+const HOVER_PIN = pin('#f97316'); // orange — matches the hovered list card
 const ME_PIN = pin('#10b981');
 
 // West Bengal bounding center.
 const WB_CENTER: [number, number] = [23.8, 87.9];
 
-export default function DistrictsMap({ userLoc }: { userLoc?: LocationCoords | null }) {
+interface DistrictsMapProps {
+  userLoc?: LocationCoords | null;
+  hoveredSlug?: string | null;
+  onHoverSlug?: (slug: string | null) => void;
+}
+
+export default function DistrictsMap({ userLoc, hoveredSlug, onHoverSlug }: DistrictsMapProps) {
   const districts = getDistrictsWithMeta();
 
   return (
@@ -40,7 +47,16 @@ export default function DistrictsMap({ userLoc }: { userLoc?: LocationCoords | n
       />
 
       {districts.map((d) => (
-        <Marker key={d.slug} position={[d.lat, d.lng]} icon={DISTRICT_PIN}>
+        <Marker
+          key={d.slug}
+          position={[d.lat, d.lng]}
+          icon={hoveredSlug === d.slug ? HOVER_PIN : DISTRICT_PIN}
+          zIndexOffset={hoveredSlug === d.slug ? 1000 : 0}
+          eventHandlers={{
+            mouseover: () => onHoverSlug?.(d.slug),
+            mouseout: () => onHoverSlug?.(null),
+          }}
+        >
           <Popup>
             <div style={{ minWidth: 160, fontFamily: 'Poppins, sans-serif' }}>
               <strong style={{ fontSize: 14, color: '#0f172a' }}>{d.name}</strong>

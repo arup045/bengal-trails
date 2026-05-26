@@ -1,19 +1,27 @@
-import { Heart, Navigation, ArrowRight, MapPin } from 'lucide-react';
+import { Navigation, ArrowRight, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { HeartButton } from '../HeartButton';
 import type { DistrictWithMeta } from '../../data/districts';
 import { queryClient } from '../../lib/queryClient';
 import { API_BASE } from '../../utils/api';
+import { morphImageFromEvent } from '../../utils/imageMorph';
 
 interface Props {
   district: DistrictWithMeta;
   saved: boolean;
   onToggleSave: () => void;
   distanceKm?: number;   // set when "Near me" is active
+  index?: number;        // staggered reveal delay
+  onHover?: (slug: string | null) => void; // map↔list hover sync
+  highlighted?: boolean; // matching map pin is hovered
 }
 
-export function DistrictCard({ district, saved, onToggleSave, distanceKm }: Props) {
-  const go = () => { window.location.hash = `#/explore/district/${district.slug}`; };
+export function DistrictCard({ district, saved, onToggleSave, distanceKm, index = 0, onHover, highlighted }: Props) {
+  const go = (e?: React.MouseEvent) => {
+    if (e) morphImageFromEvent(e, district.image);
+    window.location.hash = `#/explore/district/${district.slug}`;
+  };
 
   // Prefetch the district's place-images on hover so its detail page opens instantly.
   const prefetch = () => {
@@ -36,17 +44,17 @@ export function DistrictCard({ district, saved, onToggleSave, distanceKm }: Prop
     );
   };
 
-  const toggleSave = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onToggleSave(); };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.4, ease: 'easeOut', delay: Math.min(index * 0.04, 0.3) }}
       onClick={go}
-      onMouseEnter={prefetch}
+      onMouseEnter={() => { prefetch(); onHover?.(district.slug); }}
+      onMouseLeave={() => onHover?.(null)}
       onFocus={prefetch}
-      className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col"
+      className={`group relative bg-white rounded-3xl overflow-hidden border shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col ${highlighted ? 'border-purple-400 ring-2 ring-purple-300 shadow-2xl -translate-y-1' : 'border-gray-100'}`}
     >
       {/* Image */}
       <div className="relative h-52 overflow-hidden">
@@ -73,13 +81,11 @@ export function DistrictCard({ district, saved, onToggleSave, distanceKm }: Prop
 
         {/* Actions */}
         <div className="absolute top-3 right-3 flex gap-2">
-          <button
-            onClick={toggleSave}
-            aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
-            className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
-          >
-            <Heart className={`w-4 h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-gray-600'}`} />
-          </button>
+          <HeartButton
+            saved={saved}
+            onToggle={onToggleSave}
+            className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:scale-110 transition-transform"
+          />
           <button
             onClick={openDirections}
             aria-label="Get directions"
@@ -95,7 +101,7 @@ export function DistrictCard({ district, saved, onToggleSave, distanceKm }: Prop
           <h3 className="text-white text-2xl font-poppins font-bold leading-tight drop-shadow">{district.name}</h3>
           <p className="text-white/85 text-xs font-poppins flex items-center gap-1 mt-0.5">
             <MapPin className="w-3 h-3" />
-            {district.placeCount > 0 ? `${district.placeCount} place${district.placeCount > 1 ? 's' : ''} to explore` : 'New — coming soon'}
+            {district.placeCount > 0 ? `${district.placeCount} place${district.placeCount > 1 ? 's' : ''} to explore` : 'Explore the district'}
           </p>
         </div>
       </div>

@@ -7,6 +7,9 @@ import { placesData } from '../data/places-full';
 import { DistrictCard } from './explore/DistrictCard';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { EmptyState } from './EmptyState';
+import { CountUp } from './CountUp';
+import { Reveal } from './Reveal';
+import { morphImageFromEvent } from '../utils/imageMorph';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { getCurrentLocation, calculateDistance, type LocationCoords } from '../utils/location';
 
@@ -42,6 +45,7 @@ export function ExplorePage() {
   const [userLoc, setUserLoc] = useState<LocationCoords | null>(null);
   const [locLoading, setLocLoading] = useState(false);
   const [view, setView] = useState<'grid' | 'map'>('grid');
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null); // map↔list hover sync
   // Place-level filters (beyond region).
   const [category, setCategory] = useState('all');
   const [minRating, setMinRating] = useState(0);
@@ -151,7 +155,7 @@ export function ExplorePage() {
           </motion.div>
           <h1 className="font-poppins text-4xl sm:text-5xl font-bold mb-4">Discover West Bengal</h1>
           <p className="font-poppins text-base sm:text-lg text-white/80 max-w-2xl mx-auto">
-            All <strong>23 districts</strong> — {totalPlaces}+ destinations, from Himalayan hills to mangrove deltas.
+            All <strong><CountUp value={districts.length} /> districts</strong> — <CountUp value={totalPlaces} suffix="+" /> destinations, from Himalayan hills to mangrove deltas.
             Pick a district to start exploring.
           </p>
 
@@ -285,7 +289,10 @@ export function ExplorePage() {
                   <p className="text-gray-400 font-poppins text-sm py-10 text-center">No districts match your search.</p>
                 ) : filtered.map((d) => (
                   <a key={d.slug} href={`/explore/district/${d.slug}`}
-                    className="group flex gap-3 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:border-purple-200 transition-all">
+                    onMouseEnter={() => setHoveredSlug(d.slug)}
+                    onMouseLeave={() => setHoveredSlug(null)}
+                    onClick={(e) => morphImageFromEvent(e, d.image)}
+                    className={`group flex gap-3 bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all ${hoveredSlug === d.slug ? 'border-purple-400 ring-2 ring-purple-200 shadow-md' : 'border-gray-100 hover:border-purple-200'}`}>
                     <div className="relative w-28 sm:w-32 shrink-0 overflow-hidden">
                       <ImageWithFallback src={d.image || ''} alt={d.name} optimizeWidth={320} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
@@ -312,7 +319,7 @@ export function ExplorePage() {
             <div className="order-1 lg:order-2">
               <div className="lg:sticky lg:top-24">
                 <Suspense fallback={<div className="h-[70vh] min-h-[420px] rounded-3xl bg-gray-100 animate-pulse flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-400 animate-spin" /></div>}>
-                  <DistrictsMap userLoc={userLoc} />
+                  <DistrictsMap userLoc={userLoc} hoveredSlug={hoveredSlug} onHoverSlug={setHoveredSlug} />
                 </Suspense>
               </div>
             </div>
@@ -333,19 +340,22 @@ export function ExplorePage() {
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {placeResults.map((p: any) => (
-                  <a key={p.slug} href={`/explore/${p.slug}`}
-                    className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div className="relative h-44 overflow-hidden">
-                      <ImageWithFallback src={p.heroImage?.url || ''} alt={p.title} optimizeWidth={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      {p.category && <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-purple-700 text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full">{p.category}</span>}
-                      {Number(p.rating) > 0 && <span className="absolute top-3 right-3 bg-black/55 text-white text-[11px] font-poppins font-semibold px-2 py-0.5 rounded-full">★ {Number(p.rating).toFixed(1)}</span>}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-poppins text-base font-semibold text-slate-900 leading-tight truncate">{p.title}</h3>
-                      <p className="font-poppins text-xs text-gray-500 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{p.district || p.region}{p.priceFrom ? ` · from ${p.priceFrom}` : ''}</p>
-                    </div>
-                  </a>
+                {placeResults.map((p: any, i: number) => (
+                  <Reveal key={p.slug} index={i}>
+                    <a href={`/explore/${p.slug}`}
+                      onClick={(e) => morphImageFromEvent(e, p.heroImage?.url)}
+                      className="group block bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                      <div className="relative h-44 overflow-hidden">
+                        <ImageWithFallback src={p.heroImage?.url || ''} alt={p.title} optimizeWidth={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        {p.category && <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-purple-700 text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full">{p.category}</span>}
+                        {Number(p.rating) > 0 && <span className="absolute top-3 right-3 bg-black/55 text-white text-[11px] font-poppins font-semibold px-2 py-0.5 rounded-full">★ {Number(p.rating).toFixed(1)}</span>}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-poppins text-base font-semibold text-slate-900 leading-tight truncate">{p.title}</h3>
+                        <p className="font-poppins text-xs text-gray-500 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{p.district || p.region}{p.priceFrom ? ` · from ${p.priceFrom}` : ''}</p>
+                      </div>
+                    </a>
+                  </Reveal>
                 ))}
               </div>
             )}
@@ -357,10 +367,11 @@ export function ExplorePage() {
               {filtered.length} district{filtered.length !== 1 ? 's' : ''}{region !== 'All' ? ` in ${region}` : ''}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filtered.map((d) => (
+              {filtered.map((d, i) => (
                 <DistrictCard
                   key={d.slug}
                   district={d}
+                  index={i}
                   saved={isInWishlist(wishlistSlug(d))}
                   onToggleSave={() => onToggleSave(d)}
                   distanceKm={userLoc ? d._distance : undefined}
