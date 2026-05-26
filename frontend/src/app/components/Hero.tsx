@@ -48,8 +48,9 @@ export function Hero() {
       <img
         src={hero.backgroundImage}
         alt="Scenic landscape of West Bengal"
-        // @ts-ignore — fetchPriority supported by React 18.3+; DOM types may lag
-        fetchPriority="high"
+        // Set fetchpriority imperatively — passing it as a JSX prop makes React
+        // warn on every render (it isn't in React's attribute whitelist).
+        ref={(el) => { if (el) el.setAttribute('fetchpriority', 'high'); }}
         loading="eager"
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover object-center"

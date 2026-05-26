@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Calendar as CalendarIcon, MapPin, Clock, Sparkles, ChevronLeft, ChevronRight,
@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { API_BASE } from '../utils/api';
-import { setApiDown, setApiUp } from '../utils/connection';
+import { setApiDown, setApiUp, subscribeApi } from '../utils/connection';
 
 interface Festival {
   id: string;
@@ -379,11 +379,17 @@ export function FestivalCalendar() {
   const [calMonth, setCalMonth] = useState(now.getMonth());
   const [calYear, setCalYear] = useState(now.getFullYear());
 
-  useEffect(() => {
-    // Cold-start-resilient: the Render free tier can return a transient error or
-    // be slow on the first request while it wakes — retry on network/5xx errors.
+  const errorRef = useRef<string | null>(null);
+  errorRef.current = error;
+
+  // Cold-start-resilient loader, extracted so the "Try again" button and the
+  // auto-recovery subscription can re-run it. Retries with backoff long enough
+  // to outlast a Render free-tier cold start (~45s).
+  const load = useCallback(() => {
+    setLoading(true);
+    setError(null);
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    const fetchWithRetry = async (retries = 3): Promise<any> => {
+    const fetchWithRetry = async (retries = 5): Promise<any> => {
       for (let attempt = 0; attempt <= retries; attempt++) {
         try {
           const r = await fetch(`${API_BASE}/bengal/festivals`);
@@ -392,7 +398,7 @@ export function FestivalCalendar() {
         } catch (e) {
           if (attempt === retries) throw e;
         }
-        await sleep(1500 * (attempt + 1));
+        await sleep(Math.min(2000 * (attempt + 1), 8000)); // 2s,4s,6s,8s,8s
       }
       throw new Error('Failed to load');
     };
@@ -418,9 +424,16 @@ export function FestivalCalendar() {
         setFestivals(list);
         setApiUp();
       })
-      .catch((e) => { setError(e.message || 'Could not load festivals'); setApiDown(); })
+      .catch(() => { setError('Could not load the festival calendar.'); setApiDown(); })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    load();
+    // Auto-recover when the global connection returns (banner health-poll succeeds).
+    const unsub = subscribeApi((down) => { if (!down && errorRef.current) load(); });
+    return () => unsub();
+  }, [load]);
 
   const festivalMonthMap = useMemo(() => {
     const map: Record<number, Festival[]> = {};
@@ -654,9 +667,13 @@ export function FestivalCalendar() {
                 ))}
               </div>
             ) : error ? (
-              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center">
-                <p className="text-rose-700 font-medium">Could not load festivals</p>
-                <p className="text-rose-600 text-sm mt-1">{error}</p>
+              <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+                <div className="text-4xl mb-3">🎉</div>
+                <p className="text-slate-800 font-semibold">{error}</p>
+                <p className="text-slate-500 text-sm mt-1 mb-5">The server may have been waking up. Give it another try.</p>
+                <button onClick={load} className="px-5 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-full hover:bg-purple-700 transition">
+                  Try again
+                </button>
               </div>
             ) : filtered.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">

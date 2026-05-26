@@ -1,0 +1,25 @@
+name: Keep backend warm
+
+# The API runs on Render's free tier, which sleeps after ~15 min of inactivity.
+# A cold wake-up takes 30–50s and makes pages (Food, Festivals, etc.) appear to
+# "error" or load no data. This workflow pings the health endpoint on a schedule
+# so the instance stays awake during the day, eliminating cold starts for users.
+#
+# Note: GitHub's scheduled runs are best-effort and can be delayed under load,
+# but in practice this keeps the service warm well enough for a low-traffic site.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # every 10 minutes
+  workflow_dispatch: {}      # allow manual runs from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /healthz
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://gobro-api.onrender.com/healthz || echo "000")
+          echo "Health check returned: $code"
+          # Don't fail the job on a transient non-200 — the goal is just to wake it.
+          exit 0

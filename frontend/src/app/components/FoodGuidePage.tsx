@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   UtensilsCrossed, MapPin, Star, Search, Heart, ChefHat, Coffee, Cake,
   Flame, Leaf, Clock, DollarSign, BookOpen, ArrowRight, X,
@@ -6,7 +6,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { API_BASE } from '../utils/api';
-import { setApiDown, setApiUp } from '../utils/connection';
+import { setApiDown, setApiUp, subscribeApi } from '../utils/connection';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface Dish {
@@ -150,21 +150,27 @@ export function FoodGuidePage() {
   const dishesGridRef = useRef<HTMLDivElement>(null);
 
   const [waking, setWaking] = useState(false);
+  const ctrlRef = useRef<AbortController | null>(null);
+  const errorRef = useRef<string | null>(null);
+  errorRef.current = error;
 
-  useEffect(() => {
+  // Cold-start-resilient loader, extracted so the "Try again" button and the
+  // auto-recovery subscription can re-run it. The API runs on Render's free
+  // tier, which sleeps after inactivity and can return a transient 502/503 (or
+  // be slow) on the first request while it wakes. We retry with backoff long
+  // enough to outlast a cold start (~45s), and parsing is guarded so a non-JSON
+  // response can't blank the screen. 4xx → give up immediately (real error).
+  const load = useCallback(() => {
+    ctrlRef.current?.abort();
     const ctrl = new AbortController();
+    ctrlRef.current = ctrl;
     setLoading(true);
     setError(null);
     setWaking(false);
 
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-    // Cold-start-resilient loader. The API runs on Render's free tier, which
-    // sleeps after inactivity and can return a transient 502/503 (or be slow)
-    // on the first request while it wakes. So we retry with backoff on 5xx /
-    // network errors before giving up, and parsing is guarded so a non-JSON
-    // response can't blank the screen. 4xx → give up immediately (real error).
-    const safeJson = async (path: string, key: string, retries = 3): Promise<any[] | null> => {
+    const safeJson = async (path: string, key: string, retries = 5): Promise<any[] | null> => {
       for (let attempt = 0; attempt <= retries; attempt++) {
         try {
           const r = await fetch(`${API_BASE}${path}`, { signal: ctrl.signal });
@@ -178,7 +184,7 @@ export function FoodGuidePage() {
         }
         if (attempt < retries) {
           if (attempt >= 1) setWaking(true); // tell the user the server is waking
-          await sleep(1500 * (attempt + 1)); // 1.5s, 3s, 4.5s
+          await sleep(Math.min(2000 * (attempt + 1), 8000)); // 2s,4s,6s,8s,8s
         }
       }
       return null;
@@ -191,13 +197,19 @@ export function FoodGuidePage() {
         const streets = streetsRes.status === 'fulfilled' ? streetsRes.value : null;
         setDishes(food || []);
         setStreets(streets || []);
-        if (!food) { setError('Could not load food data. Please check your connection and refresh.'); setApiDown(); }
+        if (!food) { setError('Could not load the food guide.'); setApiDown(); }
         else setApiUp();
       })
       .finally(() => { if (!ctrl.signal.aborted) { setLoading(false); setWaking(false); } });
-
-    return () => ctrl.abort();
   }, []);
+
+  useEffect(() => {
+    load();
+    // Auto-recover: when the global connection comes back (banner's health poll
+    // succeeds), re-fetch if we were showing an error — no manual refresh needed.
+    const unsub = subscribeApi((down) => { if (!down && errorRef.current) load(); });
+    return () => { unsub(); ctrlRef.current?.abort(); };
+  }, [load]);
 
   const toggleSave = (id: string) => {
     setSavedDishes(prev => {
@@ -632,13 +644,14 @@ export function FoodGuidePage() {
 
         {error ? (
           <div className="text-center py-20">
-            <div className="text-5xl mb-4">⚠️</div>
+            <div className="text-5xl mb-4">🍲</div>
             <h3 className="font-poppins text-xl font-semibold text-slate-900 mb-2">{error}</h3>
+            <p className="text-gray-500 font-poppins text-sm mb-5">The server may have been waking up. Give it another try.</p>
             <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-5 py-2.5 bg-purple-600 text-white rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition"
+              onClick={load}
+              className="px-5 py-2.5 bg-purple-600 text-white rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition"
             >
-              Refresh
+              Try again
             </button>
           </div>
         ) : loading ? (
