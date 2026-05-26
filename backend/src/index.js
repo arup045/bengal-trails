@@ -272,15 +272,34 @@ const server = app.listen(PORT, () => {
     console.log('[server] Keep-alive ping active (' + url + ')');
   }
 
-  // Integrity: recompute EVERY destination's rating + review_count from the real
-  // `reviews` table (published only). Zeroes any seeded/fake numbers so the site
-  // only ever shows ratings backed by genuine reviews. Non-blocking, idempotent.
-  require('./db/pool').query(`
-    UPDATE destinations d SET
-      review_count = COALESCE((SELECT COUNT(*)            FROM reviews r WHERE r.destination_slug = d.slug AND r.status = 'published'), 0),
-      rating       = COALESCE((SELECT AVG(r.rating)::numeric(3,2) FROM reviews r WHERE r.destination_slug = d.slug AND r.status = 'published'), 0)
-  `).then((res) => console.log(`[server] Recomputed ratings from real reviews (${res.rowCount} destinations)`))
-    .catch((e) => console.error('[server] rating recompute failed:', e.message));
+  // Integrity: on every boot (free tier has no Shell to run migrate.js), purge
+  // any seeded/fake reviews + their demo accounts, then recompute every
+  // destination's rating + review_count from the REAL reviews that remain.
+  // Idempotent and safe — only deletes rows matching known seed fingerprints
+  // (demo @bengaltrails.com accounts + pravatar.cc avatars), never real users.
+  (async () => {
+    const pool = require('./db/pool');
+    const seedEmails = [
+      'priya@bengaltrails.com', 'arjun@bengaltrails.com', 'rohan@bengaltrails.com',
+      'riya@bengaltrails.com',  'suman@bengaltrails.com', 'anjali@bengaltrails.com',
+    ];
+    try {
+      const del1 = await pool.query(
+        `DELETE FROM reviews WHERE user_id IN (
+           SELECT id FROM users WHERE email = ANY($1::text[]) OR avatar_url LIKE '%pravatar.cc%'
+         )`, [seedEmails]);
+      const del2 = await pool.query(
+        `DELETE FROM users WHERE email = ANY($1::text[])`, [seedEmails]);
+      const rec = await pool.query(`
+        UPDATE destinations d SET
+          review_count = COALESCE((SELECT COUNT(*)            FROM reviews r WHERE r.destination_slug = d.slug AND r.status = 'published'), 0),
+          rating       = COALESCE((SELECT AVG(r.rating)::numeric(3,2) FROM reviews r WHERE r.destination_slug = d.slug AND r.status = 'published'), 0)
+      `);
+      console.log(`[server] Data integrity: purged ${del1.rowCount} seed reviews + ${del2.rowCount} demo users; recomputed ${rec.rowCount} destination ratings`);
+    } catch (e) {
+      console.error('[server] data-integrity cleanup failed:', e.message);
+    }
+  })();
 });
 
 // ── Graceful Shutdown ─────────────────────────────────────────────────────────
