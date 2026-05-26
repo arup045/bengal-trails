@@ -128,7 +128,9 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
       } else if (response.status === 409) {
         toast.error("You've already reviewed this place. Delete your old review to write a new one.");
       } else {
-        toast.error('Failed to submit review');
+        const data = await response.json().catch(() => ({} as any));
+        const detail = data?.errors?.[0]?.message || data?.error;
+        toast.error(detail ? `Couldn't submit: ${detail}` : `Failed to submit review (${response.status})`);
       }
     } catch (error) {
       console.error('Error submitting review:', error);

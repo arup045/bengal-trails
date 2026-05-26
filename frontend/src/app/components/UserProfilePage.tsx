@@ -153,6 +153,36 @@ export function UserProfilePage() {
     }
   };
 
+  // ── Inline edit for a review ──────────────────────────────────────────────
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<{ rating: number; title: string; content: string }>({ rating: 5, title: '', content: '' });
+  const [savingReview, setSavingReview] = useState(false);
+
+  const startEditReview = (r: any) => {
+    setEditingReviewId(r.id);
+    setEditDraft({ rating: Number(r.rating) || 5, title: r.title || '', content: r.content || '' });
+  };
+  const saveEditReview = async (id: string) => {
+    const content = editDraft.content.trim();
+    if (content.length < 10) { toast.error('Review must be at least 10 characters'); return; }
+    setSavingReview(true);
+    try {
+      const res = await authFetch(`/reviews/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ rating: editDraft.rating, title: editDraft.title, content }),
+      });
+      if (res.ok) {
+        toast.success('Review updated');
+        setEditingReviewId(null);
+        loadMyReviews();
+        window.dispatchEvent(new CustomEvent('bt:review-changed'));
+      } else {
+        const d = await res.json().catch(() => ({} as any));
+        toast.error(d.error || 'Could not update review');
+      }
+    } finally { setSavingReview(false); }
+  };
+
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error('Name is required'); return; }
     setLoading(true);
@@ -682,32 +712,68 @@ export function UserProfilePage() {
                                   </div>
                                 </a>
 
-                                {/* Delete button */}
-                                <button onClick={() => handleDeleteReview(review.id)}
-                                  className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                                  title="Delete review">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                {/* Edit + Delete buttons */}
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button onClick={() => (editingReviewId === review.id ? setEditingReviewId(null) : startEditReview(review))}
+                                    className="p-2 text-gray-300 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                    title="Edit review">
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  <button onClick={() => handleDeleteReview(review.id)}
+                                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Delete review">
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
 
-                              {/* Title */}
-                              {review.title && (
-                                <h4 className="font-poppins text-sm font-semibold text-slate-800 mb-1.5">
-                                  {review.title}
-                                </h4>
+                              {editingReviewId === review.id ? (
+                                /* ── Inline edit form ── */
+                                <div className="space-y-3 mb-2">
+                                  <div className="flex items-center gap-1">
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                      <button key={s} type="button" onClick={() => setEditDraft(d => ({ ...d, rating: s }))}>
+                                        <Star className={`w-5 h-5 ${s <= editDraft.rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <input value={editDraft.title} onChange={(e) => setEditDraft(d => ({ ...d, title: e.target.value }))}
+                                    placeholder="Title (optional)"
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg font-poppins text-sm focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                                  <textarea value={editDraft.content} onChange={(e) => setEditDraft(d => ({ ...d, content: e.target.value }))}
+                                    rows={3} placeholder="Your review (min 10 characters)"
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg font-poppins text-sm focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                                  <div className="flex gap-2">
+                                    <button onClick={() => saveEditReview(review.id)} disabled={savingReview}
+                                      className="inline-flex items-center gap-1.5 bg-purple-600 text-white text-sm font-poppins font-medium px-4 py-2 rounded-full hover:bg-purple-700 disabled:opacity-50">
+                                      <Save className="w-4 h-4" /> {savingReview ? 'Saving…' : 'Save'}
+                                    </button>
+                                    <button onClick={() => setEditingReviewId(null)}
+                                      className="text-sm font-poppins text-gray-500 px-4 py-2 rounded-full hover:bg-gray-100">Cancel</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  {/* Title */}
+                                  {review.title && (
+                                    <h4 className="font-poppins text-sm font-semibold text-slate-800 mb-1.5">
+                                      {review.title}
+                                    </h4>
+                                  )}
+
+                                  {/* Content */}
+                                  <p className="font-poppins text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
+                                    {review.content}
+                                  </p>
+
+                                  {/* Footer link */}
+                                  <a href={placeUrl}
+                                    className="inline-flex items-center gap-1.5 text-xs font-poppins font-medium text-purple-600 hover:text-purple-700 mt-auto self-start group/link">
+                                    View on {placeTitle}
+                                    <ChevronRight className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
+                                  </a>
+                                </>
                               )}
-
-                              {/* Content */}
-                              <p className="font-poppins text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
-                                {review.content}
-                              </p>
-
-                              {/* Footer link */}
-                              <a href={placeUrl}
-                                className="inline-flex items-center gap-1.5 text-xs font-poppins font-medium text-purple-600 hover:text-purple-700 mt-auto self-start group/link">
-                                View on {placeTitle}
-                                <ChevronRight className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
-                              </a>
                             </div>
                           </div>
                         </div>

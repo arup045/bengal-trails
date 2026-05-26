@@ -12,8 +12,19 @@ const { validate, schemas } = require('../middleware/validate');
 const MODERATION_PENDING = process.env.REVIEW_MODERATION_MODE === 'pending';
 const NEW_REVIEW_STATUS  = MODERATION_PENDING ? 'pending' : 'published';
 
-// Photo reviews: ensure the column exists (idempotent — safe on every boot).
-pool.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb`).catch(() => {});
+// Photo reviews: ensure the `photos` column exists. Memoized so the first write
+// awaits the migration (bulletproof) instead of a fire-and-forget that could lose
+// the race and make INSERTs reference a missing column.
+let _photosColReady = null;
+function ensurePhotosColumn() {
+  if (!_photosColReady) {
+    _photosColReady = pool
+      .query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb`)
+      .catch((e) => { _photosColReady = null; throw e; }); // allow retry on next call
+  }
+  return _photosColReady;
+}
+ensurePhotosColumn().catch(() => {}); // warm it on boot
 
 // ── GET /reviews/:slug ─────────────────────────────────────────────────────────
 router.get('/:slug', optionalAuth, async (req, res) => {
@@ -59,6 +70,7 @@ router.post('/', authenticate, validate(schemas.review), async (req, res) => {
     if (!destinationSlug || !rating || !content)
       return res.status(400).json({ error: 'destinationSlug, rating and content required' });
 
+    await ensurePhotosColumn(); // guarantee the column exists before inserting
     const photoList = Array.isArray(photos) ? photos.slice(0, 6) : [];
 
     const { rows } = await pool.query(
@@ -187,7 +199,7 @@ router.get('/stats/:slug', async (req, res) => {
 // Only the original author can edit. Triggers a recompute of destination stats.
 router.put('/:id', authenticate, async (req, res) => {
   try {
-    const { rating, title, content, visitDate } = req.body;
+    const { rating, title, content, visitDate, photos } = req.body;
     if (!rating || !content) return res.status(400).json({ error: 'rating and content required' });
     if (rating < 1 || rating > 5) return res.status(400).json({ error: 'rating must be 1-5' });
 
@@ -199,12 +211,16 @@ router.put('/:id', authenticate, async (req, res) => {
     }
 
     const slug = existing.rows[0].destination_slug;
+    await ensurePhotosColumn();
+    // photos optional on edit — only overwrite when an array is provided (COALESCE keeps existing otherwise)
+    const photoArg = Array.isArray(photos) ? JSON.stringify(photos.slice(0, 6)) : null;
 
     const { rows } = await pool.query(
       `UPDATE reviews
-       SET rating = $1, title = $2, content = $3, visit_date = $4, updated_at = NOW()
-       WHERE id = $5 RETURNING *`,
-      [rating, title, content, visitDate || null, req.params.id]
+       SET rating = $1, title = $2, content = $3, visit_date = $4,
+           photos = COALESCE($5::jsonb, photos), updated_at = NOW()
+       WHERE id = $6 RETURNING *`,
+      [rating, title, content, visitDate || null, photoArg, req.params.id]
     );
 
     // Recompute destination stats since rating may have changed
