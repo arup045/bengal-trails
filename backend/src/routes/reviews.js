@@ -38,7 +38,13 @@ router.get('/:slug', optionalAuth, async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
 
     let query = `
-      SELECT r.*, u.name AS user_name, u.avatar_url AS user_avatar
+      SELECT r.*, u.name AS user_name, u.avatar_url AS user_avatar,
+             EXISTS (
+               SELECT 1 FROM bookings b
+               WHERE b.user_id = r.user_id
+                 AND b.destination_slug = r.destination_slug
+                 AND b.status = 'confirmed'
+             ) AS verified
       FROM reviews r
       JOIN users u ON u.id = r.user_id
       WHERE r.destination_slug = $1 AND r.status = 'published'
