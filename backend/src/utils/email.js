@@ -215,4 +215,42 @@ async function sendBookingConfirmationEmail(email, name, booking) {
   }
 }
 
-module.exports = { sendPasswordResetEmail, sendWelcomeEmail, sendNewsletterEmail, sendNewsletterConfirmEmail, sendBookingConfirmationEmail };
+// ── Send email-verification link ──────────────────────────────────────────────
+async function sendVerificationEmail(email, rawToken, name) {
+  const link = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log(`\n📧 EMAIL VERIFICATION (no SMTP configured)\n   To: ${email}\n   Verify URL: ${link}\n`);
+    return { success: true, dev: true, preview: link };
+  }
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || `"Bengal Trails Travel" <noreply@bengaltrails.com>`,
+      to: email,
+      subject: 'Verify your Bengal Trails email',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f9f6f2">
+          <div style="background:linear-gradient(135deg,#7c3aed,#9333ea);padding:24px;text-align:center">
+            <h1 style="color:#fff;margin:0;font-size:26px;letter-spacing:1px">Bengal Trails</h1>
+            <p style="color:#e9d5ff;margin:6px 0 0;font-size:13px">Verify your email</p>
+          </div>
+          <div style="background:#fff;padding:32px 28px;line-height:1.6;color:#1a1a1a">
+            <p>Hi${name ? ' ' + name : ''},</p>
+            <p>Please confirm your email address to secure your Bengal Trails account.</p>
+            <p style="text-align:center;margin:24px 0">
+              <a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 28px;border-radius:9999px;text-decoration:none;font-weight:600">Verify email</a>
+            </p>
+            <p style="color:#666;font-size:13px">This link expires in 24 hours. If you didn't sign up, you can ignore this email.</p>
+            <p style="color:#666;font-size:12px;word-break:break-all">Or paste this link: ${link}</p>
+          </div>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (err) {
+    console.error('verification email failed:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+module.exports = { sendPasswordResetEmail, sendWelcomeEmail, sendNewsletterEmail, sendNewsletterConfirmEmail, sendBookingConfirmationEmail, sendVerificationEmail };

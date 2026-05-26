@@ -1,4 +1,4 @@
-const { sendPasswordResetEmail, sendWelcomeEmail } = require('../utils/email');
+const { sendPasswordResetEmail, sendWelcomeEmail, sendVerificationEmail } = require('../utils/email');
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -27,6 +27,34 @@ function validatePassword(password) {
 // because they don't know the pre-image. Industry standard pattern.
 function hashResetToken(rawToken) {
   return crypto.createHash('sha256').update(rawToken).digest('hex');
+}
+
+// Email verification storage (idempotent — safe on every boot).
+pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false`).catch(() => {});
+pool.query(`
+  CREATE TABLE IF NOT EXISTS email_verify_tokens (
+    user_id    UUID NOT NULL,
+    token_hash VARCHAR(64) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used       BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(() => {});
+
+// Create + email a verification token for a freshly-created user (non-blocking).
+async function issueVerificationEmail(userId, email, name) {
+  try {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashResetToken(rawToken);
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    await pool.query(
+      `INSERT INTO email_verify_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)`,
+      [userId, tokenHash, expires]
+    );
+    await sendVerificationEmail(email, rawToken, name);
+  } catch (e) {
+    console.error('issueVerificationEmail failed:', e.message);
+  }
 }
 
 // ── Bcrypt cost ────────────────────────────────────────────────────────────────
@@ -133,8 +161,9 @@ router.post('/signup', validate(schemas.signup), async (req, res) => {
       [rows[0].id]
     );
 
-    // Send welcome email (non-blocking)
+    // Send welcome + verification emails (non-blocking)
     sendWelcomeEmail(email.toLowerCase(), name).catch(console.error);
+    issueVerificationEmail(rows[0].id, email.toLowerCase(), name);
 
     return res.status(201).json({ success: true, message: 'Account created. Please sign in.' });
   } catch (err) {
@@ -356,10 +385,42 @@ router.post('/refresh', async (req, res) => {
 //   3. In /signup, generate a token, store its sha256 hash, email the raw token
 //   4. Here, hash incoming token, look up unused/unexpired, mark verified
 router.post('/verify-email', async (req, res) => {
-  return res.status(501).json({
-    error: 'Email verification is not enabled on this server',
-    code: 'not_implemented',
-  });
+  try {
+    const { token } = req.body || {};
+    if (!token || typeof token !== 'string') return res.status(400).json({ error: 'Token required' });
+
+    const tokenHash = hashResetToken(token);
+    const { rows } = await pool.query(
+      `SELECT user_id FROM email_verify_tokens
+        WHERE token_hash = $1 AND used = false AND expires_at > NOW()
+        ORDER BY created_at DESC LIMIT 1`,
+      [tokenHash]
+    );
+    if (!rows.length) return res.status(400).json({ error: 'This verification link is invalid or has expired.' });
+
+    const userId = rows[0].user_id;
+    await pool.query(`UPDATE users SET email_verified = true WHERE id = $1`, [userId]);
+    await pool.query(`UPDATE email_verify_tokens SET used = true WHERE token_hash = $1`, [tokenHash]);
+
+    return res.json({ success: true, message: 'Email verified. Thank you!' });
+  } catch (err) {
+    console.error('verify-email error:', err.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── POST /auth/resend-verification ────────────────────────────────────────────
+// Authenticated; re-issues a verification email for the signed-in user.
+router.post('/resend-verification', authenticate, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`SELECT email, name, email_verified FROM users WHERE id = $1`, [req.user.id]);
+    if (!rows.length) return res.status(404).json({ error: 'User not found' });
+    if (rows[0].email_verified) return res.json({ success: true, alreadyVerified: true });
+    await issueVerificationEmail(req.user.id, rows[0].email, rows[0].name);
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
 });
 
 module.exports = router;

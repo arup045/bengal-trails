@@ -12,8 +12,11 @@ export function EmailVerificationPage() {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
+        // Token may arrive in the query (?token=, path routing) or in the hash
+        // fragment (#/verify-email?token=, legacy) — read from both.
         const hash = window.location.hash;
-        const params = new URLSearchParams(hash.split('?')[1] || '');
+        const search = window.location.search;
+        const params = new URLSearchParams(search || hash.split('?')[1] || '');
         const token = params.get('token') || params.get('access_token');
 
         if (!token) {
