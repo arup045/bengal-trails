@@ -1,6 +1,6 @@
 import { authFetch } from '../utils/api';
 import React, { useState } from 'react';
-import { Calendar, Users, Home, MapPin, CheckCircle, CreditCard, Shield, Clock } from 'lucide-react';
+import { Calendar, Users, Home, MapPin, CheckCircle, CreditCard, Shield, Clock, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
@@ -54,6 +54,36 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [bookingId, setBookingId] = useState('');
+
+  // Printable voucher → user saves as PDF via the browser's print dialog (zero deps).
+  const downloadVoucher = () => {
+    const t: any = calculateTotal();
+    const w = window.open('', '_blank', 'width=720,height=900');
+    if (!w) { toast.error('Allow pop-ups to download your voucher'); return; }
+    const row = (a: string, b: string) => `<tr><td style="padding:8px 0;color:#64748b">${a}</td><td style="padding:8px 0;text-align:right;font-weight:600;color:#0f172a">${b}</td></tr>`;
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Voucher ${bookingId}</title>
+      <style>body{font-family:Poppins,Arial,sans-serif;color:#0f172a;max-width:640px;margin:32px auto;padding:0 24px}
+      .h{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #7c3aed;padding-bottom:16px;margin-bottom:24px}
+      .brand{font-size:24px;font-weight:800}.brand span{color:#7c3aed}.tag{background:#dcfce7;color:#15803d;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700}
+      .id{font-size:13px;color:#64748b;margin-bottom:4px}.big{font-size:22px;font-weight:800;margin-bottom:24px}
+      table{width:100%;border-collapse:collapse;font-size:14px}.tot{border-top:2px solid #e2e8f0;font-size:16px}
+      .foot{margin-top:32px;font-size:12px;color:#94a3b8;text-align:center}</style></head><body>
+      <div class="h"><div class="brand">Bengal <span>Trails</span></div><div class="tag">CONFIRMED</div></div>
+      <div class="id">Booking ID</div><div class="big">${bookingId}</div>
+      <table>
+        ${row('Destination', destinationName)}
+        ${row('Check-in', booking.checkIn || '—')}
+        ${row('Check-out', booking.checkOut || '—')}
+        ${row('Guests', String(booking.guests))}
+        ${row('Rooms', String(booking.rooms))}
+        ${booking.addOns.length ? row('Add-ons', booking.addOns.join(', ')) : ''}
+        <tr class="tot">${`<td style="padding:12px 0;font-weight:700">Total paid</td><td style="padding:12px 0;text-align:right;font-weight:800;color:#7c3aed">₹${(t.total || 0).toLocaleString('en-IN')}</td>`}</tr>
+      </table>
+      <p class="foot">Show this voucher at check-in. Free cancellation up to 48h before arrival.<br/>Bengal Trails — West Bengal Travel Guide</p>
+      </body></html>`);
+    w.document.close(); w.focus();
+    setTimeout(() => w.print(), 300);
+  };
 
   const addOnsOptions = [
     { id: 'breakfast', name: 'Breakfast Included', price: 500 },
@@ -554,7 +584,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
             <div className="max-w-md mx-auto space-y-4 text-left bg-purple-50 p-6 rounded-xl mb-8">
               <p className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-1" />
-                <span>Confirmation email sent to your registered email address</span>
+                <span>Saved to your account — view it anytime under <strong>My Bookings</strong>.</span>
               </p>
               <p className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
@@ -565,18 +595,18 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                 <span>Free cancellation up to 48 hours before check-in</span>
               </p>
             </div>
-            <div className="flex gap-3 max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <button
-                onClick={() => (window.location.hash = '/profile')}
-                className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                onClick={downloadVoucher}
+                className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold inline-flex items-center justify-center gap-2"
               >
-                View My Bookings
+                <Download className="w-4 h-4" /> Download voucher
               </button>
               <button
-                onClick={() => (window.location.hash = '/explore')}
-                className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+                onClick={() => (window.location.hash = '/profile')}
+                className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
               >
-                Explore More
+                My Bookings
               </button>
             </div>
           </motion.div>
