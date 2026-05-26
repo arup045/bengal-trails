@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Heart, Trash2, MapPin, Navigation, Share2, X } from 'lucide-react';
+import { Heart, Trash2, MapPin, Navigation, Share2, X, Route } from 'lucide-react';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { LoadingSkeleton, EmptyState } from './LoadingSkeleton';
+import { authFetch } from '../utils/api';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 
 interface WishlistItem {
@@ -17,7 +19,29 @@ interface WishlistItem {
 
 export function WishlistPage() {
   const { wishlist, isLoading, removeFromWishlist, clearWishlist } = useWishlistSync();
+  const { user } = useAuth();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [buildingTrip, setBuildingTrip] = useState(false);
+
+  // One-click: turn the whole wishlist into a saved trip plan → My Trips.
+  const buildTripFromWishlist = async () => {
+    if (!user) { toast.error('Sign in to save a trip'); window.location.hash = '#/signin'; return; }
+    setBuildingTrip(true);
+    try {
+      const res = await authFetch('/trip-plans', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: 'My Bengal Wishlist Trip',
+          description: `A trip built from ${wishlist.length} saved place${wishlist.length > 1 ? 's' : ''}.`,
+          destinations: wishlist.map(i => ({ slug: i.slug, name: i.title, region: i.region })),
+          status: 'planning',
+        }),
+      });
+      if (res.ok) { toast.success('Trip created from your wishlist! Find it under My Trips.'); window.location.hash = '#/profile'; }
+      else { const d = await res.json().catch(() => ({} as any)); toast.error(d.error || 'Could not create trip'); }
+    } catch { toast.error('Network error'); }
+    finally { setBuildingTrip(false); }
+  };
 
   const handleRemove = async (slug: string, title: string) => {
     await removeFromWishlist(slug);
@@ -117,7 +141,15 @@ export function WishlistPage() {
               </p>
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
+              <button
+                onClick={buildTripFromWishlist}
+                disabled={buildingTrip}
+                className="flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-700 transition-all disabled:opacity-50"
+              >
+                <Route className="w-5 h-5" />
+                {buildingTrip ? 'Creating…' : 'Build a trip'}
+              </button>
               <button
                 onClick={shareWishlist}
                 className="flex items-center gap-2 bg-white text-purple-600 px-6 py-3 rounded-full font-semibold hover:bg-purple-50 transition-all border-2 border-purple-600"
