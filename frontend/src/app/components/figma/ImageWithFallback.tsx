@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { getOptimizedSrc } from '../../utils/imageOptimize'
 
 const ERROR_IMG_SRC =
@@ -11,6 +11,11 @@ interface Props extends React.ImgHTMLAttributes<HTMLImageElement> {
 
 export function ImageWithFallback(props: Props) {
   const [didError, setDidError] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+  const imgRef = useRef<HTMLImageElement>(null)
+
+  // Cached images may already be complete before React attaches onLoad.
+  useEffect(() => { if (imgRef.current?.complete) setLoaded(true) }, [])
 
   const handleError = () => {
     setDidError(true)
@@ -34,13 +39,16 @@ export function ImageWithFallback(props: Props) {
     </div>
   ) : (
     <img
+      ref={imgRef}
       src={optimizedSrc}
       alt={alt}
-      className={className}
+      // Fade in once decoded so images glide in instead of popping.
+      className={`${className ?? ''} transition-opacity duration-700 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
       style={style}
       loading={loading}
       decoding={decoding ?? 'async'}
       {...rest}
+      onLoad={() => setLoaded(true)}
       onError={handleError}
     />
   )
