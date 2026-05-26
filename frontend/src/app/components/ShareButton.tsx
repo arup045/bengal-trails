@@ -17,14 +17,16 @@ export function ShareButton({ title, description, url, variant = 'pill' }: Share
   const shareUrl  = url || (typeof window !== 'undefined' ? window.location.href : '');
   const shareText = `${title} — ${description}`;
 
-  // Close on outside click
+  // Close on outside click or Escape (keyboard accessibility)
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) setOpen(false);
     };
+    const keyHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('keydown', keyHandler);
+    return () => { document.removeEventListener('mousedown', handler); document.removeEventListener('keydown', keyHandler); };
   }, [open]);
 
   const copyLink = async () => {
