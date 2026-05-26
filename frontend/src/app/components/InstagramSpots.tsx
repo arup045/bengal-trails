@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Camera, Sunrise, Sunset, MapPin, Award, Clock, Aperture } from 'lucide-react';
+import { Camera, Sunrise, Sunset, MapPin, Clock, Aperture } from 'lucide-react';
 
 export function InstagramSpots() {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -16,7 +16,6 @@ export function InstagramSpots() {
       difficulty: 'Easy',
       tips: ['Arrive before 6 AM for best light', 'Shoot from the front lawn', 'Use wide-angle lens'],
       camera: 'f/8, ISO 100, 1/125s',
-      likes: '50K+',
     },
     {
       id: 2,
@@ -28,7 +27,6 @@ export function InstagramSpots() {
       difficulty: 'Medium',
       tips: ['Book window seat', 'Capture curves and mountain backdrop', 'Motion blur for speed effect'],
       camera: 'f/11, ISO 200, 1/500s',
-      likes: '75K+',
     },
     {
       id: 3,
@@ -40,7 +38,6 @@ export function InstagramSpots() {
       difficulty: 'Hard',
       tips: ['Bring telephoto lens', 'Watch for wildlife', 'Reflections in water'],
       camera: 'f/5.6, ISO 400, 1/1000s',
-      likes: '60K+',
     },
     {
       id: 4,
@@ -52,7 +49,6 @@ export function InstagramSpots() {
       difficulty: 'Medium',
       tips: ['Use tripod for long exposure', 'Shoot from Mallick Ghat', 'Include river reflections'],
       camera: 'f/16, ISO 100, 30s',
-      likes: '100K+',
     },
     {
       id: 5,
@@ -64,7 +60,6 @@ export function InstagramSpots() {
       difficulty: 'Easy',
       tips: ['Low angle shots', 'Silhouettes of people', 'Use ND filter'],
       camera: 'f/16, ISO 100, 1/60s',
-      likes: '85K+',
     },
     {
       id: 6,
@@ -76,7 +71,6 @@ export function InstagramSpots() {
       difficulty: 'Easy',
       tips: ['Detail shots of carvings', 'Symmetrical compositions', 'Macro lens for details'],
       camera: 'f/8, ISO 200, 1/250s',
-      likes: '40K+',
     },
     {
       id: 7,
@@ -88,7 +82,6 @@ export function InstagramSpots() {
       difficulty: 'Hard',
       tips: ['Arrive 1 hour early', 'Bring warm clothes', 'Kanchenjunga in background'],
       camera: 'f/11, ISO 100, 1/125s',
-      likes: '120K+',
     },
     {
       id: 8,
@@ -100,7 +93,6 @@ export function InstagramSpots() {
       difficulty: 'Medium',
       tips: ['Ask permission before shooting', 'Capture artisans at work', 'Natural light preferred'],
       camera: 'f/2.8, ISO 800, 1/250s',
-      likes: '55K+',
     },
     {
       id: 9,
@@ -112,7 +104,6 @@ export function InstagramSpots() {
       difficulty: 'Easy',
       tips: ['Street photography mode', 'Capture book stacks', 'People reading'],
       camera: 'f/4, ISO 400, 1/250s',
-      likes: '45K+',
     },
     {
       id: 10,
@@ -124,7 +115,6 @@ export function InstagramSpots() {
       difficulty: 'Medium',
       tips: ['Drone shots if allowed', 'Leading lines of tea rows', 'Misty atmosphere'],
       camera: 'f/11, ISO 100, 1/250s',
-      likes: '90K+',
     },
     {
       id: 11,
@@ -136,7 +126,6 @@ export function InstagramSpots() {
       difficulty: 'Easy',
       tips: ['Boat silhouettes', 'Monument framing', 'River reflections'],
       camera: 'f/8, ISO 200, 1/250s',
-      likes: '70K+',
     },
     {
       id: 12,
@@ -148,7 +137,6 @@ export function InstagramSpots() {
       difficulty: 'Easy',
       tips: ['Contrast red earth and green', 'Local life candids', 'Cultural festivals'],
       camera: 'f/5.6, ISO 200, 1/500s',
-      likes: '50K+',
     },
   ];
 
@@ -225,8 +213,8 @@ export function InstagramSpots() {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 px-3 py-1 bg-pink-500 text-white rounded-full text-sm font-semibold flex items-center gap-1">
-                  <Award className="w-3 h-3" />
-                  {spot.likes}
+                  <Camera className="w-3 h-3" />
+                  Photo spot
                 </div>
                 <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-semibold">
                   {spot.difficulty}
