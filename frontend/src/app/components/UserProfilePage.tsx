@@ -5,7 +5,7 @@ import {
   User, Mail, Calendar, MapPin, Heart, Phone,
   Edit2, Save, X, Camera, Globe, Mountain, Sparkles,
   CheckCircle2, Loader2, LogOut, Shield, Trash2,
-  Star, BookOpen, Compass, ChevronRight, Upload, AlertTriangle
+  Star, BookOpen, Compass, ChevronRight, Upload, AlertTriangle, Share2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { uploadImage, authFetch } from '../utils/api';
@@ -320,6 +320,13 @@ export function UserProfilePage() {
             </div>
             {/* Actions */}
             <div className="flex gap-2 sm:self-start">
+              {user.id && (
+                <a href={`/u/${user.id}`}
+                  className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl font-poppins text-sm transition-colors"
+                  title="View your public profile">
+                  <Share2 className="w-4 h-4" /> Public profile
+                </a>
+              )}
               <button onClick={() => { setIsEditing(true); setActiveTab('profile'); }}
                 className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl font-poppins text-sm transition-colors">
                 <Edit2 className="w-4 h-4" /> Edit

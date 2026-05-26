@@ -509,4 +509,76 @@ router.get('/site-settings', async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════
+// PUBLIC PROFILE  (shareable, read-only — no private data exposed)
+// ════════════════════════════════════════
+//
+// GET /users/:id/public
+//   Returns a traveller's public-facing profile: display name, avatar, bio,
+//   member-since, their PUBLISHED reviews, and badges computed from REAL
+//   activity (review count, distinct places, helpful votes). No email, phone,
+//   bookings, wishlist or other private data is ever returned.
+router.get('/users/:id/public', async (req, res) => {
+  const { id } = req.params;
+  // UUID guard — avoids hammering the DB with malformed ids.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return res.status(404).json({ error: 'Profile not found' });
+  }
+  try {
+    const userRes = await pool.query(
+      `SELECT id, name, avatar_url, location, bio, created_at
+         FROM users WHERE id = $1 AND status != 'banned'`,
+      [id]
+    );
+    if (!userRes.rows.length) return res.status(404).json({ error: 'Profile not found' });
+    const u = userRes.rows[0];
+
+    const reviewsRes = await pool.query(
+      `SELECT r.id, r.destination_slug, r.rating, r.title, r.content, r.photos,
+              r.helpful_count, r.created_at,
+              d.name AS destination_title, d.image_url AS destination_image
+         FROM reviews r
+         LEFT JOIN destinations d ON d.slug = r.destination_slug
+        WHERE r.user_id = $1 AND r.status = 'published'
+        ORDER BY r.created_at DESC
+        LIMIT 50`,
+      [id]
+    );
+    const reviews = reviewsRes.rows;
+
+    const reviewCount = reviews.length;
+    const distinctPlaces = new Set(reviews.map(r => r.destination_slug)).size;
+    const helpfulVotes = reviews.reduce((s, r) => s + (Number(r.helpful_count) || 0), 0);
+    const hasPhoto = reviews.some(r => Array.isArray(r.photos) && r.photos.length > 0);
+    const avgRating = reviewCount
+      ? Math.round((reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / reviewCount) * 10) / 10
+      : 0;
+
+    const badges = [
+      { earned: reviewCount >= 1,    icon: '✍️', label: 'First Review' },
+      { earned: reviewCount >= 5,    icon: '🌟', label: 'Top Reviewer' },
+      { earned: reviewCount >= 15,   icon: '🏆', label: 'Prolific Reviewer' },
+      { earned: distinctPlaces >= 5, icon: '🧭', label: 'Bengal Explorer' },
+      { earned: helpfulVotes >= 10,  icon: '👍', label: 'Trusted Voice' },
+      { earned: hasPhoto,            icon: '📸', label: 'Photographer' },
+    ];
+
+    return res.json({
+      profile: {
+        id: u.id,
+        name: u.name || 'Traveller',
+        avatarUrl: u.avatar_url || null,
+        location: u.location || null,
+        bio: u.bio || null,
+        memberSince: u.created_at,
+      },
+      stats: { reviews: reviewCount, places: distinctPlaces, helpfulVotes, avgRating },
+      badges,
+      reviews,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

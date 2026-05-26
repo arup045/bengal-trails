@@ -454,12 +454,14 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <a href={review.userId ? `/u/${review.userId}` : undefined}
+                    className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold shrink-0 hover:ring-2 hover:ring-purple-300 transition">
                     {(review.userName || 'U').charAt(0).toUpperCase()}
-                  </div>
+                  </a>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-gray-900">{review.userName}</p>
+                      <a href={review.userId ? `/u/${review.userId}` : undefined}
+                        className="font-semibold text-gray-900 hover:text-purple-700 transition">{review.userName}</a>
                       {review.verified && (
                         <span title="Verified Visitor" aria-label="Verified Visitor">
                           <Award className="w-4 h-4 text-blue-500" />

@@ -44,6 +44,7 @@ const SpotDetailPage = lazy(() => import('./components/SpotDetailPage').then(m =
 const PlaceDetailPage = lazy(() => import('./components/PlaceDetailPage').then(m => ({ default: m.PlaceDetailPage })));
 const SignInPage = lazy(() => import('./components/SignInPage').then(m => ({ default: m.SignInPage })));
 const UserProfilePage = lazy(() => import('./components/UserProfilePage').then(m => ({ default: m.UserProfilePage })));
+const PublicProfilePage = lazy(() => import('./components/PublicProfilePage').then(m => ({ default: m.PublicProfilePage })));
 const TripPlanner = lazy(() => import('./components/TripPlanner').then(m => ({ default: m.TripPlanner })));
 const WishlistPage = lazy(() => import('./components/WishlistPage').then(m => ({ default: m.WishlistPage })));
 const FoodGuidePage = lazy(() => import('./components/FoodGuidePage').then(m => ({ default: m.FoodGuidePage })));
@@ -136,7 +137,7 @@ type RouteId =
   | 'forgot-password' | 'reset-password' | 'verify-email' | 'gamification'
   | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact'
   | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder'
-  | 'not-found' | 'oauth-success' | 'about' | 'tours' | 'blog';
+  | 'not-found' | 'oauth-success' | 'about' | 'tours' | 'blog' | 'user';
 
 interface RouteConfig { id: RouteId; title?: string; devOnly?: boolean; }
 
@@ -207,6 +208,10 @@ function resolveRoute(hash: string): { id: RouteId; slug?: string; path: string;
   if (hash.startsWith('/explore/')) {
     const slug = hash.replace('/explore/', '');
     return { id: 'place', slug, path: `/explore/${slug}`, title: `Destination: ${slug}` };
+  }
+  if (hash.startsWith('/u/')) {
+    const id = hash.replace('/u/', '').split(/[/?]/)[0];
+    return { id: 'user', slug: id, path: `/u/${id}`, title: 'Traveller Profile' };
   }
   if (hash.startsWith('/oauth-success')) {
     return { id: 'oauth-success', path: '/oauth-success' };
@@ -574,7 +579,9 @@ export default function App() {
               {currentPage === 'signin' && <SignInPage />}
               
               {currentPage === 'profile' && <UserProfilePage />}
-              
+
+              {currentPage === 'user' && <PublicProfilePage userId={currentSlug} />}
+
               {currentPage === 'planner' && <TripPlanner />}
               
               {currentPage === 'wishlist' && <WishlistPage />}
