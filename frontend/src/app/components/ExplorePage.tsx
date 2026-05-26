@@ -18,6 +18,21 @@ const readQueryParam = () => {
   try { return new URLSearchParams(window.location.search).get('q') || ''; } catch { return ''; }
 };
 
+// Emoji per category for the visual chip bar (keyword-matched, with a fallback).
+const catEmoji = (c: string): string => {
+  const s = c.toLowerCase();
+  if (/hill|mountain/.test(s)) return '⛰️';
+  if (/beach|sea|coast/.test(s)) return '🏖️';
+  if (/heritage|fort|palace|monument|colonial/.test(s)) return '🏛️';
+  if (/wild|forest|sanctuary|national|nature/.test(s)) return '🐯';
+  if (/temple|religious|pilgrim|spiritual/.test(s)) return '🛕';
+  if (/lake|river|water|dam/.test(s)) return '🌊';
+  if (/tea|garden/.test(s)) return '🍃';
+  if (/adventure|trek|hik/.test(s)) return '🥾';
+  if (/city|urban/.test(s)) return '🏙️';
+  return '📍';
+};
+
 export function ExplorePage() {
   const districts = useMemo(() => getDistrictsWithMeta(), []);
   // Seed from ?q= so the global search bar (header/hero) carries its query here.
@@ -65,11 +80,11 @@ export function ExplorePage() {
 
   const q = query.trim().toLowerCase();
 
-  // Category list derived from the real data.
+  // Category list + counts derived from the real data.
   const placeCategories = useMemo(() => {
-    const set = new Set<string>();
-    placesData.forEach((p: any) => p.category && set.add(p.category));
-    return Array.from(set).sort();
+    const counts: Record<string, number> = {};
+    placesData.forEach((p: any) => { if (p.category) counts[p.category] = (counts[p.category] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
   }, []);
 
   const priceBand = (priceFrom?: string): '$' | '$$' | '$$$' => {
@@ -198,16 +213,29 @@ export function ExplorePage() {
         </div>
       </div>
 
-      {/* ── Place filters (category / rating / budget / kid-friendly) ──────── */}
+      {/* ── Category chip bar (visual discovery) ───────────────────────────── */}
       {view === 'grid' && (
         <div className="max-w-7xl mx-auto px-5 sm:px-8 mt-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <select value={category} onChange={(e) => setCategory(e.target.value)}
-              className="px-4 py-2 rounded-full bg-white border border-gray-200 font-poppins text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
-              <option value="all">All categories</option>
-              {placeCategories.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button onClick={() => setCategory('all')}
+              className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full font-poppins text-sm font-medium transition-all border ${category === 'all' ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300'}`}>
+              🗺️ All
+            </button>
+            {placeCategories.map((c) => (
+              <button key={c.name} onClick={() => setCategory(category === c.name ? 'all' : c.name)}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full font-poppins text-sm font-medium transition-all border ${category === c.name ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300'}`}>
+                {catEmoji(c.name)} {c.name}
+                <span className={category === c.name ? 'text-white/80' : 'text-gray-400'}>{c.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
+      {/* ── Refine filters (rating / budget / kid-friendly) ────────────────── */}
+      {view === 'grid' && (
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 mt-3">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center bg-white border border-gray-200 rounded-full p-0.5" role="group" aria-label="Minimum rating">
               {[0, 3, 4, 4.5].map((r) => (
                 <button key={r} onClick={() => setMinRating(r)}
