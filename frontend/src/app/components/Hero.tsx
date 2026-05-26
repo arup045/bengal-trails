@@ -2,6 +2,7 @@ import { TrendingUp, Camera, Utensils, Car, Mountain, Star, ArrowRight } from 'l
 import { memo, useState } from 'react';
 import { SmartSearchBar } from './SmartSearchBar';
 import { useSiteContent } from '../utils/useSiteContent';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // ─── Trending chip ─────────────────────────────────────────────────────────────
 const TrendingChip = memo(({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) => (
@@ -24,6 +25,7 @@ TrendingChip.displayName = 'TrendingChip';
 export function Hero() {
   const [tab, setTab] = useState<'destinations' | 'festivals' | 'food'>('destinations');
   const { content } = useSiteContent();
+  const { t } = useLanguage();
   const hero = content.hero;
 
   const tabHints: Record<typeof tab, string> = {
@@ -87,13 +89,13 @@ export function Hero() {
           {/* Tabs */}
           <div className="flex justify-center mb-3.5">
             <div className="flex bg-white/10 backdrop-blur-sm border border-white/15 rounded-full p-1 gap-1">
-              {(['destinations', 'festivals', 'food'] as const).map(t => (
-                <button key={t} onClick={() => setTab(t)}
+              {(['destinations', 'festivals', 'food'] as const).map(tb => (
+                <button key={tb} onClick={() => setTab(tb)}
                   className={`font-poppins text-xs sm:text-sm font-medium capitalize px-4 py-1.5 rounded-full transition-all duration-200
-                    ${tab === t
+                    ${tab === tb
                       ? 'bg-white text-purple-700 shadow-sm'
                       : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
-                  {t}
+                  {t(`hero.tab.${tb}`)}
                 </button>
               ))}
             </div>
@@ -110,7 +112,7 @@ export function Hero() {
         {/* Trending chips */}
         <div className="flex flex-wrap gap-2 justify-center max-w-2xl mb-12">
           <span className="font-poppins text-xs font-medium text-white/40 uppercase tracking-widest self-center mr-1">
-            Trending
+            {t('hero.trending')}
           </span>
           <TrendingChip icon={<Mountain className="w-3.5 h-3.5 text-amber-300/80" />}  label="Darjeeling"        href="/explore/darjeeling" />
           <TrendingChip icon={<TrendingUp className="w-3.5 h-3.5 text-amber-300/80" />} label="Sundarbans"       href="/explore/sundarbans-national-park" />

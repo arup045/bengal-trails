@@ -262,6 +262,115 @@ const translations: Translations = {
     bn: 'পাঠান',
     hi: 'भेजें',
   },
+
+  // Hero (static labels)
+  'hero.trending': {
+    en: 'Trending',
+    bn: 'জনপ্রিয়',
+    hi: 'ट्रेंडिंग',
+  },
+  'hero.tab.destinations': {
+    en: 'Destinations',
+    bn: 'গন্তব্য',
+    hi: 'गंतव्य',
+  },
+  'hero.tab.festivals': {
+    en: 'Festivals',
+    bn: 'উৎসব',
+    hi: 'त्योहार',
+  },
+  'hero.tab.food': {
+    en: 'Food',
+    bn: 'খাবার',
+    hi: 'भोजन',
+  },
+
+  // Footer
+  'footer.tagline': {
+    en: "Discover the soul of West Bengal. Experience authentic culture, breathtaking landscapes, and unforgettable memories with Bengal's most trusted travel companion.",
+    bn: 'পশ্চিমবঙ্গের আত্মা আবিষ্কার করুন। বাংলার সবচেয়ে বিশ্বস্ত ভ্রমণ সঙ্গীর সাথে প্রামাণিক সংস্কৃতি, শ্বাসরুদ্ধকর প্রাকৃতিক দৃশ্য এবং অবিস্মরণীয় স্মৃতির অভিজ্ঞতা নিন।',
+    hi: 'पश्चिम बंगाल की आत्मा को जानें। बंगाल के सबसे भरोसेमंद यात्रा साथी के साथ प्रामाणिक संस्कृति, मनमोहक नज़ारों और अविस्मरणीय यादों का अनुभव करें।',
+  },
+  'footer.location': {
+    en: 'Kolkata, West Bengal, India',
+    bn: 'কলকাতা, পশ্চিমবঙ্গ, ভারত',
+    hi: 'कोलकाता, पश्चिम बंगाल, भारत',
+  },
+  'footer.contactUs': {
+    en: 'Contact us',
+    bn: 'যোগাযোগ করুন',
+    hi: 'संपर्क करें',
+  },
+  'footer.topDestinations': {
+    en: 'Top Destinations',
+    bn: 'শীর্ষ গন্তব্য',
+    hi: 'शीर्ष गंतव्य',
+  },
+  'footer.tools': {
+    en: 'Tools',
+    bn: 'সরঞ্জাম',
+    hi: 'उपकरण',
+  },
+  'footer.support': {
+    en: 'Support',
+    bn: 'সহায়তা',
+    hi: 'सहायता',
+  },
+  'footer.helpfulLinks': {
+    en: 'Helpful Links',
+    bn: 'সহায়ক লিঙ্ক',
+    hi: 'उपयोगी लिंक',
+  },
+  'footer.allDestinations': {
+    en: 'All Destinations',
+    bn: 'সমস্ত গন্তব্য',
+    hi: 'सभी गंतव्य',
+  },
+  'footer.newsletterTitle': {
+    en: 'Stay Updated with Bengal Adventures',
+    bn: 'বেঙ্গল অ্যাডভেঞ্চারের সাথে আপডেট থাকুন',
+    hi: 'बंगाल एडवेंचर्स के साथ अपडेट रहें',
+  },
+  'footer.newsletterSubtitle': {
+    en: 'Get exclusive travel tips, special offers, and destination guides delivered to your inbox.',
+    bn: 'আপনার ইনবক্সে একচেটিয়া ভ্রমণ টিপস, বিশেষ অফার এবং গন্তব্য গাইড পান।',
+    hi: 'विशेष यात्रा सुझाव, ऑफ़र और गंतव्य गाइड सीधे अपने इनबॉक्स में पाएं।',
+  },
+  'footer.emailPlaceholder': {
+    en: 'Enter your email',
+    bn: 'আপনার ইমেল লিখুন',
+    hi: 'अपना ईमेल दर्ज करें',
+  },
+  'footer.subscribe': {
+    en: 'Subscribe',
+    bn: 'সাবস্ক্রাইব',
+    hi: 'सब्सक्राइब',
+  },
+  'footer.madeWith': {
+    en: 'Made with',
+    bn: 'তৈরি',
+    hi: 'बनाया गया',
+  },
+  'footer.inWestBengal': {
+    en: 'in West Bengal',
+    bn: 'পশ্চিমবঙ্গে ❤️ দিয়ে',
+    hi: 'पश्चिम बंगाल में ❤️ से',
+  },
+  'footer.privacy': {
+    en: 'Privacy Policy',
+    bn: 'গোপনীয়তা নীতি',
+    hi: 'गोपनीयता नीति',
+  },
+  'footer.terms': {
+    en: 'Terms of Service',
+    bn: 'পরিষেবার শর্তাবলী',
+    hi: 'सेवा की शर्तें',
+  },
+  'footer.cookies': {
+    en: 'Cookie Policy',
+    bn: 'কুকি নীতি',
+    hi: 'कुकी नीति',
+  },
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);

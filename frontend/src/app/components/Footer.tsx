@@ -13,8 +13,10 @@ import {
   Heart
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export function Footer() {
+  const { t } = useLanguage();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trap, setTrap] = useState(''); // honeypot — bots fill this
@@ -75,7 +77,7 @@ export function Footer() {
       { name: 'Darjeeling', href: '/explore/darjeeling' },
       { name: 'Sundarbans', href: '/explore/sundarbans-national-park' },
       { name: 'Victoria Memorial', href: '/explore/victoria-memorial-kolkata' },
-      { name: 'All Destinations', href: '/explore' },
+      { name: t('footer.allDestinations'), href: '/explore' },
     ],
     tools: [
       { name: 'Itinerary Builder', href: '/itinerary' },
@@ -138,14 +140,14 @@ export function Footer() {
                 <span className="text-3xl" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800 }}>Bengal Trails</span>
               </div>
               <p className="text-orange-100 mb-6 leading-relaxed">
-                Discover the soul of West Bengal. Experience authentic culture, breathtaking landscapes, and unforgettable memories with Bengal's most trusted travel companion.
+                {t('footer.tagline')}
               </p>
               
               {/* Contact Info */}
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-orange-100">
                   <MapPin className="w-4 h-4 text-orange-400" />
-                  <span className="text-sm">Kolkata, West Bengal, India</span>
+                  <span className="text-sm">{t('footer.location')}</span>
                 </div>
                 <a href="/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
                   <Mail className="w-4 h-4 text-orange-400" />
@@ -153,7 +155,7 @@ export function Footer() {
                 </a>
                 <a href="/contact" className="flex items-center gap-3 text-orange-100 hover:text-white transition-colors">
                   <Phone className="w-4 h-4 text-orange-400" />
-                  <span className="text-sm">Contact us</span>
+                  <span className="text-sm">{t('footer.contactUs')}</span>
                 </a>
               </div>
             </motion.div>
@@ -166,7 +168,7 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            <h4 className="text-lg mb-6 text-orange-200">Top Destinations</h4>
+            <h4 className="text-lg mb-6 text-orange-200">{t('footer.topDestinations')}</h4>
             <ul className="space-y-3">
               {footerLinks.destinations.map((link, index) => (
                 <li key={index}>
@@ -191,7 +193,7 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <h4 className="text-lg mb-6 text-orange-200">Tools</h4>
+            <h4 className="text-lg mb-6 text-orange-200">{t('footer.tools')}</h4>
             <ul className="space-y-3">
               {footerLinks.tools.map((link, index) => (
                 <li key={index}>
@@ -216,7 +218,7 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
           >
-            <h4 className="text-lg mb-6 text-orange-200">Support</h4>
+            <h4 className="text-lg mb-6 text-orange-200">{t('footer.support')}</h4>
             <ul className="space-y-3">
               {footerLinks.support.map((link, index) => (
                 <li key={index}>
@@ -242,7 +244,7 @@ export function Footer() {
             transition={{ delay: 0.4 }}
           >
             <div>
-              <h3 className="text-lg mb-4">Helpful Links</h3>
+              <h3 className="text-lg mb-4">{t('footer.helpfulLinks')}</h3>
               <ul className="space-y-2 text-gray-400">
                 <li><a href="/planner" className="hover:text-white transition-colors">Trip Planner</a></li>
                 <li><a href="/food" className="hover:text-white transition-colors">Food Guide</a></li>
@@ -266,14 +268,14 @@ export function Footer() {
           className="bg-gradient-to-r from-orange-800/40 to-red-800/40 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-orange-500/20"
         >
           <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-2xl md:text-3xl mb-3">Stay Updated with Bengal Adventures</h3>
+            <h3 className="text-2xl md:text-3xl mb-3">{t('footer.newsletterTitle')}</h3>
             <p className="text-orange-100 mb-6">
-              Get exclusive travel tips, special offers, and destination guides delivered to your inbox.
+              {t('footer.newsletterSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('footer.emailPlaceholder')}
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 className="flex-1 px-5 py-3.5 rounded-full bg-white/10 border border-orange-300/30 focus:outline-none focus:border-orange-400 focus:bg-white/15 transition-all placeholder:text-orange-200/60 text-white backdrop-blur-sm"
@@ -296,7 +298,7 @@ export function Footer() {
                 onClick={handleNewsletterSubmit}
                 disabled={isSubmitting}
               >
-                <span>Subscribe</span>
+                <span>{t('footer.subscribe')}</span>
                 <Send className="w-4 h-4" />
               </motion.button>
             </div>
@@ -312,7 +314,7 @@ export function Footer() {
               viewport={{ once: true }}
               className="text-orange-200 text-center md:text-left flex items-center gap-2"
             >
-              © 2025 Bengal Trails. Made with <Heart className="w-4 h-4 fill-orange-400 text-orange-400" /> in West Bengal
+              © 2025 Bengal Trails. {t('footer.madeWith')} <Heart className="w-4 h-4 fill-orange-400 text-orange-400" /> {t('footer.inWestBengal')}
             </motion.p>
             
             {/* Social Links */}
@@ -352,11 +354,11 @@ export function Footer() {
             transition={{ delay: 0.1 }}
             className="flex flex-wrap justify-center gap-6 mt-6 text-sm"
           >
-            <a href="/privacy" className="text-orange-200 hover:text-white transition-colors">Privacy Policy</a>
+            <a href="/privacy" className="text-orange-200 hover:text-white transition-colors">{t('footer.privacy')}</a>
             <span className="text-orange-500/50">•</span>
-            <a href="/terms" className="text-orange-200 hover:text-white transition-colors">Terms of Service</a>
+            <a href="/terms" className="text-orange-200 hover:text-white transition-colors">{t('footer.terms')}</a>
             <span className="text-orange-500/50">•</span>
-            <a href="/cookies" className="text-orange-200 hover:text-white transition-colors">Cookie Policy</a>
+            <a href="/cookies" className="text-orange-200 hover:text-white transition-colors">{t('footer.cookies')}</a>
           </motion.div>
         </div>
       </div>
