@@ -58,48 +58,44 @@ export function useWishlistSync() {
     if (saved) setWishlist(JSON.parse(saved));
   };
 
+  // OPTIMISTIC: update UI + localStorage instantly, then sync to the server in
+  // the background. Roll back only if the server call fails — so the heart never
+  // feels laggy, even on a free-tier cold start.
+  const persist = (items: WishlistItem[]) => {
+    setWishlist(items);
+    try { localStorage.setItem('wishlist', JSON.stringify(items)); } catch { /* quota */ }
+  };
+
   const addToWishlist = async (place: WishlistItem) => {
     const newItem = { ...place, addedAt: new Date().toISOString() };
+    const prev = wishlist;
+    persist([...wishlist.filter(i => i.slug !== place.slug), newItem]); // optimistic
     if (user && accessToken) {
       try {
-        // Backend expects { slug }
         const res = await fetch(`${API_BASE}/wishlist`, {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify({ slug: place.slug }),
+          method: 'POST', headers: authHeaders(), body: JSON.stringify({ slug: place.slug }),
         });
-        if (res.ok) {
-          const updated = [...wishlist.filter(i => i.slug !== place.slug), newItem];
-          setWishlist(updated);
-          localStorage.setItem('wishlist', JSON.stringify(updated));
-          return true;
-        }
-      } catch { /* fall through */ }
+        if (!res.ok) throw new Error('save failed');
+      } catch {
+        persist(prev); // rollback
+        return false;
+      }
     }
-    const updated = [...wishlist.filter(i => i.slug !== place.slug), newItem];
-    setWishlist(updated);
-    localStorage.setItem('wishlist', JSON.stringify(updated));
     return true;
   };
 
   const removeFromWishlist = async (slug: string) => {
+    const prev = wishlist;
+    persist(wishlist.filter(i => i.slug !== slug)); // optimistic
     if (user && accessToken) {
       try {
-        const res = await fetch(`${API_BASE}/wishlist/${slug}`, {
-          method: 'DELETE',
-          headers: authHeaders(),
-        });
-        if (res.ok) {
-          const updated = wishlist.filter(i => i.slug !== slug);
-          setWishlist(updated);
-          localStorage.setItem('wishlist', JSON.stringify(updated));
-          return true;
-        }
-      } catch { /* fall through */ }
+        const res = await fetch(`${API_BASE}/wishlist/${slug}`, { method: 'DELETE', headers: authHeaders() });
+        if (!res.ok) throw new Error('remove failed');
+      } catch {
+        persist(prev); // rollback
+        return false;
+      }
     }
-    const updated = wishlist.filter(i => i.slug !== slug);
-    setWishlist(updated);
-    localStorage.setItem('wishlist', JSON.stringify(updated));
     return true;
   };
 
