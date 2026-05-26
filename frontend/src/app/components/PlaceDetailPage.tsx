@@ -21,10 +21,17 @@ import { AiFaq } from './AiFaq';
 
 interface PlaceDetailPageProps { slug: string; }
 
+// Keep the "About" concise — show at most `max` sentences (the rest via Read more).
+function splitSentences(text: string): string[] {
+  if (!text) return [];
+  return (text.match(/[^.!?]+[.!?]+(\s|$)/g) || [text]).map(s => s.trim()).filter(Boolean);
+}
+
 export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   // ── Hooks (all unconditional, before any early return) ──────────────────────
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistSync();
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [aboutExpanded, setAboutExpanded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -227,8 +234,22 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             {/* About */}
             <section id="about" className="scroll-mt-32">
               <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-4">About {place.title}</h2>
-              {place.description && <p className="text-gray-600 text-lg leading-relaxed mb-4">{place.description}</p>}
-              {place.excerpt && place.excerpt !== place.description && <p className="text-gray-600 leading-relaxed">{place.excerpt}</p>}
+              {place.description && (() => {
+                const sentences = splitSentences(place.description);
+                const isLong = sentences.length > 5;
+                const shown = aboutExpanded || !isLong ? place.description : sentences.slice(0, 5).join(' ');
+                return (
+                  <p className="text-gray-600 text-lg leading-relaxed mb-4">
+                    {shown}
+                    {isLong && (
+                      <button onClick={() => setAboutExpanded(v => !v)}
+                        className="ml-1.5 font-poppins text-base font-medium text-purple-600 hover:text-purple-700">
+                        {aboutExpanded ? 'Show less' : 'Read more'}
+                      </button>
+                    )}
+                  </p>
+                );
+              })()}
 
               {place.tags?.length > 0 && (
                 <div className="mt-6">
