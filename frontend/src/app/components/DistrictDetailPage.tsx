@@ -38,6 +38,15 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
 
   const meta = (name: string) => items[name] || {};
 
+  // A simple curated 2-day plan from the district's top places (3 per day).
+  // (The "Plan with AI" bar above generates a fully tailored one on demand.)
+  const dayPlan = useMemo(() => {
+    const top = (placesForDistrict(slug) as any[]).slice(0, 6);
+    const days = [top.slice(0, 3), top.slice(3, 6)].filter((d) => d.length > 0);
+    return days;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
   // Places in this district that have coordinates → plotted on the mini-map.
   const mapPlaces = useMemo(() =>
     places
@@ -209,6 +218,40 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                   saved={isInWishlist(c.wishSlug)}
                   onToggleSave={() => (c.href ? togglePlace({ slug: c.wishSlug, title: c.name, region: district.region, heroImage: { url: c.image }, excerpt: c.excerpt }) : toggleContent(c.name, 'Landmark'))}
                 />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Suggested 2-day plan — curated from real places, with an AI option */}
+        {dayPlan.length > 0 && dayPlan[0].length >= 2 && (
+          <section id="sec-plan">
+            <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🗓️</span>
+                <h2 className="font-poppins text-2xl font-bold text-slate-900">A perfect 2 days in {district.name}</h2>
+              </div>
+              <button onClick={() => askAI(`Plan a detailed 2-day itinerary for ${district.name}, West Bengal with timings`)}
+                className="inline-flex items-center gap-1.5 text-sm font-poppins font-medium text-purple-600 hover:text-purple-700">
+                <Sparkles className="w-4 h-4" /> Get a custom AI plan
+              </button>
+            </div>
+            <div className="grid md:grid-cols-2 gap-5">
+              {dayPlan.map((day, i) => (
+                <div key={i} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                  <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 font-poppins text-sm font-semibold px-3 py-1 rounded-full mb-4">Day {i + 1}</div>
+                  <ol className="space-y-3">
+                    {day.map((p: any, idx: number) => (
+                      <li key={p.slug}>
+                        <a href={`/explore/${p.slug}`} className="group flex items-center gap-3">
+                          <span className="w-7 h-7 rounded-full bg-gray-100 text-gray-600 font-poppins text-xs font-bold flex items-center justify-center shrink-0">{idx + 1}</span>
+                          <span className="font-poppins text-sm font-medium text-slate-800 group-hover:text-purple-700 transition-colors">{p.title}</span>
+                          <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-purple-600 ml-auto shrink-0" />
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               ))}
             </div>
           </section>
