@@ -204,7 +204,8 @@ router.post('/destinations', async (req, res) => {
   try {
     const { name, category, region, description, short_description,
             image_url, price_from, best_time_to_visit, duration,
-            latitude, longitude, featured, status } = req.body;
+            latitude, longitude, featured, status, gallery_images } = req.body;
+    const gallery = Array.isArray(gallery_images) ? gallery_images.slice(0, 12) : [];
 
     if (!name || !category || !region || !description)
       return res.status(400).json({ error: 'name, category, region, description required' });
@@ -225,12 +226,12 @@ router.post('/destinations', async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO destinations
          (name, slug, category, region, description, short_description, image_url,
-          price_from, best_time_to_visit, duration, latitude, longitude, featured, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
+          price_from, best_time_to_visit, duration, latitude, longitude, featured, status, gallery_images)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::text[]) RETURNING *`,
       [name, slug, category, region, description, short_description, image_url,
        price_from, best_time_to_visit, duration,
        latitude || null, longitude || null,
-       featured || false, status || 'published']
+       featured || false, status || 'published', gallery]
     );
 
     cache.invalidate('/api/destinations');
@@ -257,6 +258,11 @@ router.put('/destinations/:id', async (req, res) => {
         updates.push(`${key} = $${i++}`);
         values.push(req.body[key]);
       }
+    }
+    // gallery_images is a text[] — cast explicitly
+    if (Array.isArray(req.body.gallery_images)) {
+      updates.push(`gallery_images = $${i++}::text[]`);
+      values.push(req.body.gallery_images.slice(0, 12));
     }
 
     if (!updates.length) return res.status(400).json({ error: 'No valid fields to update' });

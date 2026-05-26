@@ -16,6 +16,7 @@ interface Destination {
   description: string;
   shortDescription?: string;
   imageUrl?: string;
+  galleryImages?: string[];
   priceFrom?: number | null;
   bestTimeToVisit?: string;
   duration?: string;
@@ -152,6 +153,7 @@ export function DestinationManagement() {
         duration:           formData.duration || null,
         featured:           !!formData.featured,
         status:             formData.status || 'published',
+        gallery_images:     Array.isArray(formData.galleryImages) ? formData.galleryImages : [],
       };
 
       const res = await authFetch(path, { method, body: JSON.stringify(payload) });
@@ -476,6 +478,30 @@ export function DestinationManagement() {
                   folder="bengal-trails/destinations"
                   helperText="Click to upload from your computer, or paste a URL below."
                 />
+
+                {/* Gallery images → shown in the place-detail photo gallery */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Gallery Photos (optional, up to 12)</label>
+                  {formData.galleryImages && formData.galleryImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {formData.galleryImages.map((url, idx) => (
+                        <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                          <button type="button"
+                            onClick={() => setFormData((f) => ({ ...f, galleryImages: (f.galleryImages || []).filter((_, i) => i !== idx) }))}
+                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 text-white rounded-full text-xs flex items-center justify-center hover:bg-black/80">×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <ImageUploader
+                    label=""
+                    value=""
+                    onChange={(url) => url && setFormData((f) => ({ ...f, galleryImages: [...(f.galleryImages || []), url].slice(0, 12) }))}
+                    folder="bengal-trails/destinations"
+                    helperText="Add photos one at a time — these appear in the place's photo gallery."
+                  />
+                </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
