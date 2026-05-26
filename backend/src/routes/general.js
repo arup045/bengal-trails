@@ -102,6 +102,22 @@ router.get('/bookings', authenticate, async (req, res) => {
   }
 });
 
+// PUT /bookings/:bookingId/cancel — user cancels their own booking
+router.put('/bookings/:bookingId/cancel', authenticate, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `UPDATE bookings SET status = 'cancelled'
+        WHERE booking_id = $1 AND user_id = $2 AND status IN ('pending','created','confirmed')
+        RETURNING booking_id, status`,
+      [req.params.bookingId, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Booking not found or already cancelled' });
+    return res.json({ success: true, booking: rows[0] });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ════════════════════════════════════════
 // NEWSLETTER
 // ════════════════════════════════════════

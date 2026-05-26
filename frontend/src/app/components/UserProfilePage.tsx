@@ -141,6 +141,17 @@ export function UserProfilePage() {
     return () => window.removeEventListener('bt:review-changed', handler);
   }, [activeTab]);
 
+  const cancelBooking = async (bookingId: string) => {
+    if (!bookingId || !confirm('Cancel this booking?')) return;
+    const r = await authFetch(`/bookings/${bookingId}/cancel`, { method: 'PUT' });
+    if (r.ok) {
+      toast.success('Booking cancelled');
+      setBookings((prev) => prev.map((b: any) => ((b.bookingId || b.booking_id) === bookingId ? { ...b, status: 'cancelled' } : b)));
+    } else {
+      toast.error('Could not cancel booking');
+    }
+  };
+
   const handleDeleteReview = async (reviewId: string) => {
     if (!confirm('Delete this review? This cannot be undone.')) return;
     const r = await authFetch(`/reviews/${reviewId}`, { method: 'DELETE' });
@@ -617,12 +628,21 @@ export function UserProfilePage() {
                             {b.checkIn || b.check_in} · {b.guests || 1} guest(s)
                           </p>
                         </div>
-                        <span className={`font-poppins text-xs font-semibold px-2.5 py-1 rounded-full ${
-                          b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                          b.status === 'pending'   ? 'bg-amber-100 text-amber-700' :
-                          'bg-gray-100 text-gray-600'}`}>
-                          {b.status}
-                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`font-poppins text-xs font-semibold px-2.5 py-1 rounded-full ${
+                            b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                            b.status === 'pending'   ? 'bg-amber-100 text-amber-700' :
+                            b.status === 'cancelled' ? 'bg-gray-200 text-gray-500' :
+                            'bg-gray-100 text-gray-600'}`}>
+                            {b.status}
+                          </span>
+                          {['pending', 'created', 'confirmed'].includes(b.status) && (
+                            <button onClick={() => cancelBooking(b.bookingId || b.booking_id)}
+                              className="font-poppins text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors">
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
