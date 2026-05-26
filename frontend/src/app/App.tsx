@@ -83,6 +83,7 @@ const UserGeneratedContent = lazy(() => import('./components/UserGeneratedConten
 
 // Lazy load home page sections
 const ToolsSection = lazy(() => import('./components/ToolsSection').then(m => ({ default: m.ToolsSection })));
+const SeasonalPicks = lazy(() => import('./components/SeasonalPicks').then(m => ({ default: m.SeasonalPicks })));
 const RecentlyViewed = lazy(() => import('./components/RecentlyViewed').then(m => ({ default: m.RecentlyViewed })));
 const CultureFestival = lazy(() => import('./components/CultureFestival').then(m => ({ default: m.CultureFestival })));
 const PromoSection = lazy(() => import('./components/PromoSection').then(m => ({ default: m.PromoSection })));
@@ -534,6 +535,9 @@ export default function App() {
                 <>
                   <Hero />
                   <Features />
+                  <Suspense fallback={null}>
+                    <SeasonalPicks />
+                  </Suspense>
                   <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><DestinationGridSkeleton count={3} /></div>}>
                     <ToolsSection />
                   </Suspense>
