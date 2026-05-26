@@ -1,4 +1,4 @@
-import { Star, MapPin, Sparkles } from 'lucide-react';
+import { Star, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { OptimizedImage } from './OptimizedImage';
@@ -161,19 +161,15 @@ export function ExploreWorld() {
                         {d.category}
                       </span>
                     </div>
-                    {/* Rating or "New" badge (top-right) */}
-                    <div className="absolute top-3 right-3">
-                      {hasReviews ? (
+                    {/* Rating badge (top-right) — only when backed by real reviews */}
+                    {hasReviews && (
+                      <div className="absolute top-3 right-3">
                         <span className="bg-white/95 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 font-poppins shadow-sm">
                           <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                           <span className="text-xs font-semibold text-slate-800">{d.rating.toFixed(1)}</span>
                         </span>
-                      ) : (
-                        <span className="bg-amber-500 text-white rounded-full px-2 py-1 flex items-center gap-1 font-poppins text-[11px] font-semibold shadow-sm">
-                          <Sparkles className="w-3 h-3" />New
-                        </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                   {/* Body */}
                   <div className="p-4">
