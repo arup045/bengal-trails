@@ -20,12 +20,64 @@ interface Article {
 const CATEGORIES = ['All', 'Destinations', 'Food & Cuisine', 'Festivals', 'Travel Tips', 'Culture'];
 
 const FALLBACK_ARTICLES: Article[] = [
-  { id: '1', title: 'Top 10 Places to Visit in Darjeeling', slug: 'top-10-darjeeling', excerpt: 'From Tiger Hill sunrise to the famous Darjeeling tea estates, discover the best experiences this hill station has to offer.', content: '', category: 'Destinations', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800', read_time: 5, created_at: '2026-04-15', tags: ['darjeeling', 'hills', 'tea'] },
-  { id: '2', title: 'A Food Lover\'s Guide to Kolkata Street Food', slug: 'kolkata-street-food-guide', excerpt: 'Kathi rolls, puchka, mishti doi — explore the vibrant street food culture of the City of Joy.', content: '', category: 'Food & Cuisine', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1567337710282-00832b415979?w=800', read_time: 7, created_at: '2026-04-10', tags: ['kolkata', 'food', 'street food'] },
-  { id: '3', title: 'Durga Puja: The Biggest Festival of West Bengal', slug: 'durga-puja-guide', excerpt: 'Everything you need to know about experiencing Durga Puja — the grandest celebration in West Bengal.', content: '', category: 'Festivals', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1605640840605-14ac1855827b?w=800', read_time: 6, created_at: '2026-03-20', tags: ['durga puja', 'festival', 'culture'] },
-  { id: '4', title: 'Sundarbans: Complete Travel Guide 2026', slug: 'sundarbans-travel-guide', excerpt: 'Plan your perfect Sundarbans trip — best time to visit, boat safaris, where to stay and what to expect.', content: '', category: 'Destinations', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800', read_time: 8, created_at: '2026-03-05', tags: ['sundarbans', 'wildlife', 'mangrove'] },
-  { id: '5', title: 'Best Time to Visit West Bengal', slug: 'best-time-visit-west-bengal', excerpt: 'A month-by-month guide to help you plan the perfect West Bengal trip based on weather, festivals and crowds.', content: '', category: 'Travel Tips', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800', read_time: 4, created_at: '2026-02-18', tags: ['travel tips', 'weather', 'planning'] },
-  { id: '6', title: 'Bengali Culture: Traditions You Must Know', slug: 'bengali-culture-traditions', excerpt: 'Dive deep into the rich traditions, music, art and literature that make Bengali culture truly unique.', content: '', category: 'Culture', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=800', read_time: 6, created_at: '2026-02-01', tags: ['culture', 'traditions', 'art'] },
+  { id: '1', title: 'Top 10 Places to Visit in Darjeeling', slug: 'top-10-darjeeling', excerpt: 'From Tiger Hill sunrise to the famous Darjeeling tea estates, discover the best experiences this hill station has to offer.', category: 'Destinations', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800', read_time: 5, created_at: '2026-04-15', tags: ['darjeeling', 'hills', 'tea'],
+    content: `<p>The "Queen of the Hills" rewards every kind of traveller. Here are ten experiences worth building a Darjeeling itinerary around.</p>
+<h2>1. Tiger Hill sunrise</h2><p>Set out before dawn to watch the first light hit Kanchenjunga — on clear days you can even glimpse Everest on the horizon. Go October–November or March–May for the best odds.</p>
+<h2>2. The Toy Train</h2><p>The UNESCO-listed Darjeeling Himalayan Railway still runs steam-hauled joy rides to Ghum, India's highest station, looping through Batasia.</p>
+<h2>3. Happy Valley Tea Estate</h2><p>Tour a working garden, watch leaves being processed, and taste a fresh first-flush brew.</p>
+<h2>4–10. More to love</h2><ul>
+<li><strong>Batasia Loop</strong> — spiralling track with a war memorial and mountain views.</li>
+<li><strong>Ghum Monastery</strong> — the area's oldest Tibetan monastery.</li>
+<li><strong>Padmaja Naidu Zoological Park</strong> — red pandas and snow leopards.</li>
+<li><strong>HMI</strong> — the Himalayan Mountaineering Institute and museum.</li>
+<li><strong>Peace Pagoda</strong> — serene Japanese stupa.</li>
+<li><strong>Chowrasta Mall</strong> — the town's lively pedestrian heart.</li>
+<li><strong>Rock Garden & Ganga Maya Park</strong> — terraced gardens by a stream.</li></ul>
+<p>Allow 3–4 days, pack warm layers year-round, and book the toy train in advance.</p>` },
+  { id: '2', title: 'A Food Lover\'s Guide to Kolkata Street Food', slug: 'kolkata-street-food-guide', excerpt: 'Kathi rolls, puchka, mishti doi — explore the vibrant street food culture of the City of Joy.', category: 'Food & Cuisine', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1567337710282-00832b415979?w=800', read_time: 7, created_at: '2026-04-10', tags: ['kolkata', 'food', 'street food'],
+    content: `<p>Kolkata eats well on every corner. Come hungry and graze your way through these classics.</p>
+<h2>The must-tries</h2><ul>
+<li><strong>Kathi roll</strong> — the city's gift to the world: kebab and egg wrapped in a flaky paratha. Try Nizam's or Kusum near New Market.</li>
+<li><strong>Puchka</strong> — Kolkata's sharper, tangier take on pani puri, finished with tamarind water.</li>
+<li><strong>Telebhaja</strong> — crisp fritters (beguni, alur chop) best with evening cha.</li>
+<li><strong>Kosha mangsho with luchi</strong> — slow-cooked mutton and puffed bread.</li>
+<li><strong>Mughlai paratha</strong> — egg-and-keema stuffed, deep-fried.</li></ul>
+<h2>Sweet finish</h2><p>No trip is complete without <strong>mishti doi</strong> (caramelised sweet yoghurt), <strong>rosogolla</strong>, and winter's <strong>nolen gur sandesh</strong>.</p>
+<h2>Where to graze</h2><p>Head to Decker's Lane for lunch, Vivekananda Park for puchka, and College Street's Coffee House for adda over coffee. Carry small cash and eat where the queues are longest.</p>` },
+  { id: '3', title: 'Durga Puja: The Biggest Festival of West Bengal', slug: 'durga-puja-guide', excerpt: 'Everything you need to know about experiencing Durga Puja — the grandest celebration in West Bengal.', category: 'Festivals', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1605640840605-14ac1855827b?w=800', read_time: 6, created_at: '2026-03-20', tags: ['durga puja', 'festival', 'culture'],
+    content: `<p>For five days each autumn, Kolkata becomes the world's biggest open-air art gallery. Durga Puja — now on UNESCO's Intangible Heritage list — celebrates the goddess Durga's victory over evil.</p>
+<h2>When it happens</h2><p>Usually late September to October. The key days run Shoshthi through Dashami, peaking on Ashtami.</p>
+<h2>How to experience it</h2><ul>
+<li><strong>Pandal hopping</strong> — themed pavilions range from village crafts to giant art installations. North Kolkata (Kumartuli, Bagbazar) and South (Ekdalia, Mudiali) are favourites.</li>
+<li><strong>Kumartuli</strong> — visit the potters' quarter beforehand to see idols being sculpted.</li>
+<li><strong>Dhunuchi naach</strong> — incense dance during evening aarti.</li>
+<li><strong>Sindoor khela & immersion</strong> — the emotional farewell on Dashami.</li></ul>
+<h2>Tips</h2><p>Expect huge crowds and walk a lot — wear comfortable shoes, start pandal hopping after dusk, and book stays months ahead.</p>` },
+  { id: '4', title: 'Sundarbans: Complete Travel Guide 2026', slug: 'sundarbans-travel-guide', excerpt: 'Plan your perfect Sundarbans trip — best time to visit, boat safaris, where to stay and what to expect.', category: 'Destinations', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800', read_time: 8, created_at: '2026-03-05', tags: ['sundarbans', 'wildlife', 'mangrove'],
+    content: `<p>The Sundarbans is the world's largest mangrove forest and the only one home to the Royal Bengal Tiger — a UNESCO World Heritage Site straddling India and Bangladesh.</p>
+<h2>Best time to visit</h2><p>November to February: cool, dry weather and the best wildlife sightings. Avoid the monsoon (June–September).</p>
+<h2>Getting there</h2><p>Drive or take a train from Kolkata to Godkhali/Gosaba (around 3–4 hours), then transfer to a boat — the only way to explore the delta.</p>
+<h2>What to do</h2><ul>
+<li><strong>Boat safari</strong> through narrow creeks past Sajnekhali, Sudhanyakhali and Dobanki watchtowers.</li>
+<li><strong>Wildlife spotting</strong> — spotted deer, estuarine crocodiles, kingfishers and, if lucky, a tiger.</li>
+<li><strong>Mangrove walks</strong> on raised canopy trails.</li></ul>
+<h2>Stay & tips</h2><p>Choose forest-edge eco resorts or government lodges. Carry binoculars, mosquito repellent and a permit (arranged by most tour operators). Patience is everything — the magic is in the stillness.</p>` },
+  { id: '5', title: 'Best Time to Visit West Bengal', slug: 'best-time-visit-west-bengal', excerpt: 'A month-by-month guide to help you plan the perfect West Bengal trip based on weather, festivals and crowds.', category: 'Travel Tips', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800', read_time: 4, created_at: '2026-02-18', tags: ['travel tips', 'weather', 'planning'],
+    content: `<p>West Bengal packs the Himalayas, a mangrove delta and a buzzing metropolis into one state — so timing depends on where you're headed.</p>
+<h2>Winter (Nov–Feb) — the all-rounder</h2><p>Cool and dry. Ideal for Kolkata, the Sundarbans, beaches like Digha, and the plains. Peak season, so book ahead.</p>
+<h2>Summer (Mar–Jun) — head for the hills</h2><p>The plains get hot, but it's prime time for Darjeeling, Kalimpong and Mirik, with clear mountain views.</p>
+<h2>Monsoon (Jul–Sep) — lush and green</h2><p>Heavy rain, but tea gardens and waterfalls look spectacular. Watch for landslides in the hills.</p>
+<h2>Festival season (Sep–Nov)</h2><p>Durga Puja transforms Kolkata — unforgettable, but the busiest and priciest window.</p>
+<p><strong>Verdict:</strong> October–February suits most first-time visitors.</p>` },
+  { id: '6', title: 'Bengali Culture: Traditions You Must Know', slug: 'bengali-culture-traditions', excerpt: 'Dive deep into the rich traditions, music, art and literature that make Bengali culture truly unique.', category: 'Culture', author: 'Bengal Trails Team', image_url: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=800', read_time: 6, created_at: '2026-02-01', tags: ['culture', 'traditions', 'art'],
+    content: `<p>Bengal's culture is built on art, intellect and warmth — a heritage that gave India its first Nobel laureate and its national anthem.</p>
+<h2>Literature & music</h2><p>Rabindranath Tagore's poetry, songs (<em>Rabindra Sangeet</em>) and Shantiniketan still shape Bengali identity. Baul folk singers carry a mystical tradition across the countryside.</p>
+<h2>Art & craft</h2><p>From Kalighat pat paintings and Kumartuli clay idols to Bishnupur's terracotta temples and Baluchari silk, craftsmanship runs deep.</p>
+<h2>Everyday life</h2><ul>
+<li><strong>Adda</strong> — the beloved art of long, free-flowing conversation.</li>
+<li><strong>Food first</strong> — meals move from bitter to sweet, ending with mishti.</li>
+<li><strong>Festivals</strong> — Durga Puja, Poush Mela and Saraswati Puja anchor the calendar.</li></ul>
+<p>To feel it firsthand, wander College Street, catch a performance at a para pandal, and share a cup of cha with a local.</p>` },
 ];
 
 function ArticleCard({ article, onClick }: { article: Article; onClick: () => void }) {
