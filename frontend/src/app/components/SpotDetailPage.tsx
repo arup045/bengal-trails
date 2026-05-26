@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, MapPin, Navigation, Compass, Sparkles, Star, Clock, Heart, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { API_BASE } from '../utils/api';
 import { getDistrict } from '../data/districts';
 import { getDistrictContent, type DistrictContent } from '../data/districtContent';
 import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
@@ -39,12 +40,26 @@ export function SpotDetailPage({ path }: { path: string }) {
   // district ↔ spot reuses the same data instead of refetching.
   const { data: placeImageData } = usePlaceImages(districtSlug);
   const items: Record<string, ItemMeta> = placeImageData?.items || {};
+  const [blurb, setBlurb] = useState('');
 
   // Resolve the real item name from its slug within the section's list.
   const list: string[] = (content && (content as DistrictContent)[section as keyof DistrictContent] as string[]) || [];
   const name = useMemo(() => list.find((n) => slugify(n) === itemSlug), [list, itemSlug]);
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, [path]);
+
+  // Short AI-grounded "about" for this spot (cached server-side). Hidden if empty.
+  useEffect(() => {
+    if (!name || !district) { setBlurb(''); return; }
+    let alive = true;
+    const sectionLabel = (LABELS[section] || LABELS.landmarks).label;
+    setBlurb('');
+    fetch(`${API_BASE}/ai-assistant/blurb?name=${encodeURIComponent(name)}&context=${encodeURIComponent(`${sectionLabel} in ${district.name}`)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive) setBlurb(d?.blurb || ''); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [name, district, section]);
 
   if (!district || !content || !name) {
     return (
@@ -141,6 +156,17 @@ export function SpotDetailPage({ path }: { path: string }) {
             <Sparkles className="w-4 h-4" /> Ask AI about this
           </button>
         </div>
+
+        {/* AI-grounded about */}
+        {blurb && (
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="font-poppins text-lg font-bold text-slate-900">About {name}</h2>
+              <span className="inline-flex items-center gap-1 text-[11px] font-poppins text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full"><Sparkles className="w-3 h-3" /> AI</span>
+            </div>
+            <p className="font-poppins text-gray-600 leading-relaxed">{blurb}</p>
+          </div>
+        )}
 
         {/* Quick facts + map */}
         <div className="grid md:grid-cols-2 gap-6">

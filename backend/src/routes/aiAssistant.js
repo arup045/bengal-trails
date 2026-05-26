@@ -657,3 +657,39 @@ router.get('/district-faq', async (req, res) => {
   }));
   return res.json({ faqs, poweredByAI: false });
 });
+
+// ── GET /ai-assistant/blurb?name=&context= ──────────────────────────────────────
+// Short AI-grounded description for a spot (activity/food/landmark/stay). Cached
+// 24h. Returns { blurb: '' } gracefully if AI isn't configured or fails — the UI
+// simply hides the section then.
+const _blurbCache = new Map();
+router.get('/blurb', async (req, res) => {
+  const name = String(req.query.name || '').slice(0, 90);
+  const context = String(req.query.context || '').slice(0, 140);
+  if (!name) return res.status(400).json({ error: 'name required' });
+
+  const key = `${name}|${context}`.toLowerCase();
+  const cached = _blurbCache.get(key);
+  if (cached && Date.now() - cached.ts < FAQ_TTL_MS) return res.json({ blurb: cached.blurb, cached: true });
+  if (!process.env.GEMINI_API_KEY) return res.json({ blurb: '' });
+
+  try {
+    const prompt =
+      `Write a vivid, factual 2-3 sentence description (about 45 words) of "${name}"` +
+      `${context ? ` (${context})` : ''} in West Bengal, India — what it is, why a traveller would go, ` +
+      `and one quick practical tip. Use only real, well-known information; don't invent specifics. ` +
+      `Plain text only — no markdown, no quotes.`;
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.6, maxOutputTokens: 160 } }) }
+    );
+    if (!r.ok) return res.json({ blurb: '' });
+    const data = await r.json();
+    const blurb = (data?.candidates?.[0]?.content?.parts || []).map((p) => p.text).join('').trim();
+    if (blurb) _blurbCache.set(key, { ts: Date.now(), blurb });
+    return res.json({ blurb, poweredByAI: !!blurb });
+  } catch {
+    return res.json({ blurb: '' });
+  }
+});
