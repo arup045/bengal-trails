@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { Loader2, Mail, Calendar, Users, MapPin, CheckCircle, Clock } from 'lucide-react';
 import { authFetch } from '../../utils/api';
 
+// Responses are camelCased by the API middleware; we read camelCase with a
+// snake_case fallback for safety, so the type allows both.
 interface Enquiry {
-  id: number; destination_name: string; check_in: string; check_out: string;
-  guests: number; name: string; email: string; phone: string; message: string;
-  status: string; created_at: string;
+  id: number; guests: number; name: string; email: string; phone: string; message: string; status: string;
+  destinationName?: string; destination_name?: string;
+  checkIn?: string;  check_in?: string;
+  checkOut?: string; check_out?: string;
+  createdAt?: string; created_at?: string;
 }
 
 export function AdminEnquiries() {

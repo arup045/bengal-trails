@@ -7,9 +7,10 @@ interface ShareButtonProps {
   description: string;
   url?:        string;
   variant?:    'icon' | 'pill';
+  className?:  string;
 }
 
-export function ShareButton({ title, description, url, variant = 'pill' }: ShareButtonProps) {
+export function ShareButton({ title, description, url, variant = 'pill', className }: ShareButtonProps) {
   const [open,   setOpen]   = useState(false);
   const [copied, setCopied] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -89,7 +90,7 @@ export function ShareButton({ title, description, url, variant = 'pill' }: Share
   );
 
   return (
-    <div className="relative inline-block" ref={popoverRef}>
+    <div className={`relative inline-block ${className ?? ''}`} ref={popoverRef}>
       {trigger}
       {open && (
         <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 min-w-[240px]">
