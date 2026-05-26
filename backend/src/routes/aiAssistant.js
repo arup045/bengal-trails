@@ -22,6 +22,29 @@ const { toolDeclarations, executeTool } = require('../services/aiTools');
 const MAX_TOOL_HOPS = 4;       // Max chained function calls before forcing a text response
 const GEMINI_MODEL  = 'gemini-2.0-flash';  // faster + better tool use than 1.5-flash
 
+// Human-friendly status shown in the UI while a tool runs (Perplexity-style transparency).
+function toolLabel(name) {
+  return {
+    search_destinations: '🔍 Searching destinations…',
+    get_destination_details: '📍 Pulling up the details…',
+    semantic_search: '🧠 Searching by meaning…',
+    get_weather: '🌤️ Checking live weather…',
+    get_transport: '🚆 Finding the best way there…',
+    find_stays: '🏨 Finding places to stay…',
+    estimate_budget: '💰 Estimating your budget…',
+    suggest_itinerary: '🗺️ Building your itinerary…',
+    list_festivals: '🎉 Checking the festival calendar…',
+    whats_on: '🎉 Checking what’s on…',
+    list_food: '🍛 Looking up Bengali food…',
+    add_to_wishlist: '❤️ Saving to your wishlist…',
+    save_itinerary: '🗒️ Saving your trip…',
+    start_booking: '📅 Opening the booking…',
+    get_my_wishlist: '👤 Checking your wishlist…',
+    get_my_trip_plans: '👤 Checking your trips…',
+    get_recently_viewed: '👤 Checking your recent views…',
+  }[name] || '⚙️ Looking that up…';
+}
+
 // ─── Gemini with function-calling support ──────────────────────────────────────
 
 async function callGeminiWithTools(message, conversationHistory, language, context = {}, ctx = {}) {
@@ -121,7 +144,7 @@ async function callGeminiWithTools(message, conversationHistory, language, conte
 // emit functionCalls (no user text) and are handled internally. Returns the same
 // { text, destinations } shape. Returns null on any failure so the caller can
 // fall back to the non-streaming path.
-async function streamGeminiWithTools(message, conversationHistory, language, context = {}, ctx = {}, onToken) {
+async function streamGeminiWithTools(message, conversationHistory, language, context = {}, ctx = {}, onToken, onTool) {
   if (!process.env.GEMINI_API_KEY) return null;
 
   const systemPrompt = buildSystemPrompt(language, context);
@@ -190,6 +213,7 @@ async function streamGeminiWithTools(message, conversationHistory, language, con
     const functionResponses = [];
     for (const fc of collectedParts) {
       const { name, args } = fc.functionCall;
+      try { onTool && onTool(toolLabel(name)); } catch { /* client gone */ }
       const { result, error } = await executeTool(name, args, ctx);
       if (result) harvestDestinations(name, result, surfacedDestinations);
       functionResponses.push({ functionResponse: { name, response: error ? { error } : { content: result } } });
@@ -512,7 +536,8 @@ router.post('/chat/stream', optionalAuth, async (req, res) => {
 
     const result = await streamGeminiWithTools(
       message, conversationHistory, language, context, ctx,
-      (delta) => send('token', { t: delta })
+      (delta) => send('token', { t: delta }),
+      (label) => send('tool', { label })
     );
 
     if (!result || !result.text) { send('error', { reason: 'no_text' }); return res.end(); }
