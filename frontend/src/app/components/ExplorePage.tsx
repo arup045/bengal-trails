@@ -271,9 +271,51 @@ export function ExplorePage() {
       {/* ── Results: map / filtered places / district grid ─────────────────── */}
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-8">
         {view === 'map' ? (
-          <Suspense fallback={<div className="h-[70vh] min-h-[420px] rounded-3xl bg-gray-100 animate-pulse flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-400 animate-spin" /></div>}>
-            <DistrictsMap userLoc={userLoc} />
-          </Suspense>
+          /* Split view (Airbnb/Booking standard): scrollable district list left, sticky live map right. */
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_1.25fr] gap-6">
+            {/* Left: scrollable district list */}
+            <div className="order-2 lg:order-1">
+              <div className="flex items-center gap-2 mb-4 text-gray-500 font-poppins text-sm">
+                <MapPin className="w-4 h-4 text-purple-600" />
+                {filtered.length} district{filtered.length !== 1 ? 's' : ''}{region !== 'All' ? ` in ${region}` : ''}
+              </div>
+              <div className="space-y-3 lg:max-h-[70vh] lg:overflow-y-auto lg:pr-2 scrollbar-hide">
+                {filtered.length === 0 ? (
+                  <p className="text-gray-400 font-poppins text-sm py-10 text-center">No districts match your search.</p>
+                ) : filtered.map((d) => (
+                  <a key={d.slug} href={`/explore/district/${d.slug}`}
+                    className="group flex gap-3 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:border-purple-200 transition-all">
+                    <div className="relative w-28 sm:w-32 shrink-0 overflow-hidden">
+                      <ImageWithFallback src={d.image || ''} alt={d.name} optimizeWidth={320} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <div className="flex-1 min-w-0 py-3 pr-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-poppins text-base font-semibold text-slate-900 leading-tight truncate">{d.name}</h3>
+                        {userLoc && d._distance != null && (
+                          <span className="shrink-0 text-[11px] font-poppins font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{Math.round(d._distance)} km</span>
+                        )}
+                      </div>
+                      <p className="font-poppins text-xs text-gray-500 mt-0.5">{d.region}</p>
+                      <p className="font-poppins text-xs text-gray-500 mt-1.5 line-clamp-2">{d.blurb}</p>
+                      <span className="inline-flex items-center gap-1 mt-2 text-xs font-poppins font-medium text-purple-600">
+                        {d.placeCount > 0 ? `${d.placeCount} place${d.placeCount > 1 ? 's' : ''}` : 'Explore'}
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: sticky live map */}
+            <div className="order-1 lg:order-2">
+              <div className="lg:sticky lg:top-24">
+                <Suspense fallback={<div className="h-[70vh] min-h-[420px] rounded-3xl bg-gray-100 animate-pulse flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-400 animate-spin" /></div>}>
+                  <DistrictsMap userLoc={userLoc} />
+                </Suspense>
+              </div>
+            </div>
+          </div>
         ) : filtersActive ? (
           <>
             <div className="flex items-center gap-2 mb-6 text-gray-500 font-poppins text-sm">
