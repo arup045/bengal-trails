@@ -7,6 +7,7 @@ import {
   ThumbsUp, ThumbsDown, IndianRupee, ArrowRight, Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { sanitizeInline } from '../utils/sanitize';
@@ -182,11 +183,43 @@ export const AITravelAssistant: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [listening, setListening] = useState(false);
   const [copiedId, setCopiedId] = useState('');
+  const [removedSlugs, setRemovedSlugs] = useState<Set<string>>(new Set());
+  const [savingTrip, setSavingTrip] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
 
   const quickPrompts = useMemo(() => contextualPrompts(getPageContext()), [isOpen]);
+
+  // Every unique destination the AI has surfaced this conversation → "trip in progress".
+  const tripDests = useMemo(() => {
+    const seen = new Map<string, Destination>();
+    messages.forEach((m) => (m.destinations || []).forEach((d) => {
+      if (d.slug && !removedSlugs.has(d.slug) && !seen.has(d.slug)) seen.set(d.slug, d);
+    }));
+    return Array.from(seen.values());
+  }, [messages, removedSlugs]);
+
+  const saveTripFromAI = async () => {
+    if (!tripDests.length || savingTrip) return;
+    const token = getToken();
+    if (!user || !token) { toast.error('Please sign in to save your trip'); window.location.href = '/signin'; return; }
+    setSavingTrip(true);
+    try {
+      const res = await fetch(`${API_BASE}/trip-plans`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: `AI trip · ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+          destinations: tripDests.map((d) => ({ name: d.name, slug: d.slug, image: d.image })),
+          status: 'planning',
+        }),
+      });
+      if (res.ok) toast.success('Saved to My Trips!');
+      else { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Could not save trip'); }
+    } catch { toast.error('Network error — please try again'); }
+    finally { setSavingTrip(false); }
+  };
   const voiceSupported = typeof window !== 'undefined' && (('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window));
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading, toolStatus]);
@@ -421,7 +454,8 @@ export const AITravelAssistant: React.FC = () => {
             </div>
 
             {!isMinimized && (
-              <>
+              <div className="flex-1 flex min-h-0">
+               <div className="flex-1 flex flex-col min-h-0">
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
                   {messages.map((msg) => (
@@ -508,7 +542,39 @@ export const AITravelAssistant: React.FC = () => {
                   </div>
                   <p className="text-xs text-gray-400 text-center mt-1.5">Grounded in real Bengal Trails data · never invented</p>
                 </div>
-              </>
+               </div>
+
+               {/* Trip-in-progress rail (full-screen only) */}
+               {expanded && tripDests.length > 0 && (
+                 <aside className="hidden lg:flex w-64 flex-col border-l border-gray-100 bg-gray-50/60 shrink-0">
+                   <div className="px-4 py-3 border-b border-gray-100">
+                     <h4 className="font-poppins text-sm font-semibold text-slate-900 flex items-center gap-1.5"><MapPin className="w-4 h-4 text-purple-600" /> Trip in progress</h4>
+                     <p className="text-xs text-gray-400 mt-0.5">{tripDests.length} place{tripDests.length !== 1 ? 's' : ''} the AI suggested</p>
+                   </div>
+                   <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                     {tripDests.map((d) => (
+                       <div key={d.slug} className="group flex items-center gap-2 bg-white border border-gray-100 rounded-xl p-1.5 pr-2">
+                         <a href={`/explore/${d.slug}`} className="flex items-center gap-2 flex-1 min-w-0">
+                           <div className="w-9 h-9 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                             {d.image ? <ImageWithFallback src={d.image} alt={d.name} optimizeWidth={120} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-purple-200"><MapPin className="w-4 h-4" /></div>}
+                           </div>
+                           <span className="font-poppins text-xs font-medium text-slate-800 truncate">{d.name}</span>
+                         </a>
+                         <button onClick={() => setRemovedSlugs((prev) => new Set(prev).add(d.slug))} aria-label={`Remove ${d.name}`}
+                           className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all shrink-0"><X className="w-3.5 h-3.5" /></button>
+                       </div>
+                     ))}
+                   </div>
+                   <div className="p-3 border-t border-gray-100">
+                     <button onClick={saveTripFromAI} disabled={savingTrip}
+                       className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2.5 rounded-xl font-poppins text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors">
+                       {savingTrip ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+                       {savingTrip ? 'Saving…' : 'Save to My Trips'}
+                     </button>
+                   </div>
+                 </aside>
+               )}
+              </div>
             )}
           </motion.div>
         )}
