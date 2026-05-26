@@ -17,6 +17,7 @@ import { BookingSystem } from './BookingSystem';
 import { ReportIssueButton } from './ReportIssueButton';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { districtSlugForPlace } from '../data/districts';
+import { AiFaq } from './AiFaq';
 
 interface PlaceDetailPageProps { slug: string; }
 
@@ -338,6 +339,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* AI travel tips */}
+        <div className="mt-14">
+          <AiFaq slug={place.slug} name={place.title} />
         </div>
 
         {/* Booking */}
