@@ -15,11 +15,13 @@ const NEW_REVIEW_STATUS  = MODERATION_PENDING ? 'pending' : 'published';
 // Photo reviews: ensure the `photos` column exists. Memoized so the first write
 // awaits the migration (bulletproof) instead of a fire-and-forget that could lose
 // the race and make INSERTs reference a missing column.
+// NOTE: the `photos` column is TEXT[] (a Postgres array) in the schema — NOT jsonb.
+// Inserts must pass a JS string[] cast to ::text[], never a JSON string.
 let _photosColReady = null;
 function ensurePhotosColumn() {
   if (!_photosColReady) {
     _photosColReady = pool
-      .query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb`)
+      .query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photos TEXT[]`)
       .catch((e) => { _photosColReady = null; throw e; }); // allow retry on next call
   }
   return _photosColReady;
@@ -75,8 +77,8 @@ router.post('/', authenticate, validate(schemas.review), async (req, res) => {
 
     const { rows } = await pool.query(
       `INSERT INTO reviews (user_id, destination_slug, rating, title, content, visit_date, status, photos)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb) RETURNING *`,
-      [req.user.id, destinationSlug, rating, title, content, visitDate || null, NEW_REVIEW_STATUS, JSON.stringify(photoList)]
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::text[]) RETURNING *`,
+      [req.user.id, destinationSlug, rating, title, content, visitDate || null, NEW_REVIEW_STATUS, photoList]
     );
 
     // Update destination stats — derive both count and average from published
@@ -213,12 +215,12 @@ router.put('/:id', authenticate, async (req, res) => {
     const slug = existing.rows[0].destination_slug;
     await ensurePhotosColumn();
     // photos optional on edit — only overwrite when an array is provided (COALESCE keeps existing otherwise)
-    const photoArg = Array.isArray(photos) ? JSON.stringify(photos.slice(0, 6)) : null;
+    const photoArg = Array.isArray(photos) ? photos.slice(0, 6) : null;
 
     const { rows } = await pool.query(
       `UPDATE reviews
        SET rating = $1, title = $2, content = $3, visit_date = $4,
-           photos = COALESCE($5::jsonb, photos), updated_at = NOW()
+           photos = COALESCE($5::text[], photos), updated_at = NOW()
        WHERE id = $6 RETURNING *`,
       [rating, title, content, visitDate || null, photoArg, req.params.id]
     );
