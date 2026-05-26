@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { uploadImage, authFetch } from '../utils/api';
+import { Achievements } from './Achievements';
 
 const INTEREST_OPTIONS = [
   { value: 'Hills & Tea',        icon: Mountain,  color: 'bg-blue-50   text-blue-600   border-blue-200'   },
@@ -344,6 +345,8 @@ export function UserProfilePage() {
           {activeTab === 'profile' && (
             <motion.div key="profile" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <ProfileCompletion user={user} />
+
+              {!isEditing && <Achievements />}
 
               {isEditing ? (
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7 space-y-6">
