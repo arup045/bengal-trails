@@ -295,9 +295,12 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5">Where to eat nearby</h2>
                 <div className="flex flex-wrap gap-2">
                   {restaurants.map((r: { name: string }) => (
-                    <span key={r.name} className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full font-poppins text-sm text-gray-700">
+                    <a key={r.name}
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name}, ${place.district || place.region}, West Bengal`)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full font-poppins text-sm text-gray-700 hover:border-rose-300 hover:text-rose-600 transition-colors">
                       <MapPin className="w-3.5 h-3.5 text-rose-500" />{r.name}
-                    </span>
+                    </a>
                   ))}
                 </div>
               </section>
