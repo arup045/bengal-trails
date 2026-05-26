@@ -2,6 +2,8 @@ import { Heart, Navigation, ArrowRight, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import type { DistrictWithMeta } from '../../data/districts';
+import { queryClient } from '../../lib/queryClient';
+import { API_BASE } from '../../utils/api';
 
 interface Props {
   district: DistrictWithMeta;
@@ -12,6 +14,18 @@ interface Props {
 
 export function DistrictCard({ district, saved, onToggleSave, distanceKm }: Props) {
   const go = () => { window.location.hash = `#/explore/district/${district.slug}`; };
+
+  // Prefetch the district's place-images on hover so its detail page opens instantly.
+  const prefetch = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['place-images', district.slug],
+      queryFn: async () => {
+        const r = await fetch(`${API_BASE}/place-images/${district.slug}`);
+        return r.ok ? r.json() : { items: {}, images: {} };
+      },
+      staleTime: 5 * 60 * 1000,
+    }).catch(() => {});
+  };
 
   const openDirections = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -30,6 +44,8 @@ export function DistrictCard({ district, saved, onToggleSave, distanceKm }: Prop
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       onClick={go}
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
       className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col"
     >
       {/* Image */}
