@@ -1,23 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, X, Calendar, MapPin, Clock, IndianRupee, Download, Share2, Trash2 } from 'lucide-react';
+import { Plus, X, Calendar, MapPin, IndianRupee, Download, Share2, Trash2, Map as MapIcon } from 'lucide-react';
 import { placesData } from '../data/places-full';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import type { RouteStop } from './TripRouteMap';
+
+const TripRouteMap = lazy(() => import('./TripRouteMap'));
+
+interface TripPlace {
+  slug: string;
+  title: string;
+  image: string;
+  priceFrom: string;
+  region: string;
+  lat?: number;
+  lng?: number;
+}
 
 interface TripDay {
   id: string;
   day: number;
-  places: {
-    slug: string;
-    title: string;
-    image: string;
-    priceFrom: string;
-    region: string;
-  }[];
+  places: TripPlace[];
 }
 
 export function TripPlanner() {
@@ -57,7 +64,9 @@ export function TripPlanner() {
             title: place.title,
             image: place.heroImage.url,
             priceFrom: place.priceFrom || 'Free',
-            region: place.region
+            region: place.region,
+            lat: place.coordinates?.lat,
+            lng: place.coordinates?.lng,
           }]
         };
       }
@@ -95,6 +104,91 @@ export function TripPlanner() {
   const getTotalPlaces = () => {
     return tripDays.reduce((sum, day) => sum + day.places.length, 0);
   };
+
+  const priceToNumber = (price?: string) => {
+    if (!price || price.toLowerCase().includes('free')) return 0;
+    const num = parseInt(price.replace(/[^0-9]/g, ''), 10);
+    return isNaN(num) ? 0 : num;
+  };
+
+  // Per-day budget total (sum of place "from" prices for that day).
+  const dayBudget = (day: TripDay) => day.places.reduce((s, p) => s + priceToNumber(p.priceFrom), 0);
+
+  // Ordered stops (with coordinates) across the whole trip — drives the route map.
+  const routeStops: RouteStop[] = (() => {
+    const stops: RouteStop[] = [];
+    let order = 0;
+    tripDays.forEach((day) => {
+      day.places.forEach((p) => {
+        if (typeof p.lat === 'number' && typeof p.lng === 'number') {
+          order += 1;
+          stops.push({ title: p.title, lat: p.lat, lng: p.lng, day: day.day, order });
+        }
+      });
+    });
+    return stops;
+  })();
+
+  // ── Share-as-link ──────────────────────────────────────────────────────────
+  // Encode a compact { n: name, d: [[slug,…], …] } into a URL-safe base64 token
+  // so a trip can be shared and rebuilt from real place data on the other end.
+  const buildShareUrl = () => {
+    const payload = { n: tripName, d: tripDays.map((day) => day.places.map((p) => p.slug)) };
+    const token = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(payload)))));
+    return `${window.location.origin}/planner?t=${token}`;
+  };
+
+  const shareTrip = async () => {
+    if (getTotalPlaces() === 0) { toast.error('Add at least one place before sharing'); return; }
+    const url = buildShareUrl();
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: tripName, text: `Check out my West Bengal trip: ${tripName}`, url });
+        return;
+      }
+    } catch { /* user cancelled native share — fall through to copy */ }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Shareable link copied to clipboard!');
+    } catch {
+      toast.error('Could not copy link');
+    }
+  };
+
+  // On mount, rebuild the trip from a ?t= share token if present.
+  useEffect(() => {
+    let token = '';
+    try { token = new URLSearchParams(window.location.search).get('t') || ''; } catch { token = ''; }
+    if (!token) return;
+    try {
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(token)))));
+      const slugDays: string[][] = Array.isArray(decoded?.d) ? decoded.d : [];
+      if (slugDays.length === 0) return;
+      const bySlug = new Map(placesData.map((p) => [p.slug, p]));
+      const rebuilt: TripDay[] = slugDays.map((slugs, idx) => ({
+        id: `${idx + 1}`,
+        day: idx + 1,
+        places: slugs
+          .map((slug) => bySlug.get(slug))
+          .filter(Boolean)
+          .map((place: any) => ({
+            slug: place.slug,
+            title: place.title,
+            image: place.heroImage.url,
+            priceFrom: place.priceFrom || 'Free',
+            region: place.region,
+            lat: place.coordinates?.lat,
+            lng: place.coordinates?.lng,
+          })),
+      }));
+      if (rebuilt.length > 0) {
+        setTripDays(rebuilt);
+        if (typeof decoded?.n === 'string' && decoded.n.trim()) setTripName(decoded.n);
+        toast.success('Shared trip loaded — make it your own!');
+      }
+    } catch { /* malformed token — ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredPlaces = placesData.filter(place =>
     place.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -212,7 +306,15 @@ export function TripPlanner() {
                       <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center">
                         {day.day}
                       </div>
-                      <h3 className="text-xl">Day {day.day}</h3>
+                      <div>
+                        <h3 className="text-xl leading-tight">Day {day.day}</h3>
+                        {day.places.length > 0 && (
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            {day.places.length} place{day.places.length !== 1 ? 's' : ''}
+                            {dayBudget(day) > 0 && <span className="text-purple-600">· ₹{dayBudget(day).toLocaleString()}</span>}
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -288,6 +390,20 @@ export function TripPlanner() {
               <Plus className="w-5 h-5" />
               Add Another Day
             </button>
+
+            {/* Route map — shows the order you'll visit places, connected on a live map */}
+            {routeStops.length >= 1 && (
+              <div className="bg-white rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl mb-4 flex items-center gap-2">
+                  <MapIcon className="w-5 h-5 text-purple-600" />
+                  Your route
+                  <span className="text-sm font-normal text-gray-500">({routeStops.length} mapped stop{routeStops.length !== 1 ? 's' : ''})</span>
+                </h3>
+                <Suspense fallback={<div className="h-80 rounded-2xl bg-gray-100 animate-pulse flex items-center justify-center"><Loader2 className="w-7 h-7 text-purple-400 animate-spin" /></div>}>
+                  <TripRouteMap stops={routeStops} />
+                </Suspense>
+              </div>
+            )}
           </div>
 
           {/* Sidebar Summary */}
@@ -333,6 +449,13 @@ export function TripPlanner() {
               >
                 <Download className="w-5 h-5" />
                 Download Itinerary
+              </button>
+              <button
+                onClick={shareTrip}
+                className="w-full mt-3 bg-purple-500/30 text-white py-3 rounded-full hover:bg-purple-500/50 transition-colors flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-5 h-5" />
+                Share as link
               </button>
             </div>
 
