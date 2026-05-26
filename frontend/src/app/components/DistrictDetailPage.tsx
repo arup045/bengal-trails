@@ -8,6 +8,7 @@ import { getDistrictContent } from '../data/districtContent';
 import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { usePlaceImages } from '../lib/queries';
+import { ShareButton } from './ShareButton';
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -130,6 +131,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                   className="inline-flex items-center gap-2 bg-white/90 hover:bg-white text-purple-700 font-poppins text-sm font-medium px-4 py-2 rounded-full transition-colors">
                   <Navigation className="w-4 h-4" /> Directions
                 </button>
+                <ShareButton title={`${district.name}, West Bengal`} description={district.blurb || 'Explore on Bengal Trails'} variant="icon" />
               </div>
             </motion.div>
           </div>
