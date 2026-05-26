@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, MapPin, Navigation, Compass, Sparkles, ArrowRight, ChevronDown } from 'lucide-react';
+import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
+import { ArrowLeft, MapPin, Navigation, Compass, Sparkles, ArrowRight, ChevronDown, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { API_BASE } from '../utils/api';
@@ -11,6 +11,9 @@ import { usePlaceImages } from '../lib/queries';
 import { ShareButton } from './ShareButton';
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+// Lazy: Leaflet only loads when a district page with mappable places renders.
+const DistrictPlacesMap = lazy(() => import('./explore/DistrictPlacesMap'));
 
 // Content sections rendered after Top Places (Landmarks are merged INTO Top Places).
 const CONTENT_SECTIONS: SectionKey[] = ['parks', 'activities', 'foods', 'foodZones', 'stays'];
@@ -34,6 +37,13 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
   const items: Record<string, { image?: string; type?: string; rating?: number; hours?: string }> = placeImageData?.items || {};
 
   const meta = (name: string) => items[name] || {};
+
+  // Places in this district that have coordinates → plotted on the mini-map.
+  const mapPlaces = useMemo(() =>
+    places
+      .filter((p: any) => p.coordinates?.lat && p.coordinates?.lng)
+      .map((p: any) => ({ title: p.title, slug: p.slug, lat: p.coordinates.lat, lng: p.coordinates.lng })),
+    [places]);
 
   // AI travel-tips FAQ.
   useEffect(() => {
@@ -201,6 +211,19 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                 />
               ))}
             </div>
+          </section>
+        )}
+
+        {/* On the map — plots this district's places (Leaflet + free OSM) */}
+        {mapPlaces.length > 0 && (
+          <section id="sec-map">
+            <div className="flex items-center gap-2 mb-5">
+              <span className="text-2xl">🗺️</span>
+              <h2 className="font-poppins text-2xl font-bold text-slate-900">{district.name} on the map</h2>
+            </div>
+            <Suspense fallback={<div className="h-[360px] rounded-3xl bg-gray-100 animate-pulse flex items-center justify-center"><Loader2 className="w-7 h-7 text-purple-400 animate-spin" /></div>}>
+              <DistrictPlacesMap center={[district.lat, district.lng]} places={mapPlaces} />
+            </Suspense>
           </section>
         )}
 
