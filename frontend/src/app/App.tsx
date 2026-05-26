@@ -5,7 +5,6 @@ import { Toaster } from 'sonner';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { Hero } from './components/Hero';
-import { BentoGrid } from './components/BentoGrid';
 import { Features } from './components/Features';
 import { FavoritePlaces } from './components/FavoritePlaces';
 import { Header } from './components/Header';
@@ -526,7 +525,6 @@ export default function App() {
               {currentPage === 'home' && (
                 <>
                   <Hero />
-                  <BentoGrid />
                   <Features />
                   <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><DestinationGridSkeleton count={3} /></div>}>
                     <ToolsSection />

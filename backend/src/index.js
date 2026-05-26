@@ -271,6 +271,16 @@ const server = app.listen(PORT, () => {
     }, 9 * 60 * 1000);
     console.log('[server] Keep-alive ping active (' + url + ')');
   }
+
+  // Integrity: recompute EVERY destination's rating + review_count from the real
+  // `reviews` table (published only). Zeroes any seeded/fake numbers so the site
+  // only ever shows ratings backed by genuine reviews. Non-blocking, idempotent.
+  require('./db/pool').query(`
+    UPDATE destinations d SET
+      review_count = COALESCE((SELECT COUNT(*)            FROM reviews r WHERE r.destination_slug = d.slug AND r.status = 'published'), 0),
+      rating       = COALESCE((SELECT AVG(r.rating)::numeric(3,2) FROM reviews r WHERE r.destination_slug = d.slug AND r.status = 'published'), 0)
+  `).then((res) => console.log(`[server] Recomputed ratings from real reviews (${res.rowCount} destinations)`))
+    .catch((e) => console.error('[server] rating recompute failed:', e.message));
 });
 
 // ── Graceful Shutdown ─────────────────────────────────────────────────────────
