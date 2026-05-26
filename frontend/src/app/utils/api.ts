@@ -28,7 +28,10 @@ function resolveApiBase(): string {
     return PROD_API; // broken/unsafe value on a live site → force the real API
   }
   if (!env) return import.meta.env.DEV ? 'http://localhost:3000/api' : PROD_API;
-  if (/onrender\.com$/.test(env)) env += '/api'; // forgot the /api suffix
+  // The backend mounts EVERY route under /api. If VITE_API_BASE omits the /api
+  // suffix (a very common mistake) every call would 404 — so append it for any
+  // host that doesn't already end in /api. Fixes food/festivals, OAuth, admin login.
+  if (!/\/api$/i.test(env)) env += '/api';
   return env;
 }
 export const API_BASE = resolveApiBase();
