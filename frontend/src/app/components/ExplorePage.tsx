@@ -6,6 +6,7 @@ import { getDistrictsWithMeta, type BengalRegion, type DistrictWithMeta } from '
 import { placesData } from '../data/places-full';
 import { DistrictCard } from './explore/DistrictCard';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { EmptyState } from './EmptyState';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { getCurrentLocation, calculateDistance, type LocationCoords } from '../utils/location';
 
@@ -323,10 +324,13 @@ export function ExplorePage() {
               {placeResults.length} place{placeResults.length !== 1 ? 's' : ''} found
             </div>
             {placeResults.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-gray-400 font-poppins mb-4">No places match these filters.</p>
-                <button onClick={clearFilters} className="px-5 py-2.5 bg-purple-600 text-white rounded-full font-poppins text-sm font-medium hover:bg-purple-700">Clear filters</button>
-              </div>
+              <EmptyState
+                icon={Search}
+                title="No places match these filters"
+                description="Try widening your search — remove a filter or pick a different category to see more of West Bengal."
+                actionLabel="Clear filters"
+                onAction={clearFilters}
+              />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {placeResults.map((p: any) => (

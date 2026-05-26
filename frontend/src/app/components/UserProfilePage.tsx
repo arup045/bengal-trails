@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { uploadImage, authFetch } from '../utils/api';
 import { Achievements } from './Achievements';
+import { EmptyState } from './EmptyState';
 
 const INTEREST_OPTIONS = [
   { value: 'Hills & Tea',        icon: Mountain,  color: 'bg-blue-50   text-blue-600   border-blue-200'   },
@@ -613,15 +614,15 @@ export function UserProfilePage() {
                 {bookingsLoading ? (
                   <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-purple-400 animate-spin" /></div>
                 ) : bookings.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Compass className="w-8 h-8 text-purple-300" />
-                    </div>
-                    <p className="font-poppins text-gray-500 mb-4">No trips booked yet</p>
-                    <a href="/explore" className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
-                      Explore Destinations
-                    </a>
-                  </div>
+                  <EmptyState
+                    icon={Compass}
+                    title="No trips booked yet"
+                    description="Your booked stays and experiences will show up here. Find your next Bengal adventure to get started."
+                    actionLabel="Explore destinations"
+                    actionHref="/explore"
+                    secondaryLabel="Plan a trip"
+                    secondaryHref="/planner"
+                  />
                 ) : (
                   <div className="space-y-4">
                     {bookings.map((b: any) => (
@@ -681,19 +682,13 @@ export function UserProfilePage() {
                     <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
                   </div>
                 ) : myReviews.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Star className="w-8 h-8 text-amber-300" />
-                    </div>
-                    <h3 className="font-poppins text-base font-semibold text-slate-900 mb-2">No reviews yet</h3>
-                    <p className="font-poppins text-sm text-gray-500 mb-5">
-                      Share your experiences to help fellow travelers discover Bengal
-                    </p>
-                    <a href="/explore"
-                      className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-full font-poppins text-sm font-medium hover:bg-purple-700 transition-colors">
-                      <Compass className="w-4 h-4" /> Explore Destinations
-                    </a>
-                  </div>
+                  <EmptyState
+                    icon={Star}
+                    title="No reviews yet"
+                    description="Share your experiences to help fellow travellers discover Bengal. Visit a place you've been to and leave your first review."
+                    actionLabel="Explore destinations"
+                    actionHref="/explore"
+                  />
                 ) : (
                   <div className="space-y-4">
                     {myReviews.map((review: any) => {

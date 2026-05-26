@@ -149,7 +149,8 @@ export const NotificationSystem: React.FC = () => {
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
                   <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>No notifications yet</p>
+                  <p className="font-medium text-gray-700">You're all caught up</p>
+                  <p className="text-sm text-gray-400 mt-1">Booking updates and travel alerts will appear here.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">

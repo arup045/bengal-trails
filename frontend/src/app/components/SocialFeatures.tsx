@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { EmptyState } from './EmptyState';
 
 interface UserProfile {
   id: string;
@@ -397,9 +398,14 @@ export const SocialFeatures: React.FC = () => {
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600">No posts yet. Be the first to share!</p>
+              <div className="bg-white rounded-2xl shadow-lg p-2">
+                <EmptyState
+                  icon={Users}
+                  title="No posts yet"
+                  description="This is where the community shares trip stories, tips and photos. Be the first to post something!"
+                  actionLabel="Explore destinations"
+                  actionHref="/explore"
+                />
               </div>
             ) : (
               <div className="space-y-6">
