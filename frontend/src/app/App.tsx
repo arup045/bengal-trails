@@ -522,6 +522,14 @@ export default function App() {
           <main id="main-content" role="main" tabIndex={-1} className="">
             <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
+            <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPage}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
               {currentPage === 'home' && (
                 <>
                   <Hero />
@@ -634,6 +642,8 @@ export default function App() {
               {currentPage === 'about' && <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>}><AboutUsPage /></Suspense>}
 
               {currentPage === 'not-found' && <NotFoundPage />}
+            </motion.div>
+            </AnimatePresence>
             </Suspense>
             </ErrorBoundary>
           </main>
