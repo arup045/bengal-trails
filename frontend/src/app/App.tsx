@@ -15,18 +15,20 @@ import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
-import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { SkipToContent, usePrefersReducedMotion } from './utils/accessibility';
 import { SEOHead, useStructuredData, getOrganizationSchema, getWebsiteSchema, getTouristAttractionSchema, getFaqSchema, getBreadcrumbSchema, getDefaultPlaceFaqs } from './components/SEOHead';
 import { GoogleAnalytics, trackPageView } from './components/Analytics';
-import { AITravelAssistant } from './components/AITravelAssistant';
-import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { ConnectionBanner } from './components/ConnectionBanner';
 import { ScrollProgress } from './components/ScrollProgress';
 import { OfflineIndicator } from './components/OfflineIndicator';
-import { ImageMorphOverlay } from './components/ImageMorphOverlay';
 import { SeasonalRibbon } from './components/SeasonalRibbon';
-import { CommandPalette } from './components/CommandPalette';
+// Heavy, always-mounted but NOT first-paint-critical → code-split + deferred to
+// browser idle so they never block first paint or weigh down the entry chunk.
+const AITravelAssistant   = lazy(() => import('./components/AITravelAssistant').then(m => ({ default: m.AITravelAssistant })));
+const CommandPalette      = lazy(() => import('./components/CommandPalette').then(m => ({ default: m.CommandPalette })));
+const PWAInstallPrompt    = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
+const CookieConsentBanner = lazy(() => import('./components/CookieConsentBanner').then(m => ({ default: m.CookieConsentBanner })));
+const ImageMorphOverlay   = lazy(() => import('./components/ImageMorphOverlay').then(m => ({ default: m.ImageMorphOverlay })));
 // NOTE: places-full is ~490 KB. It is ONLY needed to build JSON-LD structured
 // data on place-detail pages, so we lazy-load it on demand (see the effect in
 // App) instead of importing it eagerly — that alone keeps it out of the initial
@@ -235,6 +237,22 @@ function resolveRoute(hash: string): { id: RouteId; slug?: string; path: string;
     return { id: cfg.id, path: key, title: cfg.title };
   }
   return { id: 'not-found', path: hash, title: '404 Not Found' };
+}
+
+// Mounts children only after the browser is idle, so non-critical widgets
+// (chat assistant, command palette, prompts) never block first paint and their
+// JS is fetched after the page is already interactive.
+function Deferred({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const ric: any = (window as any).requestIdleCallback || ((cb: () => void) => setTimeout(cb, 200));
+    const id = ric(() => setReady(true), { timeout: 2500 });
+    return () => {
+      const cic = (window as any).cancelIdleCallback;
+      if (cic) cic(id); else clearTimeout(id);
+    };
+  }, []);
+  return ready ? <>{children}</> : null;
 }
 
 export default function App() {
@@ -514,8 +532,8 @@ export default function App() {
           {/* Skip to Content Link for Accessibility */}
           <SkipToContent />
 
-          {/* Shared-element card→detail image morph overlay */}
-          <ImageMorphOverlay />
+          {/* Shared-element card→detail image morph overlay (deferred) */}
+          <Suspense fallback={null}><Deferred><ImageMorphOverlay /></Deferred></Suspense>
 
           {/* Toast Notifications */}
           <Toaster
@@ -678,17 +696,16 @@ export default function App() {
         {/* Footer is now universal across all pages */}
         <Footer />
 
-        {/* ⌘K / Ctrl+K quick search palette */}
-        <CommandPalette />
-
-        {/* AI Travel Assistant - Available on all pages */}
-        <AITravelAssistant />
-
-        {/* PWA Install Prompt */}
-        <PWAInstallPrompt />
-
-        {/* Cookie consent banner */}
-        <CookieConsentBanner />
+        {/* Non-critical, always-mounted widgets — code-split + mounted at idle
+            so they never block first paint or bloat the entry chunk. */}
+        <Suspense fallback={null}>
+          <Deferred>
+            <CommandPalette />
+            <AITravelAssistant />
+            <PWAInstallPrompt />
+            <CookieConsentBanner />
+          </Deferred>
+        </Suspense>
 
         {/* Scroll to Top Button */}
         <AnimatePresence>

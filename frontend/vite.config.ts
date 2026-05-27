@@ -52,6 +52,13 @@ export default defineConfig(({ mode }) => ({
           if (/[\\/](recharts|recharts-scale|victory-vendor|internmap|d3-[a-z-]+)[\\/]/.test(id)) {
             return 'vendor-recharts';
           }
+          // Leaflet + react-leaflet are a self-contained leaf used ONLY by the
+          // lazy map routes (Explore map, district maps, Food map, trip route).
+          // Carving them out keeps ~150 KB of mapping code off every other page's
+          // initial load. They only depend on react (one-way → no TDZ cycle).
+          if (/[\\/](leaflet|react-leaflet|@react-leaflet)[\\/]/.test(id)) {
+            return 'vendor-leaflet';
+          }
           return 'vendor';
         },
       },
