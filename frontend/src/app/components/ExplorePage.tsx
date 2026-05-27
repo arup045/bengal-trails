@@ -37,6 +37,18 @@ const catEmoji = (c: string): string => {
   return '📍';
 };
 
+// A single removable active-filter chip.
+function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-full pl-3 pr-1.5 py-1 font-poppins text-xs font-medium">
+      {label}
+      <button onClick={onClear} aria-label={`Remove ${label} filter`} className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-purple-200 transition-colors">
+        <X className="w-3 h-3" />
+      </button>
+    </span>
+  );
+}
+
 export function ExplorePage() {
   const districts = useMemo(() => getDistrictsWithMeta(), []);
   // Seed from ?q= so the global search bar (header/hero) carries its query here.
@@ -334,9 +346,30 @@ export function ExplorePage() {
           </div>
         ) : filtersActive ? (
           <>
-            <div className="flex items-center gap-2 mb-6 text-gray-500 font-poppins text-sm">
+            <div className="flex items-center gap-2 mb-3 text-gray-500 font-poppins text-sm">
               <Search className="w-4 h-4 text-purple-600" />
               {placeResults.length} place{placeResults.length !== 1 ? 's' : ''} found
+            </div>
+            {/* Active-filter chips — each removable independently */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              {q.length >= 2 && (
+                <FilterChip label={`“${query.trim()}”`} onClear={() => setQuery('')} />
+              )}
+              {category !== 'all' && (
+                <FilterChip label={category} onClear={() => setCategory('all')} />
+              )}
+              {minRating > 0 && (
+                <FilterChip label={`${minRating}★ +`} onClear={() => setMinRating(0)} />
+              )}
+              {budget !== 'all' && (
+                <FilterChip label={budget === '$' ? '₹' : budget === '$$' ? '₹₹' : '₹₹₹'} onClear={() => setBudget('all')} />
+              )}
+              {kidFriendly && (
+                <FilterChip label="Kid-friendly" onClear={() => setKidFriendly(false)} />
+              )}
+              <button onClick={clearFilters} className="font-poppins text-xs font-medium text-purple-600 hover:text-purple-700 underline underline-offset-2 ml-1">
+                Clear all
+              </button>
             </div>
             {placeResults.length === 0 ? (
               <EmptyState
