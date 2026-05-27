@@ -141,11 +141,19 @@ export function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <div className="relative bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 text-white overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl" />
+      {/* ── Hero (Darjeeling banner photo behind a brand-tinted overlay) ─────── */}
+      <div className="relative text-white overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1600&q=70&auto=format&fit=crop"
+          alt="Darjeeling tea gardens and the Himalayan range"
+          loading="eager"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Brand-tinted gradient keeps the purple identity AND the text readable */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/85 via-purple-800/80 to-indigo-900/85" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl" />
-        <div className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-28 pb-14 text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 pt-28 pb-14 text-center">
           <motion.div
             initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full mb-5"

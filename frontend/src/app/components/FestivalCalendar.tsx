@@ -486,19 +486,27 @@ export function FestivalCalendar() {
   const clearFilters = () => { setSearch(''); setSelectedMonth(null); setSelectedCategory(null); };
 
   return (
-    <section className="min-h-screen bg-slate-50 pt-8 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-slate-50 pb-16">
+      {/* ── Banner: Kolkata Durga Puja ───────────────────────────────────── */}
+      <div className="relative h-60 sm:h-72 overflow-hidden">
+        <ImageWithFallback
+          src="https://images.unsplash.com/photo-1558431382-27e303142255?w=1600&q=70&auto=format&fit=crop"
+          alt="Kolkata — home of the grandest Durga Puja"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/55 to-purple-900/50" />
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-6 text-white">
+          <p className="text-sm font-semibold text-amber-300 mb-1">Bengal Festivals {calYear}</p>
+          <h1 className="text-3xl md:text-4xl font-bold drop-shadow-lg">Festival calendar of West Bengal</h1>
+          <p className="text-white/90 mt-2 max-w-2xl text-sm sm:text-base">
+            {festivals.length} pujas, melas, and celebrations across the year — with dates, places to go, must-try foods, and one-click Google Calendar reminders.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <header className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-purple-600 mb-1">Bengal Festivals {calYear}</p>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-                Festival calendar of West Bengal
-              </h1>
-              <p className="text-slate-600 mt-2 max-w-2xl">
-                {festivals.length} pujas, melas, and celebrations across the year — with dates, places to go, must-try foods, and one-click Google Calendar reminders.
-              </p>
-            </div>
+          <div className="flex justify-end">
             <div className="relative w-full md:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
