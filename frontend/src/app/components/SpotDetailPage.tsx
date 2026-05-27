@@ -3,7 +3,7 @@ import { ArrowLeft, MapPin, Navigation, Compass, Sparkles, Star, Clock, Heart, C
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { API_BASE } from '../utils/api';
-import { getDistrict } from '../data/districts';
+import { getDistrict, placesForDistrict } from '../data/districts';
 import { getDistrictContent, type DistrictContent } from '../data/districtContent';
 import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
@@ -93,6 +93,14 @@ export function SpotDetailPage({ path }: { path: string }) {
   // Siblings in the same section (excluding this one) for a "More like this" row.
   const siblings = list.filter((n) => n !== name).slice(0, 8);
 
+  // Real, photo-rich Top Places in this district — connects this spot to the
+  // full place-detail experience (the biggest cross-link users were missing).
+  const nearbyPlaces = placesForDistrict(districtSlug).slice(0, 4);
+
+  // The district's OTHER section hubs, to keep people exploring this district.
+  const OTHER_SECTIONS = (['parks', 'activities', 'foods', 'foodZones', 'stays'] as SectionKey[])
+    .filter((k) => k !== section && ((content as any)[k]?.length));
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
@@ -100,9 +108,13 @@ export function SpotDetailPage({ path }: { path: string }) {
         {m.image ? (
           <ImageWithFallback src={m.image} alt={name} className="w-full h-full object-cover" />
         ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-            <span className="text-7xl opacity-90 drop-shadow-lg">{meta.emoji}</span>
-          </div>
+          <>
+            {/* No photo of the exact spot → use a REAL photo of its district as an
+                honest, attractive backdrop, tinted with the section's accent. */}
+            <ImageWithFallback src={(district as any).fallbackImage || ''} alt={`${district.name}, ${district.region}`} className="w-full h-full object-cover" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50 mix-blend-multiply`} />
+            <span className="absolute top-5 right-6 text-5xl opacity-90 drop-shadow-lg">{meta.emoji}</span>
+          </>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/15" />
         <div className="absolute inset-0 flex flex-col justify-end">
@@ -196,6 +208,35 @@ export function SpotDetailPage({ path }: { path: string }) {
           </div>
         </div>
 
+        {/* Top places nearby — connect this spot to the full photo-rich place pages */}
+        {nearbyPlaces.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-5">
+              <span className="text-2xl">📍</span>
+              <h2 className="font-poppins text-2xl font-bold text-slate-900">Top places near {name}</h2>
+              <span className="font-poppins text-sm text-gray-400">in {district.name}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {nearbyPlaces.map((p: any) => (
+                <a key={p.slug} href={`/explore/${p.slug}`}
+                  className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                  <div className="relative h-40 overflow-hidden">
+                    <ImageWithFallback src={p.heroImage?.url || ''} alt={p.title} optimizeWidth={480}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {Number(p.rating) > 0 && (
+                      <span className="absolute top-3 right-3 bg-black/55 text-white text-[11px] font-poppins font-semibold px-2 py-0.5 rounded-full">★ {Number(p.rating).toFixed(1)}</span>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-poppins text-base font-semibold text-slate-900 truncate group-hover:text-purple-700 transition-colors">{p.title}</h3>
+                    {p.excerpt && <p className="font-poppins text-xs text-gray-500 mt-1 line-clamp-2">{p.excerpt}</p>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* More in this section */}
         {siblings.length > 0 && (
           <section>
@@ -220,6 +261,22 @@ export function SpotDetailPage({ path }: { path: string }) {
                   />
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* Explore more of the district — quick links into its other section hubs */}
+        {OTHER_SECTIONS.length > 0 && (
+          <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+            <h2 className="font-poppins text-lg font-bold text-slate-900 mb-4">Explore more of {district.name}</h2>
+            <div className="flex flex-wrap gap-2.5">
+              {OTHER_SECTIONS.map((k) => (
+                <a key={k} href={`/explore/district/${districtSlug}`}
+                  onClick={(e) => { e.preventDefault(); navigate(`/explore/district/${districtSlug}`); }}
+                  className="inline-flex items-center gap-1.5 bg-gray-50 hover:bg-purple-50 border border-gray-200 hover:border-purple-200 text-slate-700 hover:text-purple-700 font-poppins text-sm font-medium px-4 py-2 rounded-full transition-colors">
+                  <span>{(SECTION_META as any)[k].emoji}</span> {(SECTION_META as any)[k].label.split(' &')[0]}
+                </a>
+              ))}
             </div>
           </section>
         )}
