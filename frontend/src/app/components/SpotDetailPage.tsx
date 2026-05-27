@@ -9,6 +9,7 @@ import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { navigate } from '../utils/navigation';
 import { usePlaceImages } from '../lib/queries';
+import { categoryImage } from '../utils/categoryImage';
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -109,10 +110,10 @@ export function SpotDetailPage({ path }: { path: string }) {
           <ImageWithFallback src={m.image} alt={name} className="w-full h-full object-cover" />
         ) : (
           <>
-            {/* No photo of the exact spot → use a REAL photo of its district as an
-                honest, attractive backdrop, tinted with the section's accent. */}
-            <ImageWithFallback src={(district as any).fallbackImage || ''} alt={`${district.name}, ${district.region}`} className="w-full h-full object-cover" />
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50 mix-blend-multiply`} />
+            {/* No photo of the exact spot → a type-representative real photo
+                (same one shown on its card), tinted with the section's accent. */}
+            <ImageWithFallback src={categoryImage(name, section, m.type)} alt={`${meta.label} in ${district.name}`} className="w-full h-full object-cover" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-40 mix-blend-multiply`} />
             <span className="absolute top-5 right-6 text-5xl opacity-90 drop-shadow-lg">{meta.emoji}</span>
           </>
         )}

@@ -1,7 +1,8 @@
-import { Heart, Navigation, ArrowRight, Star, Clock } from 'lucide-react';
+import { Heart, Navigation, ArrowRight, Star, Clock, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { navigate } from '../../utils/navigation';
+import { categoryImage } from '../../utils/categoryImage';
 
 export type SectionKey = 'places' | 'parks' | 'activities' | 'foods' | 'foodZones' | 'stays';
 
@@ -47,18 +48,18 @@ export function ItemCard({ name, section, districtName, image, excerpt, href, ra
       onClick={go}
       className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col"
     >
-      {/* Image / placeholder */}
-      <div className="relative h-44 overflow-hidden">
-        {image ? (
-          <ImageWithFallback src={image} alt={name} optimizeWidth={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-        ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${meta.gradient} flex items-center justify-center`}>
-            <span className="text-5xl opacity-90 drop-shadow">{meta.emoji}</span>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
-        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-purple-700 text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full shadow-sm">
-          {type || meta.pill}
+      {/* Image — real photo when available, else a type-representative photo
+          (never a flat gradient). The emoji sits as a small honest accent. */}
+      <div className="relative h-44 overflow-hidden bg-gray-100">
+        <ImageWithFallback
+          src={image || categoryImage(name, section, type)}
+          alt={name}
+          optimizeWidth={640}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+        <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-purple-700 text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full shadow-sm">
+          <span className="text-xs leading-none">{meta.emoji}</span>{type || meta.pill}
         </span>
         <div className="absolute top-3 right-3 flex gap-2">
           <button onClick={toggle} aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
@@ -82,10 +83,11 @@ export function ItemCard({ name, section, districtName, image, excerpt, href, ra
             </span>
           ) : null}
         </div>
+        <p className="text-gray-500 text-xs font-poppins flex items-center gap-1.5 mb-2"><MapPin className="w-3.5 h-3.5 text-gray-400" />{districtName}</p>
         {hours ? (
           <p className="text-gray-500 text-xs font-poppins flex items-center gap-1.5 mb-2"><Clock className="w-3.5 h-3.5 text-gray-400" />{hours}</p>
         ) : null}
-        {excerpt ? <p className="text-gray-600 text-sm font-poppins line-clamp-2 mb-4 min-h-[2.5rem]">{excerpt}</p> : <div className="mb-3" />}
+        {excerpt ? <p className="text-gray-600 text-sm font-poppins line-clamp-2 mb-4">{excerpt}</p> : <div className="mb-2" />}
         <button
           onClick={(e) => { e.stopPropagation(); go(); }}
           className="mt-auto w-full inline-flex items-center justify-center gap-2 border border-purple-200 text-purple-700 hover:bg-purple-50 font-poppins text-sm font-medium px-4 py-2.5 rounded-full transition-colors group/btn"
