@@ -10,16 +10,20 @@ name: Keep backend warm
 
 on:
   schedule:
-    - cron: '*/10 * * * *' # every 10 minutes
+    - cron: '*/5 * * * *'  # every 5 minutes (GitHub's minimum) to outrun Render's 15-min sleep
   workflow_dispatch: {}      # allow manual runs from the Actions tab
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping /healthz
+      - name: Ping health + warm the DB pool
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://gobro-api.onrender.com/healthz || echo "000")
-          echo "Health check returned: $code"
-          # Don't fail the job on a transient non-200 — the goal is just to wake it.
+          # /healthz wakes the web process; a real data endpoint warms the
+          # Postgres connection pool so the first user query isn't slow either.
+          h=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://gobro-api.onrender.com/healthz || echo "000")
+          echo "healthz: $h"
+          d=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://gobro-api.onrender.com/api/destinations?limit=1 || echo "000")
+          echo "destinations: $d"
+          # Never fail the job on a transient non-200 — the goal is just to keep it awake.
           exit 0
