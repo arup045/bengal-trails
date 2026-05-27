@@ -9,6 +9,7 @@ import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { usePlaceImages } from '../lib/queries';
 import { ShareButton } from './ShareButton';
+import { Reveal } from './Reveal';
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -212,12 +213,14 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
               <span className="font-poppins text-sm text-gray-400">({topPlaces.length})</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {topPlaces.map((c) => (
-                <ItemCard key={c.key} name={c.name} section="places" districtName={district.name}
-                  image={c.image} excerpt={c.excerpt} href={c.href} rating={c.rating} type={c.type} hours={c.hours}
-                  saved={isInWishlist(c.wishSlug)}
-                  onToggleSave={() => (c.href ? togglePlace({ slug: c.wishSlug, title: c.name, region: district.region, heroImage: { url: c.image }, excerpt: c.excerpt }) : toggleContent(c.name, 'Landmark'))}
-                />
+              {topPlaces.map((c, i) => (
+                <Reveal key={c.key} index={i}>
+                  <ItemCard name={c.name} section="places" districtName={district.name}
+                    image={c.image} excerpt={c.excerpt} href={c.href} rating={c.rating} type={c.type} hours={c.hours}
+                    saved={isInWishlist(c.wishSlug)}
+                    onToggleSave={() => (c.href ? togglePlace({ slug: c.wishSlug, title: c.name, region: district.region, heroImage: { url: c.image }, excerpt: c.excerpt }) : toggleContent(c.name, 'Landmark'))}
+                  />
+                </Reveal>
               ))}
             </div>
           </section>
@@ -282,14 +285,16 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                 <span className="font-poppins text-sm text-gray-400">({list.length})</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {list.map((name) => {
+                {list.map((name, i) => {
                   const m = meta(name);
                   return (
-                    <ItemCard key={name} name={name} section={key} districtName={district.name}
-                      image={m.image} type={m.type} rating={m.rating} hours={m.hours}
-                      href={`/explore/district/${slug}/${key}/${slugify(name)}`}
-                      saved={isInWishlist(contentSlug(name))}
-                      onToggleSave={() => toggleContent(name, sm.label)} />
+                    <Reveal key={name} index={i}>
+                      <ItemCard name={name} section={key} districtName={district.name}
+                        image={m.image} type={m.type} rating={m.rating} hours={m.hours}
+                        href={`/explore/district/${slug}/${key}/${slugify(name)}`}
+                        saved={isInWishlist(contentSlug(name))}
+                        onToggleSave={() => toggleContent(name, sm.label)} />
+                    </Reveal>
                   );
                 })}
               </div>
