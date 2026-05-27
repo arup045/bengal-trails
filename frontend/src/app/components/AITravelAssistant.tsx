@@ -188,6 +188,19 @@ export const AITravelAssistant: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
+  const warmedRef = useRef(false);
+
+  // Warm the backend once (free) the moment the user shows intent to chat — pings
+  // /healthz only (NOT the model), so the first real message doesn't wait on a
+  // cold free-tier server. No-ops after the first call.
+  const warm = () => {
+    if (warmedRef.current) return;
+    warmedRef.current = true;
+    try {
+      const origin = API_BASE.replace(/\/api\/?$/, '');
+      fetch(`${origin}/healthz`, { method: 'GET', cache: 'no-store' }).catch(() => {});
+    } catch { /* ignore */ }
+  };
 
   const quickPrompts = useMemo(() => contextualPrompts(getPageContext()), [isOpen]);
 
@@ -404,7 +417,8 @@ export const AITravelAssistant: React.FC = () => {
         {!isOpen && (
           <motion.button
             initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
-            onClick={() => { setIsOpen(true); setUnreadCount(0); }}
+            onClick={() => { setIsOpen(true); setUnreadCount(0); warm(); }}
+            onMouseEnter={warm}
             aria-label="Open AI travel assistant"
             className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 text-white rounded-full shadow-2xl flex items-center justify-center group"
             style={{ boxShadow: '0 8px 32px rgba(124, 58, 237, 0.45)' }}>
@@ -534,7 +548,7 @@ export const AITravelAssistant: React.FC = () => {
                         <Mic className="w-4 h-4" />
                       </button>
                     )}
-                    <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+                    <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} onFocus={warm}
                       placeholder={listening ? 'Listening…' : 'Ask about destinations, food, festivals…'} rows={1}
                       className="flex-1 text-sm text-gray-800 placeholder-gray-400 bg-transparent outline-none resize-none leading-relaxed" style={{ maxHeight: '80px' }} />
                     <button onClick={() => sendMessage()} disabled={!input.trim() || loading}

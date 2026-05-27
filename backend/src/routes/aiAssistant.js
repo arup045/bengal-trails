@@ -111,22 +111,8 @@ async function callGeminiWithTools(message, conversationHistory, language, conte
     // Append Gemini's tool call as a 'model' turn (required for the conversation context)
     contents.push({ role: 'model', parts });
 
-    // Execute each function call and collect responses
-    const functionResponses = [];
-    for (const fc of functionCalls) {
-      const { name, args } = fc.functionCall;
-      const { result, error } = await executeTool(name, args, ctx);
-      // If the tool returned destination-like data, harvest it for the API payload
-      if (result) {
-        harvestDestinations(name, result, surfacedDestinations);
-      }
-      functionResponses.push({
-        functionResponse: {
-          name,
-          response: error ? { error } : { content: result },
-        },
-      });
-    }
+    // Execute all requested tools in PARALLEL, then feed the results back.
+    const functionResponses = await runTools(functionCalls, ctx, surfacedDestinations);
 
     // Append the function responses as a 'function' role turn
     contents.push({ role: 'function', parts: functionResponses });
@@ -208,16 +194,10 @@ async function streamGeminiWithTools(message, conversationHistory, language, con
       return { text: hopText.trim(), destinations: surfacedDestinations };
     }
 
-    // Tool-calling hop: replay model turn, execute tools, append results, loop.
+    // Tool-calling hop: replay model turn, show status, run tools in PARALLEL.
     contents.push({ role: 'model', parts: collectedParts });
-    const functionResponses = [];
-    for (const fc of collectedParts) {
-      const { name, args } = fc.functionCall;
-      try { onTool && onTool(toolLabel(name)); } catch { /* client gone */ }
-      const { result, error } = await executeTool(name, args, ctx);
-      if (result) harvestDestinations(name, result, surfacedDestinations);
-      functionResponses.push({ functionResponse: { name, response: error ? { error } : { content: result } } });
-    }
+    try { onTool && onTool(toolLabel(collectedParts[0].functionCall.name)); } catch { /* client gone */ }
+    const functionResponses = await runTools(collectedParts, ctx, surfacedDestinations);
     contents.push({ role: 'function', parts: functionResponses });
   }
 
@@ -420,6 +400,71 @@ const MAX_MESSAGE_LEN = 2000;          // single message
 const MAX_HISTORY_MSGS = 20;           // most recent messages kept
 const MAX_HISTORY_TOTAL_CHARS = 20000; // total chars across kept history
 
+// ─── Efficiency helpers: fast-path, response cache, tool labels, parallel run ──
+
+// Pure greetings/thanks never need the model or the DB — answer instantly + free.
+const GREETING_RE = /^\s*(hi+|hello+|hey+|hola|namaste|namaskar|yo|sup|good\s*(morning|afternoon|evening|day))\b[\s!.]*$/i;
+const THANKS_RE   = /^\s*(thanks?|thank\s*you|thx|ty|great|cool|nice|awesome|ok(ay)?|got\s*it|bye|goodbye)\b[\s!.]*$/i;
+function fastReply(message, language) {
+  const m = String(message || '').trim();
+  if (m && GREETING_RE.test(m)) {
+    const g = {
+      en: "Hi! I'm Bengal Trails — your West Bengal travel guide. Ask me about destinations, the best time to visit, food, festivals, stays or budgets, and I'll answer from real data.",
+      bn: 'নমস্কার! আমি বেঙ্গল ট্রেইলস — আপনার পশ্চিমবঙ্গ ভ্রমণ গাইড। গন্তব্য, সেরা সময়, খাবার, উৎসব বা বাজেট সম্পর্কে জিজ্ঞাসা করুন।',
+      hi: 'नमस्ते! मैं बंगाल ट्रेल्स हूँ — आपका पश्चिम बंगाल यात्रा गाइड। गंतव्य, सही समय, भोजन, त्योहार या बजट के बारे में पूछें।',
+    };
+    return { text: g[language] || g.en, suggestions: ['Best time to visit Darjeeling', 'Plan a 3-day trip', 'Must-try Bengali food'], destinations: [] };
+  }
+  if (m && THANKS_RE.test(m)) {
+    const t = {
+      en: "You're welcome! Anything else about West Bengal — a place, a plan, food or festivals?",
+      bn: 'স্বাগতম! পশ্চিমবঙ্গ সম্পর্কে আর কিছু — কোনো জায়গা, পরিকল্পনা, খাবার বা উৎসব?',
+      hi: 'आपका स्वागत है! पश्चिम बंगाल के बारे में और कुछ — कोई जगह, योजना, भोजन या त्योहार?',
+    };
+    return { text: t[language] || t.en, suggestions: ['Plan a weekend trip', 'Hill stations', 'Festivals this month'], destinations: [] };
+  }
+  return null;
+}
+
+// Short-lived cache for generic, first-turn, signed-out questions. Personalized
+// or action queries (and any mid-conversation turn) are never cached.
+const _chatCache = new Map(); // key -> { ts, payload }
+const CHAT_TTL_MS = 2 * 60 * 60 * 1000; // 2h
+const CHAT_CACHE_MAX = 300;
+const ACTION_RE = /\b(add|save|book|remove|delete|cancel|wishlist|my\s)\b/i;
+function chatCacheable(message, history, userId) {
+  return !userId && (!Array.isArray(history) || history.length === 0) && !ACTION_RE.test(String(message || ''));
+}
+function chatCacheKey(message, language, page) {
+  return `${language}|${page || ''}|${String(message).trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 200)}`;
+}
+function chatCacheGet(key) {
+  const c = _chatCache.get(key);
+  if (c && Date.now() - c.ts < CHAT_TTL_MS) return c.payload;
+  if (c) _chatCache.delete(key);
+  return null;
+}
+function chatCacheSet(key, payload) {
+  if (_chatCache.size >= CHAT_CACHE_MAX) { const k = _chatCache.keys().next().value; _chatCache.delete(k); }
+  _chatCache.set(key, { ts: Date.now(), payload });
+}
+
+// Execute all of a hop's tool calls in PARALLEL (order preserved), harvesting
+// destinations and building the functionResponse parts Gemini expects back.
+async function runTools(functionCalls, ctx, surfaced) {
+  const settled = await Promise.all(functionCalls.map(async (fc) => {
+    const { name, args } = fc.functionCall;
+    try { const { result, error } = await executeTool(name, args, ctx); return { name, result, error }; }
+    catch (e) { return { name, error: String((e && e.message) || e) }; }
+  }));
+  const functionResponses = [];
+  for (const { name, result, error } of settled) {
+    if (result) harvestDestinations(name, result, surfaced);
+    functionResponses.push({ functionResponse: { name, response: error ? { error } : { content: result } } });
+  }
+  return functionResponses;
+}
+
 router.post('/chat', optionalAuth, async (req, res) => {
   try {
     const { message, language = 'en', conversationHistory: rawHistory = [], page } = req.body;
@@ -453,6 +498,20 @@ router.post('/chat', optionalAuth, async (req, res) => {
       }
     }
 
+    // Fast path: pure greeting/thanks — no model call, no DB, instant + free.
+    const fast = fastReply(message, language);
+    if (fast) {
+      return res.json({ response: fast.text, suggestions: fast.suggestions, destinations: fast.destinations, provider: 'fast' });
+    }
+
+    // Cache: generic, signed-out, first-turn questions are served instantly.
+    const cacheKey = chatCacheable(message, conversationHistory, ctx.userId)
+      ? chatCacheKey(message, language, context.page) : null;
+    if (cacheKey) {
+      const hit = chatCacheGet(cacheKey);
+      if (hit) return res.json({ ...hit, provider: 'cache' });
+    }
+
     let aiResult = null;
     let provider = 'fallback';
 
@@ -480,12 +539,13 @@ router.post('/chat', optionalAuth, async (req, res) => {
       });
     }
 
-    return res.json({
+    const payload = {
       response: aiResult.text,
       suggestions: generateSuggestions(message, aiResult.text),
       destinations: aiResult.destinations || [],
-      provider,
-    });
+    };
+    if (cacheKey) chatCacheSet(cacheKey, payload);
+    return res.json({ ...payload, provider });
   } catch (err) {
     console.error('AI chat error:', err);
     return res.json({
@@ -521,6 +581,14 @@ router.post('/chat/stream', optionalAuth, async (req, res) => {
     const context = { userName: req.user?.name || null, page: typeof page === 'string' ? page.slice(0, 40) : null };
     const ctx = { userId: req.user?.id || null };
 
+    // Fast path: pure greeting/thanks — answer instantly, no model call.
+    const fast = fastReply(message, language);
+    if (fast) {
+      send('token', { t: fast.text });
+      send('done', { suggestions: fast.suggestions, destinations: fast.destinations, provider: 'fast', full: fast.text });
+      return res.end();
+    }
+
     // Normalize + cap history (same rules as /chat)
     let conversationHistory = [];
     if (Array.isArray(rawHistory)) {
@@ -534,6 +602,18 @@ router.post('/chat/stream', optionalAuth, async (req, res) => {
       }
     }
 
+    // Cache: serve a stored answer for generic, signed-out, first-turn questions.
+    const cacheKey = chatCacheable(message, conversationHistory, ctx.userId)
+      ? chatCacheKey(message, language, context.page) : null;
+    if (cacheKey) {
+      const hit = chatCacheGet(cacheKey);
+      if (hit) {
+        send('token', { t: hit.response });
+        send('done', { suggestions: hit.suggestions, destinations: hit.destinations, provider: 'cache', full: hit.response });
+        return res.end();
+      }
+    }
+
     const result = await streamGeminiWithTools(
       message, conversationHistory, language, context, ctx,
       (delta) => send('token', { t: delta }),
@@ -541,6 +621,14 @@ router.post('/chat/stream', optionalAuth, async (req, res) => {
     );
 
     if (!result || !result.text) { send('error', { reason: 'no_text' }); return res.end(); }
+
+    if (cacheKey) {
+      chatCacheSet(cacheKey, {
+        response: result.text,
+        suggestions: generateSuggestions(message, result.text),
+        destinations: result.destinations || [],
+      });
+    }
 
     send('done', {
       suggestions: generateSuggestions(message, result.text),
