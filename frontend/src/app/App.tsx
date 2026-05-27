@@ -26,6 +26,7 @@ import { ScrollProgress } from './components/ScrollProgress';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { ImageMorphOverlay } from './components/ImageMorphOverlay';
 import { SeasonalRibbon } from './components/SeasonalRibbon';
+import { CommandPalette } from './components/CommandPalette';
 // NOTE: places-full is ~490 KB. It is ONLY needed to build JSON-LD structured
 // data on place-detail pages, so we lazy-load it on demand (see the effect in
 // App) instead of importing it eagerly — that alone keeps it out of the initial
@@ -676,6 +677,9 @@ export default function App() {
 
         {/* Footer is now universal across all pages */}
         <Footer />
+
+        {/* ⌘K / Ctrl+K quick search palette */}
+        <CommandPalette />
 
         {/* AI Travel Assistant - Available on all pages */}
         <AITravelAssistant />
