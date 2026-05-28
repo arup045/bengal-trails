@@ -19,6 +19,7 @@ import { useWishlistSync } from '../utils/useWishlistSync';
 import { districtSlugForPlace } from '../data/districts';
 import { AiFaq } from './AiFaq';
 import { PlaceQuickFacts } from './PlaceQuickFacts';
+import { PlaceNearbyAmenities } from './PlaceNearbyAmenities';
 
 interface PlaceDetailPageProps { slug: string; }
 
@@ -154,6 +155,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   const navSections = [
     { id: 'about', label: 'Overview' },
     ...(place.coordinates ? [{ id: 'plan-visit', label: 'Plan visit' }] : []),
+    ...(place.coordinates ? [{ id: 'around-here', label: 'Around here' }] : []),
     ...(showGallery ? [{ id: 'photos', label: 'Photos' }] : []),
     { id: 'getting-there', label: 'Getting there' },
     { id: 'stay', label: 'Stay' },
@@ -317,6 +319,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             <section id="reviews" className="scroll-mt-32">
               <ReviewsSystem destinationSlug={place.slug} destinationName={place.title} />
             </section>
+
+            {/* Around here — live amenities (ATMs/hospitals/police/fuel) from OpenStreetMap */}
+            {place.coordinates && (
+              <PlaceNearbyAmenities lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
+            )}
 
             {/* Nearby */}
             <section id="nearby" className="scroll-mt-32">
