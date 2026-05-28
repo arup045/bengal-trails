@@ -26,6 +26,7 @@ import { PlaceWeatherForecast } from './PlaceWeatherForecast';
 import { TravelSectionRow } from './TravelSectionRow';
 import { PremiumPlaceCard } from './PremiumPlaceCard';
 import { PlaceQuickInsights } from './PlaceQuickInsights';
+import { PlaceLogistics } from './PlaceLogistics';
 // Heavy (Leaflet + Overpass) — load only when this page renders.
 const PlaceInteractiveMap = lazy(() => import('./PlaceInteractiveMap').then(m => ({ default: m.PlaceInteractiveMap })));
 import { InternationalVisitorChip } from './InternationalVisitorChip';
@@ -368,9 +369,25 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               </section>
             )}
 
-            {/* Getting there */}
+            {/* Logistics — Fly / Rail / Drive premium 3-card grid + the
+                existing per-place transport guide below it. */}
             <section id="getting-there" className="scroll-mt-32">
-              <TransportGuideSection destinationSlug={place.slug} />
+              <div className="mb-3">
+                <h2 className="font-poppins text-3xl font-bold text-slate-900">How to reach {place.title}</h2>
+                <p className="font-poppins text-sm text-slate-500 mt-1">Nearest gateways and a live drive estimate from Kolkata.</p>
+              </div>
+              {place.coordinates && (
+                <PlaceLogistics
+                  lat={place.coordinates.lat}
+                  lng={place.coordinates.lng}
+                  region={place.region}
+                  district={place.district}
+                  placeName={place.title}
+                />
+              )}
+              <div className="mt-6">
+                <TransportGuideSection destinationSlug={place.slug} />
+              </div>
             </section>
 
             {/* Stay */}

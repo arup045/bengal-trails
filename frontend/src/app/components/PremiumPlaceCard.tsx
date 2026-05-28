@@ -1,5 +1,64 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapPin, Star, ArrowUpRight, Mountain, Utensils, Hotel, Trees, Compass, Sparkles } from 'lucide-react';
+
+// Wikipedia photo auto-backfill — when a place has no real photo URL, try the
+// free Wikipedia Commons media-list for a matching article. Result is cached
+// in localStorage (7-day TTL) and reused across components.
+const WIKI_CACHE_KEY = 'bt-wiki-cardphoto-v1';
+const WIKI_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function wikiCacheGet(key: string): string | null {
+  try {
+    const raw = localStorage.getItem(WIKI_CACHE_KEY);
+    if (!raw) return null;
+    const map = JSON.parse(raw);
+    const hit = map?.[key];
+    if (!hit) return null;
+    if (Date.now() - hit.ts > WIKI_TTL_MS) return null;
+    return hit.v ?? null;
+  } catch { return null; }
+}
+function wikiCacheSet(key: string, value: string | null) {
+  try {
+    const raw = localStorage.getItem(WIKI_CACHE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    map[key] = { ts: Date.now(), v: value };
+    const keys = Object.keys(map);
+    // Keep the cache bounded so it never inflates beyond ~200 places.
+    if (keys.length > 200) {
+      keys.sort((a, b) => (map[a].ts || 0) - (map[b].ts || 0))
+        .slice(0, keys.length - 200)
+        .forEach((k) => delete map[k]);
+    }
+    localStorage.setItem(WIKI_CACHE_KEY, JSON.stringify(map));
+  } catch { /* quota */ }
+}
+
+async function fetchWikiPhoto(title: string): Promise<string | null> {
+  try {
+    const r = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(title)}`,
+      { headers: { Accept: 'application/json' } },
+    );
+    if (!r.ok) return null;
+    const data = await r.json();
+    const items: any[] = data?.items || [];
+    for (const it of items) {
+      if (it.type !== 'image') continue;
+      const srcset = Array.isArray(it.srcset) ? it.srcset : [];
+      const best = srcset.reduce(
+        (acc: any, cur: any) => (Number(cur?.scale) > Number(acc?.scale || 0) ? cur : acc),
+        srcset[0],
+      );
+      if (!best?.src) continue;
+      const src = best.src.startsWith('//') ? `https:${best.src}` : best.src;
+      if (/\.svg(\?|$)/i.test(src)) continue;
+      if (/(coat[-_ ]of[-_ ]arms|logo|seal|map|disambig|edit-icon|flag)/i.test(src)) continue;
+      return src;
+    }
+    return null;
+  } catch { return null; }
+}
 
 // One uniform card used by every horizontal row on every detail page.
 // Strict rules from the spec:
@@ -43,11 +102,33 @@ export function PremiumPlaceCard({
   title, image, href, location, tagline, rating, price, fallbackKind,
 }: PremiumPlaceCardProps) {
   // If the supplied URL fails to load (404 / blocked / expired), flip to the
-  // neutral placeholder instead of the grey "broken image" UA icon.
-  const [imgBroken, setImgBroken] = useState(false);
+  // wiki-backfilled photo first, and only then to the neutral placeholder.
+  const [primaryBroken, setPrimaryBroken] = useState(false);
+  const [wikiPhoto, setWikiPhoto] = useState<string | null>(() => wikiCacheGet(title));
+  const [wikiBroken, setWikiBroken] = useState(false);
+
+  const primaryUsable = !!(image && image.trim()) && !primaryBroken;
+  const wikiUsable = !!wikiPhoto && !wikiBroken;
+  const displayedSrc = primaryUsable ? (image as string) : (wikiUsable ? (wikiPhoto as string) : null);
+  const hasImage = !!displayedSrc;
+
+  // Lazily fetch a Wikipedia photo whenever we don't have a usable primary image
+  // and we haven't already cached/tried one for this title.
+  useEffect(() => {
+    if (primaryUsable) return;          // primary image is fine, no backfill needed
+    if (wikiPhoto != null) return;      // already have one (state or cache hit)
+    if (!title) return;
+    let alive = true;
+    fetchWikiPhoto(title).then((src) => {
+      if (!alive) return;
+      // Cache both hits and misses — `null` skips future fetches for the TTL window.
+      wikiCacheSet(title, src);
+      if (src) setWikiPhoto(src);
+    });
+    return () => { alive = false; };
+  }, [primaryUsable, wikiPhoto, title]);
 
   const sub = tagline || location;
-  const hasImage = !!(image && image.trim()) && !imgBroken;
   const FallbackIcon = iconFor(fallbackKind);
 
   return (
@@ -60,14 +141,21 @@ export function PremiumPlaceCard({
         {hasImage ? (
           <>
             <img
-              src={image as string}
+              src={displayedSrc as string}
               alt={title}
               loading="lazy"
               decoding="async"
-              onError={() => setImgBroken(true)}
+              onError={() => {
+                // Route the failure to whichever source is currently in use,
+                // so the next render can fall through to the next layer.
+                if (primaryUsable) setPrimaryBroken(true);
+                else setWikiBroken(true);
+              }}
               onLoad={(e) => {
-                // Some image hosts respond 200 with a 0-byte body — treat as broken.
-                if ((e.currentTarget as HTMLImageElement).naturalWidth === 0) setImgBroken(true);
+                if ((e.currentTarget as HTMLImageElement).naturalWidth === 0) {
+                  if (primaryUsable) setPrimaryBroken(true);
+                  else setWikiBroken(true);
+                }
               }}
               className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
             />

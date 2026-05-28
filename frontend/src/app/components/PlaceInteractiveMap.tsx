@@ -193,9 +193,12 @@ export function PlaceInteractiveMap({ lat, lng, placeName }: { lat: number; lng:
           style={{ height: 360, width: '100%' }}
           className="z-0"
         >
+          {/* Dark Carto tiles — premium "essential radar" feel and the bright
+              category pin colours pop against the muted basemap. */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+            subdomains={['a', 'b', 'c', 'd']}
           />
 
           {/* Centre marker — the place itself */}
