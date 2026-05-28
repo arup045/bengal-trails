@@ -5,7 +5,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { API_BASE } from '../utils/api';
 import { getDistrict, placesForDistrict } from '../data/districts';
 import { getDistrictContent } from '../data/districtContent';
-import { SECTION_META, type SectionKey } from './explore/ItemCard';
+import { type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { usePlaceImages } from '../lib/queries';
 import { ShareButton } from './ShareButton';
@@ -126,9 +126,48 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const navItems: Array<{ id: string; label: string }> = [];
-  if (topPlaces.length) navItems.push({ id: 'sec-places', label: 'Top Places' });
-  CONTENT_SECTIONS.forEach((k) => { if (content?.[k]?.length) navItems.push({ id: `sec-${k}`, label: SECTION_META[k].pill === 'Park / Arena' ? 'Parks' : SECTION_META[k].label.split(' &')[0].split(' Local')[0] }); });
+  // ── Sticky sub-nav: cleaner taxonomy + scroll-spy active state ──────────────
+  const NAV_LABEL: Record<string, string> = {
+    'sec-places':     'Places',
+    'sec-plan':       'Plan visit',
+    'sec-map':        'On the map',
+    'sec-parks':      'Parks',
+    'sec-activities': 'Activities',
+    'sec-foods':      'Food',
+    'sec-foodZones':  'Food hubs',
+    'sec-stays':      'Where to stay',
+  };
+  const navItems: Array<{ id: string; label: string }> = useMemo(() => {
+    const items: Array<{ id: string; label: string }> = [];
+    if (topPlaces.length) items.push({ id: 'sec-places', label: NAV_LABEL['sec-places'] });
+    if (dayPlan.length > 0 && dayPlan[0].length >= 2) items.push({ id: 'sec-plan', label: NAV_LABEL['sec-plan'] });
+    if (mapPlaces.length > 0) items.push({ id: 'sec-map', label: NAV_LABEL['sec-map'] });
+    CONTENT_SECTIONS.forEach((k) => {
+      if (content?.[k]?.length) items.push({ id: `sec-${k}`, label: NAV_LABEL[`sec-${k}`] || k });
+    });
+    return items;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topPlaces.length, dayPlan, mapPlaces.length, content]);
+
+  // Scroll-spy — keep the underline under whichever section is currently in view.
+  const [activeNavId, setActiveNavId] = useState<string>('');
+  useEffect(() => {
+    if (navItems.length === 0) return;
+    const els = navItems.map((n) => document.getElementById(n.id)).filter(Boolean) as HTMLElement[];
+    if (els.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) setActiveNavId(visible[0].target.id);
+      },
+      // Trigger zone: top 25% to bottom 35% of viewport — feels natural while scrolling.
+      { rootMargin: '-25% 0px -65% 0px', threshold: 0 },
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [navItems]);
 
   const aiChips = [`Best 2-day plan for ${district.name}`, `Where to eat in ${district.name}`, `How to reach ${district.name}`];
 
@@ -189,16 +228,31 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
           </div>
         </div>
 
-        {/* Sticky category nav */}
+        {/* Pinned glassmorphic sub-nav with scroll-spy + sliding purple pointer */}
         {navItems.length > 0 && (
-          <div className="sticky top-16 z-20 -mx-5 sm:mx-0 mt-6 bg-gray-50/95 backdrop-blur py-3">
-            <div className="flex gap-2 overflow-x-auto px-5 sm:px-0">
-              {navItems.map((n) => (
-                <button key={n.id} onClick={() => scrollTo(n.id)}
-                  className="shrink-0 px-4 py-2 rounded-full bg-white border border-gray-200 text-gray-700 font-poppins text-sm font-medium hover:border-purple-300 hover:text-purple-600 transition-colors">
-                  {n.label}
-                </button>
-              ))}
+          <div className="sticky top-16 z-30 -mx-5 sm:mx-0 mt-6 bg-white/80 backdrop-blur-md border-b border-slate-100">
+            <div className="flex gap-1 overflow-x-auto px-5 sm:px-0 py-3 scrollbar-hide">
+              {navItems.map((n) => {
+                const active = activeNavId === n.id;
+                return (
+                  <button
+                    key={n.id}
+                    onClick={() => scrollTo(n.id)}
+                    className={`relative shrink-0 px-4 py-2 font-poppins text-sm font-medium transition-colors ${
+                      active ? 'text-purple-700' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {n.label}
+                    {active && (
+                      <motion.span
+                        layoutId="district-subnav-pointer"
+                        className="absolute left-3 right-3 -bottom-0.5 h-0.5 bg-purple-600 rounded-full"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
