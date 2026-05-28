@@ -23,6 +23,7 @@ import { PlaceNearbyAmenities } from './PlaceNearbyAmenities';
 import { PlaceHistory } from './PlaceHistory';
 import { usePlaceWikiPhotos } from '../utils/wikiPhotos';
 import { PlaceWeatherForecast } from './PlaceWeatherForecast';
+import { InternationalVisitorChip } from './InternationalVisitorChip';
 
 interface PlaceDetailPageProps { slug: string; }
 
@@ -246,6 +247,9 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
           {/* Main */}
           <div className="lg:col-span-2 space-y-12">
             {/* About */}
+            {/* Subtle chip for foreign-locale visitors (hidden for Indian locales) */}
+            <InternationalVisitorChip destinationCity={place.title} />
+
             <section id="about" className="scroll-mt-32">
               <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-4">About {place.title}</h2>
               {place.description && (() => {

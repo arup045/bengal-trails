@@ -2,6 +2,7 @@ import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, MessageSquare, Award, TrendingUp } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
+import { Avatar } from './Avatar';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
@@ -455,8 +456,8 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <a href={review.userId ? `/u/${review.userId}` : undefined}
-                    className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold shrink-0 hover:ring-2 hover:ring-purple-300 transition">
-                    {(review.userName || 'U').charAt(0).toUpperCase()}
+                    className="shrink-0 hover:ring-2 hover:ring-purple-300 rounded-full transition">
+                    <Avatar name={review.userName} src={review.userAvatar} size={48} />
                   </a>
                   <div>
                     <div className="flex items-center gap-2">
