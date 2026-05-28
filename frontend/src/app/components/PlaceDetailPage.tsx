@@ -20,6 +20,8 @@ import { districtSlugForPlace } from '../data/districts';
 import { AiFaq } from './AiFaq';
 import { PlaceQuickFacts } from './PlaceQuickFacts';
 import { PlaceNearbyAmenities } from './PlaceNearbyAmenities';
+import { PlaceHistory } from './PlaceHistory';
+import { usePlaceWikiPhotos } from '../utils/wikiPhotos';
 
 interface PlaceDetailPageProps { slug: string; }
 
@@ -143,11 +145,18 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const nearbyPlaces = placesData.filter(p => p.slug !== slug && p.region === place.region).slice(0, 4);
 
-  // REAL gallery only — hero + any gallery images from the data. No fake stock fillers.
+  // Real gallery — hero + admin-uploaded gallery + (for places whose admin
+  // gallery is empty) actual Wikimedia Commons photos of the place itself.
+  // Wikimedia is free, no-key, and only returns photos that genuinely exist
+  // for that page — so no fabricated/stock fillers.
+  const { photos: wikiPhotos } = usePlaceWikiPhotos(place.title, place.district);
   const galleryImages: Array<{ src: string; alt: string }> = [
     { src: place.heroImage.url, alt: place.heroImage.alt || place.title },
     ...((place.gallery || []) as string[]).filter(Boolean).map((u: string) => ({ src: u, alt: place.title })),
-  ].filter((img, i, arr) => arr.findIndex(x => x.src === img.src) === i);
+    ...wikiPhotos.map((u) => ({ src: u, alt: `${place.title} — photo via Wikimedia Commons` })),
+  ]
+    .filter((img, i, arr) => arr.findIndex((x) => x.src === img.src) === i)
+    .slice(0, 16);
   const showGallery = galleryImages.length >= 2;
 
   const restaurants = (place.nearbyRestaurants || []).map((name: string) => ({ name }));
@@ -264,6 +273,9 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 </div>
               )}
             </section>
+
+            {/* History & background — Wikipedia summary (renders only if available) */}
+            <PlaceHistory title={place.title} district={place.district} />
 
             {/* Plan your visit — live data from OSRM, Open-Elevation, Sunrise-Sunset */}
             {place.coordinates && (
