@@ -275,6 +275,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                 href={c.href || `/explore/district/${slug}/landmarks/${slugify(c.name)}`}
                 location={`${district.name}, ${district.region}`}
                 rating={c.rating}
+                fallbackKind="place"
               />
             ))}
           </TravelSectionRow>
@@ -362,6 +363,12 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                     : key === 'foods'
                       ? `${district.name} signature dish`
                       : `${district.name}, ${district.region}`;
+                const fallbackKind =
+                  key === 'stays' ? 'stay'
+                  : key === 'foods' || key === 'foodZones' ? 'food'
+                  : key === 'activities' ? 'activity'
+                  : key === 'parks' ? 'park'
+                  : 'place';
                 return (
                   <PremiumPlaceCard
                     key={name}
@@ -370,6 +377,7 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
                     href={`/explore/district/${slug}/${key}/${slugify(name)}`}
                     location={sub}
                     rating={m.rating}
+                    fallbackKind={fallbackKind as any}
                   />
                 );
               })}
