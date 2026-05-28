@@ -1,26 +1,33 @@
+import { useState } from 'react';
 import { MapPin, Star, ArrowUpRight, Mountain, Utensils, Hotel, Trees, Compass, Sparkles } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
 
-// Branded fallback when no real photo exists for an item — six on-brand
-// gradients keyed deterministically by the title so each card stays the same
-// across reloads, but adjacent cards vary.
-const FALLBACK_GRADIENTS = [
-  { bg: 'from-purple-500 via-violet-600 to-indigo-700', glow: 'bg-purple-300/30' },
-  { bg: 'from-rose-500 via-pink-600 to-fuchsia-700',    glow: 'bg-rose-300/30'   },
-  { bg: 'from-amber-500 via-orange-600 to-red-600',      glow: 'bg-amber-300/30'  },
-  { bg: 'from-emerald-500 via-teal-600 to-cyan-700',     glow: 'bg-emerald-300/30'},
-  { bg: 'from-sky-500 via-blue-600 to-indigo-700',       glow: 'bg-sky-300/30'    },
-  { bg: 'from-slate-700 via-slate-800 to-slate-900',     glow: 'bg-slate-300/20'  },
-];
+// One uniform card used by every horizontal row on every detail page.
+// Strict rules from the spec:
+//   • Photo-led (aspect-[4/3]), w-72, real photography only.
+//   • NO coloured pill badges, NO coloured panels — only the clean light
+//     slate/white backdrop. Purple is reserved for hover + CTA accents.
+//   • Whenever an image URL is missing OR fails to load, fall back to a
+//     soft neutral slate placeholder with a single muted icon — never a
+//     coloured panel, never a generic "broken image" icon.
 
-function gradientFor(seed: string) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return FALLBACK_GRADIENTS[h % FALLBACK_GRADIENTS.length];
+type FallbackIconKind = 'place' | 'park' | 'food' | 'stay' | 'activity' | 'default';
+
+interface PremiumPlaceCardProps {
+  title: string;
+  image?: string;
+  href: string;
+  /** Sub-line under the title — district / region / hotel type / etc. */
+  location?: string;
+  /** Short flavor line (food cards). Overrides `location` when present. */
+  tagline?: string;
+  /** Optional rating 0–5; only renders when > 0. */
+  rating?: number;
+  /** Optional price label (e.g. "₹2,500"); only renders when present. */
+  price?: string;
+  /** Category hint for the no-photo placeholder icon. */
+  fallbackKind?: FallbackIconKind;
 }
 
-// Pick a category-appropriate icon for the empty-photo fallback.
-type FallbackIconKind = 'place' | 'park' | 'food' | 'stay' | 'activity' | 'default';
 function iconFor(kind: FallbackIconKind | undefined) {
   switch (kind) {
     case 'park':     return Trees;
@@ -32,77 +39,50 @@ function iconFor(kind: FallbackIconKind | undefined) {
   }
 }
 
-interface PremiumPlaceCardProps {
-  title: string;
-  image?: string;
-  href: string;
-  /** Sub-line under the title — district / region / "Hotel" / etc. */
-  location?: string;
-  /** Short flavor line (used for food cards). Overrides `location` when present. */
-  tagline?: string;
-  /** Optional rating 0–5; only renders when > 0. */
-  rating?: number;
-  /** Optional price label (e.g. "₹2,500"); only renders when present. */
-  price?: string;
-  /** Optional callback for the heart save action — when omitted, no heart shows. */
-  onSave?: () => void;
-  saved?: boolean;
-  /** Category hint for the no-photo fallback icon. */
-  fallbackKind?: FallbackIconKind;
-}
-
-// One uniform card used by every horizontal row on the District page.
-// Strict rules from the spec:
-//   • photo-led (aspect-[4/3]), w-72, real photography only
-//   • NO colored badge pills — let the image do the visual work
-//   • Poppins everywhere, slate text, single purple accent on hover/CTA
-//   • "View details" CTA at the base, soft border, soft shadow
 export function PremiumPlaceCard({
   title, image, href, location, tagline, rating, price, fallbackKind,
 }: PremiumPlaceCardProps) {
+  // If the supplied URL fails to load (404 / blocked / expired), flip to the
+  // neutral placeholder instead of the grey "broken image" UA icon.
+  const [imgBroken, setImgBroken] = useState(false);
+
   const sub = tagline || location;
-  const hasImage = !!(image && image.trim());
-  const grad = gradientFor(title);
+  const hasImage = !!(image && image.trim()) && !imgBroken;
   const FallbackIcon = iconFor(fallbackKind);
+
   return (
     <a
       href={href}
       className="group relative block w-72 shrink-0 snap-start rounded-2xl overflow-hidden bg-white border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 font-poppins"
     >
-      {/* Photo slot — real image when available, premium branded panel otherwise. */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+      {/* Photo slot — real image when it loads, neutral placeholder otherwise */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
         {hasImage ? (
           <>
-            <ImageWithFallback
+            <img
               src={image as string}
               alt={title}
-              optimizeWidth={480}
+              loading="lazy"
+              decoding="async"
+              onError={() => setImgBroken(true)}
+              onLoad={(e) => {
+                // Some image hosts respond 200 with a 0-byte body — treat as broken.
+                if ((e.currentTarget as HTMLImageElement).naturalWidth === 0) setImgBroken(true);
+              }}
               className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
             />
+            {/* Very low-contrast bottom gradient — never obscures the body */}
             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/15 to-transparent pointer-events-none" />
           </>
         ) : (
-          // No real photo — render an on-brand gradient panel with a soft glow
-          // and a centered category icon. Looks intentional, never broken.
-          <div className={`relative w-full h-full bg-gradient-to-br ${grad.bg} flex items-center justify-center overflow-hidden`}>
-            <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl ${grad.glow}`} />
-            <div className={`absolute -bottom-12 -left-10 w-40 h-40 rounded-full blur-3xl ${grad.glow}`} />
-            <div className="relative flex flex-col items-center text-white/95">
-              <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 mb-2.5">
-                <FallbackIcon className="w-6 h-6" strokeWidth={1.85} />
-              </div>
-              <span className="font-poppins text-[11px] uppercase tracking-[0.2em] font-medium text-white/75">
-                {fallbackKind === 'food' ? 'Local taste'
-                  : fallbackKind === 'stay' ? 'Place to stay'
-                  : fallbackKind === 'activity' ? 'Experience'
-                  : fallbackKind === 'park' ? 'Open space'
-                  : 'Destination'}
-              </span>
-            </div>
+          // Neutral slate placeholder — soft, monochrome, intentional.
+          // No coloured panel, no "DESTINATION" label, no broken-image icon.
+          <div className="w-full h-full bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+            <FallbackIcon className="w-10 h-10 text-slate-300" strokeWidth={1.5} />
           </div>
         )}
 
-        {/* Clean star rating chip (only when a real rating exists). */}
+        {/* Clean star rating chip (only when a real rating exists) */}
         {rating != null && rating > 0 && (
           <div className="absolute top-3 right-3 inline-flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-sm ring-1 ring-black/[0.04]">
             <Star className="w-3 h-3 fill-amber-400 text-amber-400" strokeWidth={0} />
