@@ -1,40 +1,54 @@
 import { useEffect, useState } from 'react';
 import { MapPin, Star, ArrowUpRight, Mountain, Utensils, Hotel, Trees, Compass, Sparkles } from 'lucide-react';
 
-// Wikipedia photo auto-backfill — when a place has no real photo URL, try the
-// free Wikipedia Commons media-list for a matching article. Result is cached
-// in localStorage (7-day TTL) and reused across components.
-const WIKI_CACHE_KEY = 'bt-wiki-cardphoto-v1';
-const WIKI_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// Photo backfill — when a card has no usable real photo, try Unsplash first
+// (better travel photography), then Wikipedia Commons as the fallback. Result
+// (URL or null) is cached in localStorage for 7 days so we never re-query.
+const BACKFILL_CACHE_KEY = 'bt-cardphoto-v2';
+const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-function wikiCacheGet(key: string): string | null {
+function cacheGet(key: string): string | null | undefined {
   try {
-    const raw = localStorage.getItem(WIKI_CACHE_KEY);
-    if (!raw) return null;
+    const raw = localStorage.getItem(BACKFILL_CACHE_KEY);
+    if (!raw) return undefined;
     const map = JSON.parse(raw);
     const hit = map?.[key];
-    if (!hit) return null;
-    if (Date.now() - hit.ts > WIKI_TTL_MS) return null;
-    return hit.v ?? null;
-  } catch { return null; }
+    if (!hit) return undefined;
+    if (Date.now() - hit.ts > TTL_MS) return undefined;
+    // `null` is a valid cached miss — distinct from `undefined` (not-cached).
+    return hit.v;
+  } catch { return undefined; }
 }
-function wikiCacheSet(key: string, value: string | null) {
+function cacheSet(key: string, value: string | null) {
   try {
-    const raw = localStorage.getItem(WIKI_CACHE_KEY);
+    const raw = localStorage.getItem(BACKFILL_CACHE_KEY);
     const map = raw ? JSON.parse(raw) : {};
     map[key] = { ts: Date.now(), v: value };
     const keys = Object.keys(map);
-    // Keep the cache bounded so it never inflates beyond ~200 places.
-    if (keys.length > 200) {
+    if (keys.length > 300) {
       keys.sort((a, b) => (map[a].ts || 0) - (map[b].ts || 0))
-        .slice(0, keys.length - 200)
+        .slice(0, keys.length - 300)
         .forEach((k) => delete map[k]);
     }
-    localStorage.setItem(WIKI_CACHE_KEY, JSON.stringify(map));
+    localStorage.setItem(BACKFILL_CACHE_KEY, JSON.stringify(map));
   } catch { /* quota */ }
 }
 
-async function fetchWikiPhoto(title: string): Promise<string | null> {
+async function fetchUnsplash(query: string): Promise<string | null> {
+  const key = (import.meta as any).env?.VITE_UNSPLASH_ACCESS_KEY;
+  if (!key) return null;
+  try {
+    const r = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape&content_filter=high`,
+      { headers: { Authorization: `Client-ID ${key}` } },
+    );
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data?.results?.[0]?.urls?.regular || null;
+  } catch { return null; }
+}
+
+async function fetchWiki(title: string): Promise<string | null> {
   try {
     const r = await fetch(
       `https://en.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(title)}`,
@@ -58,6 +72,13 @@ async function fetchWikiPhoto(title: string): Promise<string | null> {
     }
     return null;
   } catch { return null; }
+}
+
+// One backfill call: Unsplash → Wikipedia → null. Always cached.
+async function fetchBackfillPhoto(query: string): Promise<string | null> {
+  const u = await fetchUnsplash(query);
+  if (u) return u;
+  return await fetchWiki(query);
 }
 
 // One uniform card used by every horizontal row on every detail page.
@@ -101,32 +122,33 @@ function iconFor(kind: FallbackIconKind | undefined) {
 export function PremiumPlaceCard({
   title, image, href, location, tagline, rating, price, fallbackKind,
 }: PremiumPlaceCardProps) {
-  // If the supplied URL fails to load (404 / blocked / expired), flip to the
-  // wiki-backfilled photo first, and only then to the neutral placeholder.
   const [primaryBroken, setPrimaryBroken] = useState(false);
-  const [wikiPhoto, setWikiPhoto] = useState<string | null>(() => wikiCacheGet(title));
-  const [wikiBroken, setWikiBroken] = useState(false);
+  const [backfill, setBackfill] = useState<string | null>(() => {
+    const cached = cacheGet(title);
+    return cached === undefined ? null : cached;
+  });
+  const [backfillBroken, setBackfillBroken] = useState(false);
 
   const primaryUsable = !!(image && image.trim()) && !primaryBroken;
-  const wikiUsable = !!wikiPhoto && !wikiBroken;
-  const displayedSrc = primaryUsable ? (image as string) : (wikiUsable ? (wikiPhoto as string) : null);
+  const backfillUsable = !!backfill && !backfillBroken;
+  const displayedSrc = primaryUsable ? (image as string) : (backfillUsable ? (backfill as string) : null);
   const hasImage = !!displayedSrc;
 
-  // Lazily fetch a Wikipedia photo whenever we don't have a usable primary image
-  // and we haven't already cached/tried one for this title.
+  // Lazily fetch a backfill photo (Unsplash → Wikipedia) when the primary is
+  // not usable and we haven't already cached a result for this title.
   useEffect(() => {
-    if (primaryUsable) return;          // primary image is fine, no backfill needed
-    if (wikiPhoto != null) return;      // already have one (state or cache hit)
+    if (primaryUsable) return;
+    if (backfill) return;
+    if (cacheGet(title) !== undefined) return;   // cached miss — don't re-query
     if (!title) return;
     let alive = true;
-    fetchWikiPhoto(title).then((src) => {
+    fetchBackfillPhoto(title).then((src) => {
       if (!alive) return;
-      // Cache both hits and misses — `null` skips future fetches for the TTL window.
-      wikiCacheSet(title, src);
-      if (src) setWikiPhoto(src);
+      cacheSet(title, src);
+      if (src) setBackfill(src);
     });
     return () => { alive = false; };
-  }, [primaryUsable, wikiPhoto, title]);
+  }, [primaryUsable, backfill, title]);
 
   const sub = tagline || location;
   const FallbackIcon = iconFor(fallbackKind);
@@ -146,15 +168,15 @@ export function PremiumPlaceCard({
               loading="lazy"
               decoding="async"
               onError={() => {
-                // Route the failure to whichever source is currently in use,
-                // so the next render can fall through to the next layer.
+                // Route the failure to whichever source is in use, so the
+                // next render falls through to the next layer.
                 if (primaryUsable) setPrimaryBroken(true);
-                else setWikiBroken(true);
+                else setBackfillBroken(true);
               }}
               onLoad={(e) => {
                 if ((e.currentTarget as HTMLImageElement).naturalWidth === 0) {
                   if (primaryUsable) setPrimaryBroken(true);
-                  else setWikiBroken(true);
+                  else setBackfillBroken(true);
                 }
               }}
               className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
