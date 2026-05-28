@@ -23,6 +23,8 @@ import { PlaceNearbyAmenities } from './PlaceNearbyAmenities';
 import { PlaceHistory } from './PlaceHistory';
 import { usePlaceWikiPhotos } from '../utils/wikiPhotos';
 import { PlaceWeatherForecast } from './PlaceWeatherForecast';
+import { TravelSectionRow } from './TravelSectionRow';
+import { PremiumPlaceCard } from './PremiumPlaceCard';
 // Heavy (Leaflet + Overpass) — load only when this page renders.
 const PlaceInteractiveMap = lazy(() => import('./PlaceInteractiveMap').then(m => ({ default: m.PlaceInteractiveMap })));
 import { InternationalVisitorChip } from './InternationalVisitorChip';
@@ -165,16 +167,37 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const restaurants = (place.nearbyRestaurants || []).map((name: string) => ({ name }));
 
+  // Spec taxonomy where the data supports it: Overview → Plan visit → Photos
+  // → Around here → Logistics (transport) → Where to stay → Reviews → Nearby.
   const navSections = [
     { id: 'about', label: 'Overview' },
     ...(place.coordinates ? [{ id: 'plan-visit', label: 'Plan visit' }] : []),
-    ...(place.coordinates ? [{ id: 'around-here', label: 'Around here' }] : []),
     ...(showGallery ? [{ id: 'photos', label: 'Photos' }] : []),
-    { id: 'getting-there', label: 'Getting there' },
-    { id: 'stay', label: 'Stay' },
+    ...(place.coordinates ? [{ id: 'around-here', label: 'Around here' }] : []),
+    { id: 'getting-there', label: 'Logistics' },
+    { id: 'stay', label: 'Where to stay' },
     { id: 'reviews', label: 'Reviews' },
     { id: 'nearby', label: 'Nearby' },
   ];
+
+  // Scroll-spy — keeps the sliding purple pointer underneath whichever section
+  // is currently inside the viewport's reading zone.
+  const [activeNavId, setActiveNavId] = useState<string>('about');
+  useEffect(() => {
+    const ids = navSections.map((s) => s.id);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) setActiveNavId(visible[0].target.id);
+      },
+      { rootMargin: '-25% 0px -65% 0px', threshold: 0 },
+    );
+    ids.forEach((id) => { const el = document.getElementById(id); if (el) observer.observe(el); });
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [place.slug, showGallery]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
@@ -232,14 +255,30 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
         </div>
       </div>
 
-      {/* ── Sticky section nav ───────────────────────────────────────────────── */}
-      <div className="sticky top-16 z-20 bg-white/95 backdrop-blur border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex gap-1 overflow-x-auto">
-          {navSections.map(s => (
-            <button key={s.id} onClick={() => scrollTo(s.id)} className="shrink-0 px-4 py-4 font-poppins text-sm font-medium text-gray-600 hover:text-purple-600 border-b-2 border-transparent hover:border-purple-300 transition-colors">
-              {s.label}
-            </button>
-          ))}
+      {/* ── Pinned glassmorphic sub-nav with scroll-spy + sliding pointer ────── */}
+      <div className="sticky top-16 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex gap-1 overflow-x-auto scrollbar-hide py-3">
+          {navSections.map((s) => {
+            const active = activeNavId === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                className={`relative shrink-0 px-4 py-2 font-poppins text-sm font-medium transition-colors ${
+                  active ? 'text-purple-700' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {s.label}
+                {active && (
+                  <motion.span
+                    layoutId="place-subnav-pointer"
+                    className="absolute left-3 right-3 -bottom-0.5 h-0.5 bg-purple-600 rounded-full"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -353,20 +392,25 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             <section id="nearby" className="scroll-mt-32">
               <NearbyPlacesSection destinationSlug={place.slug} />
               {nearbyPlaces.length > 0 && (
-                <>
-                  <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5 mt-8">More in {place.region}</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="mt-10">
+                  <TravelSectionRow
+                    title={`More in ${place.region}`}
+                    subtitle="Other places worth pairing on the same trip"
+                    count={nearbyPlaces.length}
+                  >
                     {nearbyPlaces.map((np) => (
-                      <a key={np.slug} href={`/explore/${np.slug}`} className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                        <ImageWithFallback src={np.heroImage.url} alt={np.heroImage.alt} className="w-full h-44 object-cover" />
-                        <div className="p-4">
-                          <h3 className="font-poppins text-lg font-semibold text-slate-900 mb-1">{np.title}</h3>
-                          <p className="text-gray-600 text-sm line-clamp-2">{np.excerpt}</p>
-                        </div>
-                      </a>
+                      <PremiumPlaceCard
+                        key={np.slug}
+                        title={np.title}
+                        image={np.heroImage?.url}
+                        href={`/explore/${np.slug}`}
+                        location={np.district || np.region}
+                        rating={np.rating}
+                        fallbackKind="place"
+                      />
                     ))}
-                  </div>
-                </>
+                  </TravelSectionRow>
+                </div>
               )}
             </section>
           </div>
