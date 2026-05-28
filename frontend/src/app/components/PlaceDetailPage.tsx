@@ -22,6 +22,7 @@ import { PlaceQuickFacts } from './PlaceQuickFacts';
 import { PlaceNearbyAmenities } from './PlaceNearbyAmenities';
 import { PlaceHistory } from './PlaceHistory';
 import { usePlaceWikiPhotos } from '../utils/wikiPhotos';
+import { PlaceWeatherForecast } from './PlaceWeatherForecast';
 
 interface PlaceDetailPageProps { slug: string; }
 
@@ -280,6 +281,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             {/* Plan your visit — live data from OSRM, Open-Elevation, Sunrise-Sunset */}
             {place.coordinates && (
               <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
+            )}
+
+            {/* 3-day weather forecast + live air quality (Open-Meteo, no key) */}
+            {place.coordinates && (
+              <PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
             )}
 
             {/* Photos (real only) */}
