@@ -41,27 +41,45 @@ export function PlaceQuickFacts({ lat, lng }: { lat: number; lng: number }) {
     setFacts({});
     setLoading(true);
 
+    // Each public free API gets a mirror chain — if one host is blocked by an
+    // ad-blocker / privacy filter or rate-limited, the next one tries.
+    const tryAll = async (urls: string[]): Promise<any | null> => {
+      for (const u of urls) {
+        try { const r = await fetch(u); if (r.ok) return await r.json(); } catch { /* next mirror */ }
+      }
+      return null;
+    };
+
     const drive = withTimeout(
-      fetch(`https://router.project-osrm.org/route/v1/driving/${KOLKATA.lng},${KOLKATA.lat};${lng},${lat}?overview=false`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d: any) => d?.routes?.[0]
-          ? { driveTime: d.routes[0].duration, driveKm: Math.round(d.routes[0].distance / 1000) }
-          : null)
-        .catch(() => null),
+      tryAll([
+        `https://router.project-osrm.org/route/v1/driving/${KOLKATA.lng},${KOLKATA.lat};${lng},${lat}?overview=false`,
+        `https://routing.openstreetmap.de/routed-car/route/v1/driving/${KOLKATA.lng},${KOLKATA.lat};${lng},${lat}?overview=false`,
+      ]).then((d: any) => d?.routes?.[0]
+        ? { driveTime: d.routes[0].duration, driveKm: Math.round(d.routes[0].distance / 1000) }
+        : null),
     );
 
     const elev = withTimeout(
-      fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d: any) => (d?.results?.[0]?.elevation != null ? { altitude: Math.round(d.results[0].elevation) } : null))
-        .catch(() => null),
+      tryAll([
+        `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`,
+        `https://api.opentopodata.org/v1/aster30m?locations=${lat},${lng}`,
+        `https://api.opentopodata.org/v1/srtm30m?locations=${lat},${lng}`,
+      ]).then((d: any) => (d?.results?.[0]?.elevation != null ? { altitude: Math.round(d.results[0].elevation) } : null)),
     );
 
     const sun = withTimeout(
-      fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d: any) => (d?.results ? { sunrise: d.results.sunrise, sunset: d.results.sunset } : null))
-        .catch(() => null),
+      tryAll([
+        `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`,
+        `https://api.sunrisesunset.io/json?lat=${lat}&lng=${lng}&time_format=24`,
+      ]).then((d: any) => {
+        // Both APIs nest under `results`; sunrisesunset.io returns "HH:MM:SS" strings
+        // instead of ISO timestamps — normalise to a parseable today-ISO string.
+        const r = d?.results;
+        if (!r) return null;
+        const today = new Date().toISOString().slice(0, 10);
+        const norm = (v: string) => /\d{4}-/.test(v) ? v : `${today}T${v}+00:00`;
+        return r.sunrise && r.sunset ? { sunrise: norm(r.sunrise), sunset: norm(r.sunset) } : null;
+      }),
     );
 
     Promise.all([drive, elev, sun]).then((parts) => {

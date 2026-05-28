@@ -26,6 +26,28 @@ const CATS: CatConfig[] = [
 
 const RADIUS_METERS = 3500;
 
+// Try multiple Overpass mirrors in order — one might be blocked by a user's
+// ad-blocker / privacy filter, or rate-limited at the moment. Using GET with
+// ?data= dodges the POST preflight that some filters trip on.
+const OVERPASS_MIRRORS = [
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
+];
+
+async function overpassQuery(body: string, signal: AbortSignal): Promise<any | null> {
+  for (const base of OVERPASS_MIRRORS) {
+    try {
+      const r = await fetch(`${base}?data=${encodeURIComponent(body)}`, { signal });
+      if (r.ok) return await r.json();
+    } catch (e: any) {
+      if (e?.name === 'AbortError') throw e;
+      // try the next mirror
+    }
+  }
+  return null;
+}
+
 // Centre pin — bigger purple teardrop so the place stands out from POI dots.
 const CENTER_ICON = L.divIcon({
   className: 'bt-place-center',
@@ -86,8 +108,7 @@ export function PlaceInteractiveMap({ lat, lng, placeName }: { lat: number; lng:
       fetchedRef.current.add(cat.key);
       setLoading((prev) => ({ ...prev, [cat.key]: true }));
       const body = `[out:json][timeout:20];(${cat.query}(around:${RADIUS_METERS},${lat},${lng}););out body 60;`;
-      fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body, signal: ctrl.signal })
-        .then((r) => (r.ok ? r.json() : null))
+      overpassQuery(body, ctrl.signal)
         .then((d: any) => {
           const list: POI[] = !d?.elements ? [] : d.elements
             .filter((e: any) => e.type === 'node' && typeof e.lat === 'number')
