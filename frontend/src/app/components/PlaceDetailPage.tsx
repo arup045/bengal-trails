@@ -25,6 +25,7 @@ import { usePlaceWikiPhotos } from '../utils/wikiPhotos';
 import { PlaceWeatherForecast } from './PlaceWeatherForecast';
 import { TravelSectionRow } from './TravelSectionRow';
 import { PremiumPlaceCard } from './PremiumPlaceCard';
+import { PlaceQuickInsights } from './PlaceQuickInsights';
 // Heavy (Leaflet + Overpass) — load only when this page renders.
 const PlaceInteractiveMap = lazy(() => import('./PlaceInteractiveMap').then(m => ({ default: m.PlaceInteractiveMap })));
 import { InternationalVisitorChip } from './InternationalVisitorChip';
@@ -292,32 +293,48 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             <InternationalVisitorChip destinationCity={place.title} />
 
             <section id="about" className="scroll-mt-32">
-              <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-4">About {place.title}</h2>
-              {place.description && (() => {
-                const sentences = splitSentences(place.description);
-                const isLong = sentences.length > 5;
-                const shown = aboutExpanded || !isLong ? place.description : sentences.slice(0, 5).join(' ');
-                return (
-                  <p className="text-gray-600 text-lg leading-relaxed mb-4">
-                    {shown}
-                    {isLong && (
-                      <button onClick={() => setAboutExpanded(v => !v)}
-                        className="ml-1.5 font-poppins text-base font-medium text-purple-600 hover:text-purple-700">
-                        {aboutExpanded ? 'Show less' : 'Read more'}
-                      </button>
-                    )}
-                  </p>
-                );
-              })()}
+              <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-5">About {place.title}</h2>
 
-              {place.tags?.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="font-poppins text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-purple-600" /> Highlights</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {place.tags.map((t: string) => <span key={t} className="px-4 py-2 bg-purple-50 text-purple-700 rounded-full font-poppins text-sm">{t}</span>)}
-                  </div>
+              {/* Asymmetric 2-column: editorial summary (65%) + quick insights (35%) */}
+              <div className="grid lg:grid-cols-[1.85fr_1fr] gap-6 lg:gap-8 items-start">
+                <div className="min-w-0">
+                  {place.description && (() => {
+                    const sentences = splitSentences(place.description);
+                    const isLong = sentences.length > 5;
+                    const shown = aboutExpanded || !isLong ? place.description : sentences.slice(0, 5).join(' ');
+                    return (
+                      <p className="text-gray-600 text-lg leading-relaxed mb-4">
+                        {shown}
+                        {isLong && (
+                          <button onClick={() => setAboutExpanded(v => !v)}
+                            className="ml-1.5 font-poppins text-base font-medium text-purple-600 hover:text-purple-700">
+                            {aboutExpanded ? 'Show less' : 'Read more'}
+                          </button>
+                        )}
+                      </p>
+                    );
+                  })()}
+
+                  {place.tags?.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="font-poppins text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-purple-600" /> Highlights</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {place.tags.map((t: string) => <span key={t} className="px-4 py-2 bg-purple-50 text-purple-700 rounded-full font-poppins text-sm">{t}</span>)}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {place.coordinates && (
+                  <div className="lg:sticky lg:top-32">
+                    <PlaceQuickInsights
+                      lat={place.coordinates.lat}
+                      lng={place.coordinates.lng}
+                      bestTime={place.bestTime}
+                    />
+                  </div>
+                )}
+              </div>
             </section>
 
             {/* History & background — Wikipedia summary (renders only if available) */}
