@@ -5,11 +5,12 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { API_BASE } from '../utils/api';
 import { getDistrict, placesForDistrict } from '../data/districts';
 import { getDistrictContent } from '../data/districtContent';
-import { ItemCard, SECTION_META, type SectionKey } from './explore/ItemCard';
+import { SECTION_META, type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { usePlaceImages } from '../lib/queries';
 import { ShareButton } from './ShareButton';
-import { Reveal } from './Reveal';
+import { TravelSectionRow } from './TravelSectionRow';
+import { PremiumPlaceCard } from './PremiumPlaceCard';
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -206,24 +207,23 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
       {/* ── Sections ───────────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-8 space-y-12">
         {topPlaces.length > 0 && (
-          <section id="sec-places">
-            <div className="flex items-center gap-2 mb-5">
-              <span className="text-2xl">📍</span>
-              <h2 className="font-poppins text-2xl font-bold text-slate-900">Top places to visit</h2>
-              <span className="font-poppins text-sm text-gray-400">({topPlaces.length})</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {topPlaces.map((c, i) => (
-                <Reveal key={c.key} index={i}>
-                  <ItemCard name={c.name} section="places" districtName={district.name}
-                    image={c.image} excerpt={c.excerpt} href={c.href} rating={c.rating} type={c.type} hours={c.hours}
-                    saved={isInWishlist(c.wishSlug)}
-                    onToggleSave={() => (c.href ? togglePlace({ slug: c.wishSlug, title: c.name, region: district.region, heroImage: { url: c.image }, excerpt: c.excerpt }) : toggleContent(c.name, 'Landmark'))}
-                  />
-                </Reveal>
-              ))}
-            </div>
-          </section>
+          <TravelSectionRow
+            id="sec-places"
+            title="Top places to visit"
+            subtitle={`Landmarks and viewpoints in ${district.name}`}
+            count={topPlaces.length}
+          >
+            {topPlaces.map((c) => (
+              <PremiumPlaceCard
+                key={c.key}
+                title={c.name}
+                image={c.image}
+                href={c.href || `/explore/district/${slug}/landmarks/${slugify(c.name)}`}
+                location={`${district.name}, ${district.region}`}
+                rating={c.rating}
+              />
+            ))}
+          </TravelSectionRow>
         )}
 
         {/* Suggested 2-day plan — curated from real places, with an AI option */}
@@ -273,32 +273,53 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
           </section>
         )}
 
+        {/* Cleaner taxonomy noun per row (drops the '& Arena' tail from the data labels). */}
         {content && CONTENT_SECTIONS.map((key) => {
           const list = content[key];
           if (!list || list.length === 0) return null;
-          const sm = SECTION_META[key];
+          const ROW_TITLE: Record<string, string> = {
+            parks: 'Parks & open spaces',
+            activities: 'Activities & experiences',
+            foods: 'Local & street food',
+            foodZones: 'Street food hubs',
+            stays: 'Where to stay',
+          };
+          const ROW_SUBTITLE: Record<string, string> = {
+            parks: 'Gardens, sanctuaries and viewpoints to slow down at',
+            activities: 'Tours, trails and immersive experiences',
+            foods: 'Signature dishes, sweets and street bites',
+            foodZones: 'Bustling lanes and markets for foodies',
+            stays: 'Heritage hotels, boutique stays and homestays',
+          };
           return (
-            <section key={key} id={`sec-${key}`}>
-              <div className="flex items-center gap-2 mb-5">
-                <span className="text-2xl">{sm.emoji}</span>
-                <h2 className="font-poppins text-2xl font-bold text-slate-900">{sm.label}</h2>
-                <span className="font-poppins text-sm text-gray-400">({list.length})</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {list.map((name, i) => {
-                  const m = meta(name);
-                  return (
-                    <Reveal key={name} index={i}>
-                      <ItemCard name={name} section={key} districtName={district.name}
-                        image={m.image} type={m.type} rating={m.rating} hours={m.hours}
-                        href={`/explore/district/${slug}/${key}/${slugify(name)}`}
-                        saved={isInWishlist(contentSlug(name))}
-                        onToggleSave={() => toggleContent(name, sm.label)} />
-                    </Reveal>
-                  );
-                })}
-              </div>
-            </section>
+            <TravelSectionRow
+              key={key}
+              id={`sec-${key}`}
+              title={ROW_TITLE[key] || key}
+              subtitle={ROW_SUBTITLE[key]}
+              count={list.length}
+            >
+              {list.map((name) => {
+                const m = meta(name);
+                const sub = key === 'stays'
+                  ? `${m.type || 'Stay'} · ${district.name}`
+                  : key === 'foodZones'
+                    ? `${district.name} food hub`
+                    : key === 'foods'
+                      ? `${district.name} signature dish`
+                      : `${district.name}, ${district.region}`;
+                return (
+                  <PremiumPlaceCard
+                    key={name}
+                    title={name}
+                    image={m.image}
+                    href={`/explore/district/${slug}/${key}/${slugify(name)}`}
+                    location={sub}
+                    rating={m.rating}
+                  />
+                );
+              })}
+            </TravelSectionRow>
           );
         })}
 
