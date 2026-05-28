@@ -18,6 +18,7 @@ import { ReportIssueButton } from './ReportIssueButton';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { districtSlugForPlace } from '../data/districts';
 import { AiFaq } from './AiFaq';
+import { PlaceQuickFacts } from './PlaceQuickFacts';
 
 interface PlaceDetailPageProps { slug: string; }
 
@@ -152,6 +153,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const navSections = [
     { id: 'about', label: 'Overview' },
+    ...(place.coordinates ? [{ id: 'plan-visit', label: 'Plan visit' }] : []),
     ...(showGallery ? [{ id: 'photos', label: 'Photos' }] : []),
     { id: 'getting-there', label: 'Getting there' },
     { id: 'stay', label: 'Stay' },
@@ -260,6 +262,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 </div>
               )}
             </section>
+
+            {/* Plan your visit — live data from OSRM, Open-Elevation, Sunrise-Sunset */}
+            {place.coordinates && (
+              <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
+            )}
 
             {/* Photos (real only) */}
             {showGallery && (
