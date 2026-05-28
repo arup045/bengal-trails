@@ -1,5 +1,5 @@
 import { API_BASE } from '../utils/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
 import { MapPin, Star, Calendar, ChevronRight, Navigation, Share2, Facebook, Twitter, MessageCircle, Copy, Camera, Heart, Clock, Tag, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,6 +23,8 @@ import { PlaceNearbyAmenities } from './PlaceNearbyAmenities';
 import { PlaceHistory } from './PlaceHistory';
 import { usePlaceWikiPhotos } from '../utils/wikiPhotos';
 import { PlaceWeatherForecast } from './PlaceWeatherForecast';
+// Heavy (Leaflet + Overpass) — load only when this page renders.
+const PlaceInteractiveMap = lazy(() => import('./PlaceInteractiveMap').then(m => ({ default: m.PlaceInteractiveMap })));
 import { InternationalVisitorChip } from './InternationalVisitorChip';
 
 interface PlaceDetailPageProps { slug: string; }
@@ -371,6 +373,16 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Premium "Explore the area" — interactive OSM map with togglable
+                Food / Stays / Parks / ATMs / Hospitals / Fuel / Police layers
+                fetched live from Overpass. Takes the prime sidebar slot. */}
+            {place.coordinates && (
+              <Suspense fallback={<div className="h-[460px] rounded-3xl bg-gray-100 animate-pulse" />}>
+                <PlaceInteractiveMap lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
+              </Suspense>
+            )}
+
+            {/* Current weather — now BELOW the explore-area map */}
             <LiveWeather lat={place.coordinates.lat} lon={place.coordinates.lng} cityName={place.title} bestTime={place.bestTime} />
 
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 sticky top-32">
