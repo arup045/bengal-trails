@@ -99,7 +99,7 @@ export function TravelSectionRow({
       <div
         ref={trackRef}
         onScroll={update}
-        className="flex gap-4 overflow-x-auto pb-2 -mx-5 sm:-mx-8 px-5 sm:px-8 scrollbar-hide snap-x snap-mandatory"
+        className="flex gap-4 overflow-x-auto pb-2 px-1 scrollbar-hide snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none' as any }}
       >
         {children}
