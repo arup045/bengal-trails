@@ -7,7 +7,6 @@ import { placesData } from '../data/places-full';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { buildSrcSet } from '../utils/responsiveImage';
 import { LiveWeather } from './LiveWeather';
-import { TransportGuideSection } from './TransportGuideSection';
 import { PlaceThingsToDo } from './PlaceThingsToDo';
 import { PlaceStaysCarousel } from './PlaceStaysCarousel';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
@@ -18,6 +17,7 @@ import { BookingSystem } from './BookingSystem';
 import { ReportIssueButton } from './ReportIssueButton';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { districtSlugForPlace } from '../data/districts';
+import { getDistrictContent } from '../data/districtContent';
 import { AiFaq } from './AiFaq';
 import { PlaceQuickFacts } from './PlaceQuickFacts';
 import { PlaceNearbyAmenities } from './PlaceNearbyAmenities';
@@ -192,12 +192,18 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const restaurants = (place.nearbyRestaurants || []).map((name: string) => ({ name }));
 
-  // Spec taxonomy where the data supports it: Overview → Plan visit → Photos
-  // → Around here → Logistics (transport) → Where to stay → Reviews → Nearby.
+  // Does this place's parent district have Activities / Food content? If not,
+  // PlaceThingsToDo renders nothing — so we must NOT show those nav tabs
+  // (otherwise they'd be dead anchors scrolling nowhere).
+  const dContent = getDistrictContent(districtSlug);
+  const hasActivities = !!(dContent?.activities?.length);
+  const hasFood = !!(dContent?.foods?.length || dContent?.foodZones?.length);
+
+  // Section order follows the page; tabs only appear when their section will render.
   const navSections = [
     { id: 'about', label: 'Overview' },
-    { id: 'activities', label: 'Activities' },
-    { id: 'food', label: 'Food' },
+    ...(hasActivities ? [{ id: 'activities', label: 'Activities' }] : []),
+    ...(hasFood ? [{ id: 'food', label: 'Food' }] : []),
     ...(showGallery ? [{ id: 'photos', label: 'Photos' }] : []),
     { id: 'stay', label: 'Where to stay' },
     { id: 'getting-there', label: 'Logistics' },
@@ -397,7 +403,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 <p className="font-poppins text-sm text-slate-500 mt-1">Nearest gateways and a live drive estimate from Kolkata.</p>
               </div>
               {place.coordinates && (
-                <div className="space-y-6 mb-6">
+                <div className="space-y-6">
                   <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
                   <PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
                   <PlaceLogistics
@@ -409,7 +415,6 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                   />
                 </div>
               )}
-              <TransportGuideSection destinationSlug={place.slug} />
             </section>
 
             {/* Reviews */}
