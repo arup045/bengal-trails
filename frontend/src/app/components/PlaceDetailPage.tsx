@@ -53,6 +53,10 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const fetchPlace = () => {
     if (!slug) return;
+    // The backend `destinations` table has no `district` column, so we fall back
+    // to the static dataset's district for this slug — otherwise district-derived
+    // sections (Activities, Food) and the district links break on production.
+    const staticMatch = placesData.find(p => p.slug === slug);
     fetch(`${API_BASE}/destinations/${slug}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
@@ -66,8 +70,8 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             gallery: Array.isArray(dest.galleryImages || dest.gallery_images) ? (dest.galleryImages || dest.gallery_images) : [],
             excerpt: (dest.shortDescription || dest.short_description) || dest.description?.slice(0, 160) || '',
             description: dest.description || '',
-            region: dest.region || 'Bengal',
-            district: dest.district || dest.region || 'West Bengal',
+            region: dest.region || staticMatch?.region || 'Bengal',
+            district: dest.district || staticMatch?.district || dest.region || 'West Bengal',
             coordinates: (dest.latitude && dest.longitude) ? { lat: parseFloat(dest.latitude), lng: parseFloat(dest.longitude) } : { lat: 22.5726, lng: 88.3639 },
             tags: Array.isArray(dest.highlights) && dest.highlights.length ? dest.highlights : Array.isArray(dest.activities) ? dest.activities : (dest.category ? [dest.category] : []),
             priceFrom: (dest.priceRange || dest.price_range) || ((dest.priceFrom || dest.price_from) ? `₹${(dest.priceFrom || dest.price_from).toLocaleString('en-IN')}` : 'Free'),
