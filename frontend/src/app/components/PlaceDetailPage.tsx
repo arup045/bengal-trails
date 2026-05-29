@@ -49,6 +49,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [apiPlace, setApiPlace] = useState<any | null>(null);
+  const [activeNavId, setActiveNavId] = useState<string>('about');
 
   const fetchPlace = () => {
     if (!slug) return;
@@ -104,6 +105,27 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
       localStorage.setItem('recentlyViewed', JSON.stringify(updated));
     } catch { /* ignore */ }
   }, [slug, place]);
+
+  // Scroll-spy — keeps the sliding purple pointer under whichever section is in
+  // the viewport's reading zone. Declared BEFORE any early return so the hook
+  // order is stable across the loading / not-found / loaded renders.
+  useEffect(() => {
+    const candidateIds = ['about', 'activities', 'food', 'photos', 'stay', 'getting-there', 'reviews', 'around-here', 'nearby'];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) setActiveNavId(visible[0].target.id);
+      },
+      { rootMargin: '-25% 0px -65% 0px', threshold: 0 },
+    );
+    // Observe after paint so the sections exist in the DOM.
+    const t = setTimeout(() => {
+      candidateIds.forEach((id) => { const el = document.getElementById(id); if (el) observer.observe(el); });
+    }, 300);
+    return () => { clearTimeout(t); observer.disconnect(); };
+  }, [slug]);
 
   // ── Early states ────────────────────────────────────────────────────────────
   if (isLoading && !place) {
@@ -184,24 +206,6 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     { id: 'nearby', label: 'Nearby' },
   ];
 
-  // Scroll-spy — keeps the sliding purple pointer underneath whichever section
-  // is currently inside the viewport's reading zone.
-  const [activeNavId, setActiveNavId] = useState<string>('about');
-  useEffect(() => {
-    const ids = navSections.map((s) => s.id);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible.length > 0) setActiveNavId(visible[0].target.id);
-      },
-      { rootMargin: '-25% 0px -65% 0px', threshold: 0 },
-    );
-    ids.forEach((id) => { const el = document.getElementById(id); if (el) observer.observe(el); });
-    return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [place.slug, showGallery]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
