@@ -256,8 +256,22 @@ function Deferred({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<RouteId>('home');
-  const [currentSlug, setCurrentSlug] = useState('');
+  // Resolve the route from the URL SYNCHRONOUSLY for the very first render, so a
+  // hard load / refresh / shared deep link (e.g. /explore/darjeeling) renders the
+  // correct page immediately. Initialising to 'home' and switching in an effect
+  // deadlocked under startTransition + lazy Suspense + AnimatePresence mode="wait"
+  // (the pending transition never committed → the page stayed stuck on home).
+  const initialRoute = (() => {
+    try {
+      if (typeof window === 'undefined') return { id: 'home' as RouteId, slug: '' };
+      // Auth-callback fragments are handled by the routing effect; start at home.
+      if (window.location.hash.includes('access_token')) return { id: 'home' as RouteId, slug: '' };
+      const r = resolveRoute(window.location.pathname);
+      return { id: r.id, slug: r.slug || '' };
+    } catch { return { id: 'home' as RouteId, slug: '' }; }
+  })();
+  const [currentPage, setCurrentPage] = useState<RouteId>(initialRoute.id);
+  const [currentSlug, setCurrentSlug] = useState(initialRoute.slug);
   const [showScrollTop, setShowScrollTop] = useState(false);
   // placesData is loaded on demand (it's ~490 KB) the first time a place page is
   // viewed; until then it's an empty array, which all consumers handle gracefully.
