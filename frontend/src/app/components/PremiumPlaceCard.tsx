@@ -104,6 +104,8 @@ interface PremiumPlaceCardProps {
   rating?: number;
   /** Optional price label (e.g. "₹2,500"); only renders when present. */
   price?: string;
+  /** Small note shown after the price. Defaults to "onwards"; pass "/ night" for stays, "" to hide. */
+  priceNote?: string;
   /** Category hint for the no-photo placeholder icon. */
   fallbackKind?: FallbackIconKind;
 }
@@ -120,7 +122,7 @@ function iconFor(kind: FallbackIconKind | undefined) {
 }
 
 export function PremiumPlaceCard({
-  title, image, href, location, tagline, rating, price, fallbackKind,
+  title, image, href, location, tagline, rating, price, priceNote = 'onwards', fallbackKind,
 }: PremiumPlaceCardProps) {
   const [primaryBroken, setPrimaryBroken] = useState(false);
   const [backfill, setBackfill] = useState<string | null>(() => {
@@ -217,7 +219,7 @@ export function PremiumPlaceCard({
           {price ? (
             <span className="text-sm font-semibold text-slate-800">
               {price}
-              <span className="text-[10px] font-normal text-slate-400 ml-0.5">onwards</span>
+              {priceNote && <span className="text-[10px] font-normal text-slate-400 ml-0.5">{priceNote}</span>}
             </span>
           ) : <span aria-hidden />}
           <span className="text-xs font-medium text-slate-500 group-hover:text-purple-600 inline-flex items-center gap-1 transition-colors">

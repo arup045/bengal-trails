@@ -8,7 +8,8 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { buildSrcSet } from '../utils/responsiveImage';
 import { LiveWeather } from './LiveWeather';
 import { TransportGuideSection } from './TransportGuideSection';
-import { HotelsSection } from './HotelsSection';
+import { PlaceThingsToDo } from './PlaceThingsToDo';
+import { PlaceStaysCarousel } from './PlaceStaysCarousel';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
 import { PhotoGalleryLightbox } from './PhotoGalleryLightbox';
@@ -173,12 +174,13 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   // → Around here → Logistics (transport) → Where to stay → Reviews → Nearby.
   const navSections = [
     { id: 'about', label: 'Overview' },
-    ...(place.coordinates ? [{ id: 'plan-visit', label: 'Plan visit' }] : []),
+    { id: 'activities', label: 'Activities' },
+    { id: 'food', label: 'Food' },
     ...(showGallery ? [{ id: 'photos', label: 'Photos' }] : []),
-    ...(place.coordinates ? [{ id: 'around-here', label: 'Around here' }] : []),
-    { id: 'getting-there', label: 'Logistics' },
     { id: 'stay', label: 'Where to stay' },
+    { id: 'getting-there', label: 'Logistics' },
     { id: 'reviews', label: 'Reviews' },
+    ...(place.coordinates ? [{ id: 'around-here', label: 'Around here' }] : []),
     { id: 'nearby', label: 'Nearby' },
   ];
 
@@ -341,15 +343,9 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             {/* History & background — Wikipedia summary (renders only if available) */}
             <PlaceHistory title={place.title} district={place.district} />
 
-            {/* Plan your visit — live data from OSRM, Open-Elevation, Sunrise-Sunset */}
-            {place.coordinates && (
-              <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
-            )}
-
-            {/* 3-day weather forecast + live air quality (Open-Meteo, no key) */}
-            {place.coordinates && (
-              <PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
-            )}
+            {/* Things to do — Activities + Food carousels, sourced from the
+                parent district (a place inherits its district's experiences). */}
+            <PlaceThingsToDo districtSlug={districtSlug} />
 
             {/* Photos (real only) */}
             {showGallery && (
@@ -369,33 +365,10 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               </section>
             )}
 
-            {/* Logistics — Fly / Rail / Drive premium 3-card grid + the
-                existing per-place transport guide below it. */}
-            <section id="getting-there" className="scroll-mt-32">
-              <div className="mb-3">
-                <h2 className="font-poppins text-3xl font-bold text-slate-900">How to reach {place.title}</h2>
-                <p className="font-poppins text-sm text-slate-500 mt-1">Nearest gateways and a live drive estimate from Kolkata.</p>
-              </div>
-              {place.coordinates && (
-                <PlaceLogistics
-                  lat={place.coordinates.lat}
-                  lng={place.coordinates.lng}
-                  region={place.region}
-                  district={place.district}
-                  placeName={place.title}
-                />
-              )}
-              <div className="mt-6">
-                <TransportGuideSection destinationSlug={place.slug} />
-              </div>
-            </section>
+            {/* Stay — clean full-width carousel of real stays (unified card theme) */}
+            <PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} />
 
-            {/* Stay */}
-            <section id="stay" className="scroll-mt-32">
-              <HotelsSection destinationSlug={place.slug} />
-            </section>
-
-            {/* Nearby restaurants (names are real; image is a neutral placeholder) */}
+            {/* Where to eat nearby (names are real; opens Google Maps) */}
             {restaurants.length > 0 && (
               <section className="scroll-mt-32">
                 <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5">Where to eat nearby</h2>
@@ -411,6 +384,29 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 </div>
               </section>
             )}
+
+            {/* Logistics & Practicalities — quick facts + 3-day forecast +
+                Fly/Rail/Drive matrix + per-place transport guide. */}
+            <section id="getting-there" className="scroll-mt-32">
+              <div className="mb-5">
+                <h2 className="font-poppins text-3xl font-bold text-slate-900">How to reach {place.title}</h2>
+                <p className="font-poppins text-sm text-slate-500 mt-1">Nearest gateways and a live drive estimate from Kolkata.</p>
+              </div>
+              {place.coordinates && (
+                <div className="space-y-6 mb-6">
+                  <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
+                  <PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
+                  <PlaceLogistics
+                    lat={place.coordinates.lat}
+                    lng={place.coordinates.lng}
+                    region={place.region}
+                    district={place.district}
+                    placeName={place.title}
+                  />
+                </div>
+              )}
+              <TransportGuideSection destinationSlug={place.slug} />
+            </section>
 
             {/* Reviews */}
             <section id="reviews" className="scroll-mt-32">
