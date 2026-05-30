@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { BookOpen, ExternalLink } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { API_BASE } from '../utils/api';
 
-// Wikipedia REST API — free, no key, CORS-friendly.
-// We hit /page/summary/{title} which returns a clean extract + thumbnail and
-// auto-redirects to the best match. Disambiguation results are skipped.
-//
-// Results are cached in localStorage for 7 days so repeat visits to a place
-// don't re-hit the API.
+// Wikipedia summary via OUR backend proxy (/api/geo/wiki) — queried server-side
+// and cached, so it's free of browser CORS/CSP limits. Still cached in
+// localStorage for 7 days to avoid repeat round-trips.
 
 interface WikiSummary {
   title: string;
@@ -48,17 +46,15 @@ function writeCache(key: string, value: WikiSummary | null) {
 async function fetchWiki(title: string): Promise<WikiSummary | null> {
   const enc = encodeURIComponent(title);
   try {
-    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${enc}?redirect=true`, {
-      headers: { Accept: 'application/json' },
-    });
+    const res = await fetch(`${API_BASE}/geo/wiki?title=${enc}&kind=summary`);
     if (!res.ok) return null;
     const d = await res.json();
-    if (!d || d.type === 'disambiguation' || !d.extract) return null;
+    if (!d || !d.ok || !d.extract) return null;
     return {
-      title: d.title,
+      title,
       extract: d.extract,
-      pageUrl: d.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${enc}`,
-      thumbnail: d.thumbnail?.source,
+      pageUrl: d.url || `https://en.wikipedia.org/wiki/${enc}`,
+      thumbnail: d.thumbnail || undefined,
     };
   } catch {
     return null;

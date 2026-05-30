@@ -3,50 +3,31 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Loader2, Compass } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
-// Live OpenStreetMap interactive area-explorer. Toggles fetch real POIs from
-// the Overpass API (no key) within a small radius and pin them on the map with
-// category-coloured pins, popups, distance, and a "Directions" deep-link.
+// Live OpenStreetMap interactive area-explorer. Category toggles fetch real POIs
+// through OUR backend proxy (/api/geo/amenities) — Overpass queried server-side,
+// cached, mirror-fallback — then pin them on the map with category-coloured pins,
+// popups, distance, and a "Directions" deep-link. No browser CORS/CSP fragility.
 
 interface POI { id: string; name: string; lat: number; lng: number; type: string }
 
 interface CatConfig {
-  key: string; label: string; color: string; emoji: string; query: string;
+  key: string; label: string; color: string; emoji: string; type: string;
 }
 
+// `type` maps to the backend proxy's amenity type.
 const CATS: CatConfig[] = [
-  { key: 'food',     label: 'Food',      color: '#f97316', emoji: '🍽️', query: 'node["amenity"~"^(restaurant|cafe|fast_food|food_court)$"]' },
-  { key: 'hotels',   label: 'Stays',     color: '#2563eb', emoji: '🏨', query: 'node["tourism"~"^(hotel|hostel|guest_house|motel|apartment)$"]' },
-  { key: 'parks',    label: 'Parks',     color: '#16a34a', emoji: '🌳', query: 'node["leisure"~"^(park|garden)$"]' },
-  { key: 'atm',      label: 'ATMs',      color: '#7c3aed', emoji: '🏧', query: 'node["amenity"="atm"]' },
-  { key: 'hospital', label: 'Hospitals', color: '#dc2626', emoji: '🏥', query: 'node["amenity"~"^(hospital|clinic|pharmacy)$"]' },
-  { key: 'fuel',     label: 'Fuel',      color: '#eab308', emoji: '⛽', query: 'node["amenity"="fuel"]' },
-  { key: 'police',   label: 'Police',    color: '#64748b', emoji: '🚓', query: 'node["amenity"="police"]' },
+  { key: 'food',     label: 'Food',      color: '#f97316', emoji: '🍽️', type: 'food' },
+  { key: 'hotels',   label: 'Stays',     color: '#2563eb', emoji: '🏨', type: 'hotel' },
+  { key: 'parks',    label: 'Parks',     color: '#16a34a', emoji: '🌳', type: 'park' },
+  { key: 'atm',      label: 'ATMs',      color: '#7c3aed', emoji: '🏧', type: 'atm' },
+  { key: 'hospital', label: 'Hospitals', color: '#dc2626', emoji: '🏥', type: 'hospital' },
+  { key: 'fuel',     label: 'Fuel',      color: '#eab308', emoji: '⛽', type: 'fuel' },
+  { key: 'police',   label: 'Police',    color: '#64748b', emoji: '🚓', type: 'police' },
 ];
 
 const RADIUS_METERS = 3500;
-
-// Try multiple Overpass mirrors in order — one might be blocked by a user's
-// ad-blocker / privacy filter, or rate-limited at the moment. Using GET with
-// ?data= dodges the POST preflight that some filters trip on.
-const OVERPASS_MIRRORS = [
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-  'https://overpass-api.de/api/interpreter',
-];
-
-async function overpassQuery(body: string, signal: AbortSignal): Promise<any | null> {
-  for (const base of OVERPASS_MIRRORS) {
-    try {
-      const r = await fetch(`${base}?data=${encodeURIComponent(body)}`, { signal });
-      if (r.ok) return await r.json();
-    } catch (e: any) {
-      if (e?.name === 'AbortError') throw e;
-      // try the next mirror
-    }
-  }
-  return null;
-}
 
 // Centre pin — bigger purple teardrop so the place stands out from POI dots.
 const CENTER_ICON = L.divIcon({
@@ -104,24 +85,25 @@ export function PlaceInteractiveMap({ lat, lng, placeName }: { lat: number; lng:
     if (toFetch.length === 0) return;
 
     const ctrl = new AbortController();
-    toFetch.forEach((cat) => {
+    toFetch.forEach((cat, idx) => {
       fetchedRef.current.add(cat.key);
       setLoading((prev) => ({ ...prev, [cat.key]: true }));
-      const body = `[out:json][timeout:20];(${cat.query}(around:${RADIUS_METERS},${lat},${lng}););out body 60;`;
-      overpassQuery(body, ctrl.signal)
+      fetch(`${API_BASE}/geo/amenities?lat=${lat}&lng=${lng}&type=${cat.type}&radius=${RADIUS_METERS}`, { signal: ctrl.signal })
+        .then((r) => (r.ok ? r.json() : null))
         .then((d: any) => {
-          const list: POI[] = !d?.elements ? [] : d.elements
-            .filter((e: any) => e.type === 'node' && typeof e.lat === 'number')
-            .map((e: any) => ({
-              id: `${cat.key}-${e.id}`,
-              name: e.tags?.name || e.tags?.brand || cat.label,
+          const list: POI[] = (d?.items || [])
+            .filter((e: any) => typeof e.lat === 'number' && typeof e.lon === 'number')
+            .map((e: any, i: number) => ({
+              id: `${cat.key}-${i}`,
+              name: e.name || cat.label,
               lat: e.lat, lng: e.lon,
-              type: String(e.tags?.amenity || e.tags?.tourism || e.tags?.leisure || cat.label).replace(/_/g, ' '),
+              type: String(e.type || cat.label).replace(/_/g, ' '),
             }));
           setPois((prev) => ({ ...prev, [cat.key]: list }));
         })
         .catch(() => { setPois((prev) => ({ ...prev, [cat.key]: [] })); })
         .finally(() => { setLoading((prev) => ({ ...prev, [cat.key]: false })); });
+      void idx;
     });
 
     return () => ctrl.abort();

@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Car, Mountain, Sunrise, Sunset, Sparkles } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
-// Free, no-key public APIs. Each call is independent — the card renders whatever
-// loaded by the soft timeout, so one slow service can't break the whole module.
-// Sources: OSRM (drive time), Open-Elevation (altitude), Sunrise-Sunset.org.
-
-// Howrah / Kolkata is the canonical "starting point" travellers measure from.
-const KOLKATA = { lat: 22.5851, lng: 88.3468 } as const;
-const SOFT_TIMEOUT = 9000;
+// Drive-from-Kolkata + altitude + sunrise/sunset, fetched in ONE call through
+// our backend proxy (/api/geo/facts), which queries OSRM / Open-Elevation /
+// Sunrise-Sunset server-side, with mirror fallback + caching. No browser
+// CORS/CSP fragility; the card renders whatever the proxy returns.
 
 interface Facts {
   driveTime?: number;   // seconds
@@ -28,10 +26,6 @@ const formatDuration = (sec: number) => {
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
 
-// Wraps a fetch with a soft timeout so a hung public API can't block the card.
-const withTimeout = <T,>(p: Promise<T | null>): Promise<T | null> =>
-  Promise.race([p, new Promise<null>((res) => setTimeout(() => res(null), SOFT_TIMEOUT))]);
-
 export function PlaceQuickFacts({ lat, lng }: { lat: number; lng: number }) {
   const [facts, setFacts] = useState<Facts>({});
   const [loading, setLoading] = useState(true);
@@ -41,54 +35,17 @@ export function PlaceQuickFacts({ lat, lng }: { lat: number; lng: number }) {
     setFacts({});
     setLoading(true);
 
-    // Each public free API gets a mirror chain — if one host is blocked by an
-    // ad-blocker / privacy filter or rate-limited, the next one tries.
-    const tryAll = async (urls: string[]): Promise<any | null> => {
-      for (const u of urls) {
-        try { const r = await fetch(u); if (r.ok) return await r.json(); } catch { /* next mirror */ }
-      }
-      return null;
-    };
-
-    const drive = withTimeout(
-      tryAll([
-        `https://router.project-osrm.org/route/v1/driving/${KOLKATA.lng},${KOLKATA.lat};${lng},${lat}?overview=false`,
-        `https://routing.openstreetmap.de/routed-car/route/v1/driving/${KOLKATA.lng},${KOLKATA.lat};${lng},${lat}?overview=false`,
-      ]).then((d: any) => d?.routes?.[0]
-        ? { driveTime: d.routes[0].duration, driveKm: Math.round(d.routes[0].distance / 1000) }
-        : null),
-    );
-
-    const elev = withTimeout(
-      tryAll([
-        `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`,
-        `https://api.opentopodata.org/v1/aster30m?locations=${lat},${lng}`,
-        `https://api.opentopodata.org/v1/srtm30m?locations=${lat},${lng}`,
-      ]).then((d: any) => (d?.results?.[0]?.elevation != null ? { altitude: Math.round(d.results[0].elevation) } : null)),
-    );
-
-    const sun = withTimeout(
-      tryAll([
-        `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`,
-        `https://api.sunrisesunset.io/json?lat=${lat}&lng=${lng}&time_format=24`,
-      ]).then((d: any) => {
-        // Both APIs nest under `results`; sunrisesunset.io returns "HH:MM:SS" strings
-        // instead of ISO timestamps — normalise to a parseable today-ISO string.
-        const r = d?.results;
-        if (!r) return null;
-        const today = new Date().toISOString().slice(0, 10);
-        const norm = (v: string) => /\d{4}-/.test(v) ? v : `${today}T${v}+00:00`;
-        return r.sunrise && r.sunset ? { sunrise: norm(r.sunrise), sunset: norm(r.sunset) } : null;
-      }),
-    );
-
-    Promise.all([drive, elev, sun]).then((parts) => {
-      if (!alive) return;
-      const merged: Facts = {};
-      for (const p of parts) if (p) Object.assign(merged, p);
-      setFacts(merged);
-      setLoading(false);
-    });
+    fetch(`${API_BASE}/geo/facts?lat=${lat}&lng=${lng}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: any) => {
+        if (!alive) return;
+        setFacts(d && d.ok ? {
+          driveTime: d.driveTime, driveKm: d.driveKm, altitude: d.altitude,
+          sunrise: d.sunrise, sunset: d.sunset,
+        } : {});
+        setLoading(false);
+      })
+      .catch(() => { if (alive) { setFacts({}); setLoading(false); } });
 
     return () => { alive = false; };
   }, [lat, lng]);

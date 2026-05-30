@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Landmark, Stethoscope, Shield, Fuel, ExternalLink, Loader2, MapPin } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
-// Free, no-key Overpass API (OpenStreetMap) — pulls real-world amenities around
-// a coordinate. We query ATMs, hospitals, police, fuel; render distances and a
-// Google-Maps deep link for each. No fabricated data: if OSM has nothing, we
-// honestly say so.
+// Real-world amenities (ATMs, hospitals, police, fuel) around a coordinate,
+// fetched through OUR backend proxy (/api/geo/amenities) which queries Overpass
+// server-side, caches the result, and falls back across mirrors — so it's not
+// subject to browser CORS/CSP/rate-limit fragility. No fabricated data: if OSM
+// has nothing, we honestly say so.
 
 interface Amenity { name: string; lat: number; lon: number; tags?: Record<string, string> }
 interface AmenityGroup { items: Amenity[]; loaded: boolean }
@@ -39,36 +41,18 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
 }
 const fmtKm = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`);
 
-// Multiple Overpass mirrors — one may be down, rate-limited, or blocked. We try
-// them in order with a GET request (?data=) which avoids the CORS preflight that
-// a POST + form content-type triggers (and which the main mirror often rejects).
-const OVERPASS_MIRRORS = [
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-  'https://overpass-api.de/api/interpreter',
-];
-
-async function fetchOverpass(lat: number, lng: number, queryFilter: string, radiusMeters = 7000): Promise<Amenity[]> {
-  // Overpass QL: search nodes/ways with the filter inside a radius.
-  const q = `[out:json][timeout:18];(node[${queryFilter}](around:${radiusMeters},${lat},${lng});way[${queryFilter}](around:${radiusMeters},${lat},${lng}););out center 30;`;
-  let data: any = null;
-  for (const base of OVERPASS_MIRRORS) {
-    try {
-      const res = await fetch(`${base}?data=${encodeURIComponent(q)}`);
-      if (res.ok) { data = await res.json(); break; }
-    } catch { /* try next mirror */ }
+// Fetch amenities of `type` (atm|hospital|police|fuel) via our backend proxy.
+async function fetchAmenities(lat: number, lng: number, type: string, radiusMeters = 7000): Promise<Amenity[]> {
+  try {
+    const res = await fetch(`${API_BASE}/geo/amenities?lat=${lat}&lng=${lng}&type=${encodeURIComponent(type)}&radius=${radiusMeters}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data?.items || [])
+      .filter((it: any) => typeof it.lat === 'number' && typeof it.lon === 'number')
+      .map((it: any) => ({ name: it.name || 'Place', lat: it.lat, lon: it.lon, tags: {} })) as Amenity[];
+  } catch {
+    return [];
   }
-  if (!data) return [];
-  const elements: any[] = data?.elements || [];
-  return elements
-    .map((el) => {
-      const elat = el.lat ?? el.center?.lat;
-      const elon = el.lon ?? el.center?.lon;
-      if (typeof elat !== 'number' || typeof elon !== 'number') return null;
-      const name = el.tags?.name || el.tags?.operator || el.tags?.brand || `${el.tags?.amenity || 'Place'}`;
-      return { name, lat: elat, lon: elon, tags: el.tags || {} };
-    })
-    .filter(Boolean) as Amenity[];
 }
 
 export function PlaceNearbyAmenities({ lat, lng, placeName }: { lat: number; lng: number; placeName: string }) {
@@ -83,9 +67,8 @@ export function PlaceNearbyAmenities({ lat, lng, placeName }: { lat: number; lng
   // Lazy-fetch each category only when its tab is first opened (saves Overpass quota).
   useEffect(() => {
     if (groups[active].loaded) return;
-    const cat = CATEGORIES.find((c) => c.key === active)!;
     let alive = true;
-    fetchOverpass(lat, lng, cat.query)
+    fetchAmenities(lat, lng, active)
       .then((items) => {
         if (!alive) return;
         const withDist = items

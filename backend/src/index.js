@@ -227,6 +227,7 @@ app.use('/api/wishlist',         wishlistRoutes);
 app.use('/api/recently-viewed',  recentlyViewedRoutes);
 app.use('/api/place-images',     placeImagesRoutes); // per-item district photos
 app.use('/api/bengal',           bengalRoutes);  // festivals, food, transport, hotels, subplaces
+app.use('/api/geo',              require('./routes/geo')); // proxy+cache: Overpass/Wikipedia/OSRM/elevation/sunrise/Unsplash
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {

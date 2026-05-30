@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { MapPin, Star, ArrowUpRight, Mountain, Utensils, Hotel, Trees, Compass, Sparkles } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
-// Photo backfill — when a card has no usable real photo, try Unsplash first
-// (better travel photography), then Wikipedia Commons as the fallback. Result
-// (URL or null) is cached in localStorage for 7 days so we never re-query.
+// Photo backfill — when a card has no usable real photo, ask our backend proxy
+// (/api/geo/photo) which tries Unsplash then Wikipedia server-side. The result
+// (URL or null) is also cached in localStorage for 7 days so we never re-query.
 const BACKFILL_CACHE_KEY = 'bt-cardphoto-v2';
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -34,51 +35,15 @@ function cacheSet(key: string, value: string | null) {
   } catch { /* quota */ }
 }
 
-async function fetchUnsplash(query: string): Promise<string | null> {
-  const key = (import.meta as any).env?.VITE_UNSPLASH_ACCESS_KEY;
-  if (!key) return null;
-  try {
-    const r = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape&content_filter=high`,
-      { headers: { Authorization: `Client-ID ${key}` } },
-    );
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data?.results?.[0]?.urls?.regular || null;
-  } catch { return null; }
-}
-
-async function fetchWiki(title: string): Promise<string | null> {
-  try {
-    const r = await fetch(
-      `https://en.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(title)}`,
-      { headers: { Accept: 'application/json' } },
-    );
-    if (!r.ok) return null;
-    const data = await r.json();
-    const items: any[] = data?.items || [];
-    for (const it of items) {
-      if (it.type !== 'image') continue;
-      const srcset = Array.isArray(it.srcset) ? it.srcset : [];
-      const best = srcset.reduce(
-        (acc: any, cur: any) => (Number(cur?.scale) > Number(acc?.scale || 0) ? cur : acc),
-        srcset[0],
-      );
-      if (!best?.src) continue;
-      const src = best.src.startsWith('//') ? `https:${best.src}` : best.src;
-      if (/\.svg(\?|$)/i.test(src)) continue;
-      if (/(coat[-_ ]of[-_ ]arms|logo|seal|map|disambig|edit-icon|flag)/i.test(src)) continue;
-      return src;
-    }
-    return null;
-  } catch { return null; }
-}
-
-// One backfill call: Unsplash → Wikipedia → null. Always cached.
+// One backfill call through our backend proxy (/api/geo/photo): tries Unsplash
+// then Wikipedia Commons server-side and caches the result. No browser CORS/CSP.
 async function fetchBackfillPhoto(query: string): Promise<string | null> {
-  const u = await fetchUnsplash(query);
-  if (u) return u;
-  return await fetchWiki(query);
+  try {
+    const r = await fetch(`${API_BASE}/geo/photo?query=${encodeURIComponent(query)}`);
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d?.url || null;
+  } catch { return null; }
 }
 
 // One uniform card used by every horizontal row on every detail page.

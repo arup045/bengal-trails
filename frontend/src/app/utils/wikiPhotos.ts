@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_BASE } from './api';
 
 // Pulls real photos for a place from the free Wikipedia Commons media-list API
 // (no key, CORS-friendly). Used to auto-fill the gallery on places whose admin
@@ -35,33 +36,14 @@ function cacheSet(key: string, value: string[]) {
 }
 
 async function fetchMedia(title: string): Promise<string[]> {
+  // Via our backend proxy (/api/geo/wiki?kind=media) — server-side + cached,
+  // already filtered to real photos. Avoids browser CORS/CSP limits.
   try {
-    const res = await fetch(
-      `https://en.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(title)}`,
-      { headers: { Accept: 'application/json' } },
-    );
+    const res = await fetch(`${API_BASE}/geo/wiki?title=${encodeURIComponent(title)}&kind=media`);
     if (!res.ok) return [];
     const data = await res.json();
-    const items: any[] = data?.items || [];
-    const out: string[] = [];
-    for (const it of items) {
-      if (it.type !== 'image') continue;
-      const srcset = Array.isArray(it.srcset) ? it.srcset : [];
-      // Pick the highest-resolution srcset entry.
-      const best = srcset.reduce(
-        (acc: any, cur: any) => (Number(cur?.scale) > Number(acc?.scale || 0) ? cur : acc),
-        srcset[0],
-      );
-      if (!best?.src) continue;
-      const src = best.src.startsWith('//') ? `https:${best.src}` : best.src;
-      // Skip vector files (typically icons/maps/coats-of-arms) and obviously
-      // non-photo helper images.
-      if (/\.svg(\?|$)/i.test(src)) continue;
-      if (/(coat[-_ ]of[-_ ]arms|logo|seal|map|disambig|edit-icon)/i.test(src)) continue;
-      out.push(src);
-      if (out.length >= MAX_PHOTOS) break;
-    }
-    return out;
+    const photos: string[] = Array.isArray(data?.photos) ? data.photos : [];
+    return photos.slice(0, MAX_PHOTOS);
   } catch {
     return [];
   }
