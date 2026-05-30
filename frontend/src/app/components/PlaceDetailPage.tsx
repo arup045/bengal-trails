@@ -375,105 +375,6 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             {/* History & background — Wikipedia summary (renders only if available) */}
             <PlaceHistory title={place.title} district={place.district} />
 
-            {/* Things to do — Activities + Food carousels, sourced from the
-                parent district (a place inherits its district's experiences). */}
-            <PlaceThingsToDo districtSlug={districtSlug} />
-
-            {/* Photos (real only) */}
-            {showGallery && (
-              <section id="photos" className="scroll-mt-32">
-                <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-5">Photos</h2>
-                <PhotoGalleryLightbox images={galleryImages} open={lightboxOpen} index={lightboxIndex} onClose={() => setLightboxOpen(false)} />
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {galleryImages.map((img, idx) => (
-                    <div key={idx} className="relative group cursor-pointer overflow-hidden rounded-2xl" onClick={() => { setLightboxOpen(true); setLightboxIndex(idx); }}>
-                      <ImageWithFallback src={img.src} alt={img.alt} className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                        <Camera className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Stay — clean full-width carousel of real stays (unified card theme) */}
-            <PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} />
-
-            {/* Where to eat nearby (names are real; opens Google Maps) */}
-            {restaurants.length > 0 && (
-              <section className="scroll-mt-32">
-                <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5">Where to eat nearby</h2>
-                <div className="flex flex-wrap gap-2">
-                  {restaurants.map((r: { name: string }) => (
-                    <a key={r.name}
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name}, ${place.district || place.region}, West Bengal`)}`}
-                      target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full font-poppins text-sm text-gray-700 hover:border-rose-300 hover:text-rose-600 transition-colors">
-                      <MapPin className="w-3.5 h-3.5 text-rose-500" />{r.name}
-                    </a>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Logistics & Practicalities — quick facts + 3-day forecast +
-                Fly/Rail/Drive matrix + per-place transport guide. */}
-            <section id="getting-there" className="scroll-mt-32">
-              <div className="mb-5">
-                <h2 className="font-poppins text-3xl font-bold text-slate-900">How to reach {place.title}</h2>
-                <p className="font-poppins text-sm text-slate-500 mt-1">Nearest gateways and a live drive estimate from Kolkata.</p>
-              </div>
-              {place.coordinates && (
-                <div className="space-y-6">
-                  <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
-                  <PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
-                  <PlaceLogistics
-                    lat={place.coordinates.lat}
-                    lng={place.coordinates.lng}
-                    region={place.region}
-                    district={place.district}
-                    placeName={place.title}
-                  />
-                </div>
-              )}
-            </section>
-
-            {/* Reviews */}
-            <section id="reviews" className="scroll-mt-32">
-              <ReviewsSystem destinationSlug={place.slug} destinationName={place.title} />
-            </section>
-
-            {/* Around here — live amenities (ATMs/hospitals/police/fuel) from OpenStreetMap */}
-            {place.coordinates && (
-              <PlaceNearbyAmenities lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
-            )}
-
-            {/* Nearby */}
-            <section id="nearby" className="scroll-mt-32">
-              <NearbyPlacesSection destinationSlug={place.slug} />
-              {nearbyPlaces.length > 0 && (
-                <div className="mt-10">
-                  <TravelSectionRow
-                    title={`More in ${place.region}`}
-                    subtitle="Other places worth pairing on the same trip"
-                    count={nearbyPlaces.length}
-                  >
-                    {nearbyPlaces.map((np) => (
-                      <PremiumPlaceCard
-                        key={np.slug}
-                        title={np.title}
-                        image={np.heroImage?.url}
-                        href={`/explore/${np.slug}`}
-                        location={np.district || np.region}
-                        rating={np.rating}
-                        fallbackKind="place"
-                      />
-                    ))}
-                  </TravelSectionRow>
-                </div>
-              )}
-            </section>
           </div>
 
           {/* Sidebar */}
@@ -516,6 +417,108 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* ── Full-width sections (Activities · Food · Photos · Stay ·
+            Logistics · Reviews · Around here · Nearby) ─────────────────── */}
+        <div className="space-y-14 mt-14">
+          {/* Things to do — Activities + Food carousels (inherits district data) */}
+          <PlaceThingsToDo districtSlug={districtSlug} />
+
+          {/* Photos (real only) */}
+          {showGallery && (
+            <section id="photos" className="scroll-mt-32">
+              <h2 className="font-poppins text-3xl font-bold text-slate-900 mb-5">Photos</h2>
+              <PhotoGalleryLightbox images={galleryImages} open={lightboxOpen} index={lightboxIndex} onClose={() => setLightboxOpen(false)} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {galleryImages.map((img, idx) => (
+                  <div key={idx} className="relative group cursor-pointer overflow-hidden rounded-2xl" onClick={() => { setLightboxOpen(true); setLightboxIndex(idx); }}>
+                    <ImageWithFallback src={img.src} alt={img.alt} className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <Camera className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Stay — full-width carousel of real stays (unified card theme) */}
+          <PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} />
+
+          {/* Where to eat nearby (names are real; opens Google Maps) */}
+          {restaurants.length > 0 && (
+            <section className="scroll-mt-32">
+              <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5">Where to eat nearby</h2>
+              <div className="flex flex-wrap gap-2">
+                {restaurants.map((r: { name: string }) => (
+                  <a key={r.name}
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name}, ${place.district || place.region}, West Bengal`)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full font-poppins text-sm text-gray-700 hover:border-rose-300 hover:text-rose-600 transition-colors">
+                    <MapPin className="w-3.5 h-3.5 text-rose-500" />{r.name}
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Logistics & Practicalities */}
+          <section id="getting-there" className="scroll-mt-32">
+            <div className="mb-5">
+              <h2 className="font-poppins text-3xl font-bold text-slate-900">How to reach {place.title}</h2>
+              <p className="font-poppins text-sm text-slate-500 mt-1">Nearest gateways and a live drive estimate from Kolkata.</p>
+            </div>
+            {place.coordinates && (
+              <div className="space-y-6">
+                <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
+                <PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
+                <PlaceLogistics
+                  lat={place.coordinates.lat}
+                  lng={place.coordinates.lng}
+                  region={place.region}
+                  district={place.district}
+                  placeName={place.title}
+                />
+              </div>
+            )}
+          </section>
+
+          {/* Reviews */}
+          <section id="reviews" className="scroll-mt-32">
+            <ReviewsSystem destinationSlug={place.slug} destinationName={place.title} />
+          </section>
+
+          {/* Around here — live amenities (ATMs/hospitals/police/fuel) */}
+          {place.coordinates && (
+            <PlaceNearbyAmenities lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
+          )}
+
+          {/* Nearby */}
+          <section id="nearby" className="scroll-mt-32">
+            <NearbyPlacesSection destinationSlug={place.slug} />
+            {nearbyPlaces.length > 0 && (
+              <div className="mt-10">
+                <TravelSectionRow
+                  title={`More in ${place.region}`}
+                  subtitle="Other places worth pairing on the same trip"
+                  count={nearbyPlaces.length}
+                >
+                  {nearbyPlaces.map((np) => (
+                    <PremiumPlaceCard
+                      key={np.slug}
+                      title={np.title}
+                      image={np.heroImage?.url}
+                      href={`/explore/${np.slug}`}
+                      location={np.district || np.region}
+                      rating={np.rating}
+                      fallbackKind="place"
+                    />
+                  ))}
+                </TravelSectionRow>
+              </div>
+            )}
+          </section>
         </div>
 
         {/* AI travel tips */}
