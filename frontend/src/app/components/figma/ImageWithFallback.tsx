@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { getOptimizedSrc } from '../../utils/imageOptimize'
 
-const ERROR_IMG_SRC =
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODgiIGhlaWdodD0iODgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBvcGFjaXR5PSIuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIzLjciPjxyZWN0IHg9IjE2IiB5PSIxNiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiByeD0iNiIvPjxwYXRoIGQ9Im0xNiA1OCAxNi0xOCAzMiAzMiIvPjxjaXJjbGUgY3g9IjUzIiBjeT0iMzUiIHI9IjciLz48L3N2Zz4KCg=='
-
 interface Props extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Largest width (px) to request from the CDN. Defaults to 1280. */
   optimizeWidth?: number;
@@ -29,13 +26,20 @@ export function ImageWithFallback(props: Props) {
   const optimizedSrc = typeof src === 'string' ? getOptimizedSrc(src, optimizeWidth ?? 1280) : src
 
   return didError ? (
+    // Clean on-brand placeholder — soft slate gradient + a muted mountain icon.
+    // No "Error loading image" text or broken-image glyph, so a blocked/dead
+    // image URL still looks intentional rather than broken.
     <div
-      className={`inline-block bg-gray-100 text-center align-middle ${className ?? ''}`}
+      className={`bg-gradient-to-br from-slate-100 via-white to-slate-100 flex items-center justify-center ${className ?? ''}`}
       style={style}
+      role="img"
+      aria-label={typeof alt === 'string' ? alt : 'Image unavailable'}
     >
-      <div className="flex items-center justify-center w-full h-full">
-        <img src={ERROR_IMG_SRC} alt="Error loading image" {...rest} data-original-url={src} />
-      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round"
+        className="w-10 h-10 text-slate-300" aria-hidden="true">
+        <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+      </svg>
     </div>
   ) : (
     <img
