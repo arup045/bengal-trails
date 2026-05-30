@@ -53,34 +53,50 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
   const fetchPlace = () => {
     if (!slug) return;
-    // The backend `destinations` table has no `district` column, so we fall back
-    // to the static dataset's district for this slug — otherwise district-derived
-    // sections (Activities, Food) and the district links break on production.
-    const staticMatch = placesData.find(p => p.slug === slug);
+    // The backend `destinations` table is SPARSE (no district, no gallery, no
+    // nearby hotels/restaurants). The static dataset is RICH. So we use the
+    // static entry as the base and overlay the API's live values (rating,
+    // review count, latest description) on top — otherwise sections silently
+    // empty out on production and the page looks broken vs. the full design.
+    const s: any = placesData.find(p => p.slug === slug) || {};
     fetch(`${API_BASE}/destinations/${slug}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
         const dest = d?.destination;
         if (dest) {
+          const apiGallery = (dest.galleryImages || dest.gallery_images);
+          const apiHero = (dest.imageUrl || dest.image_url);
+          const apiHighlights = Array.isArray(dest.highlights) && dest.highlights.length ? dest.highlights : null;
+          const apiRestaurants = Array.isArray(dest.nearbyRestaurants) && dest.nearbyRestaurants.length ? dest.nearbyRestaurants : null;
           setApiPlace({
+            // 1) Rich static base — keeps gallery, nearby hotels/restaurants,
+            //    coordinates, tags, bestTime, description, etc.
+            ...s,
+            // 2) Raw API fields (id, status, viewCount…).
             ...dest,
-            title: dest.name, slug: dest.slug,
-            image: dest.imageUrl || dest.image_url,
-            heroImage: { url: (dest.imageUrl || dest.image_url) || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200', alt: dest.name || 'Destination photo' },
-            gallery: Array.isArray(dest.galleryImages || dest.gallery_images) ? (dest.galleryImages || dest.gallery_images) : [],
-            excerpt: (dest.shortDescription || dest.short_description) || dest.description?.slice(0, 160) || '',
-            description: dest.description || '',
-            region: dest.region || staticMatch?.region || 'Bengal',
-            district: dest.district || staticMatch?.district || dest.region || 'West Bengal',
-            coordinates: (dest.latitude && dest.longitude) ? { lat: parseFloat(dest.latitude), lng: parseFloat(dest.longitude) } : { lat: 22.5726, lng: 88.3639 },
-            tags: Array.isArray(dest.highlights) && dest.highlights.length ? dest.highlights : Array.isArray(dest.activities) ? dest.activities : (dest.category ? [dest.category] : []),
-            priceFrom: (dest.priceRange || dest.price_range) || ((dest.priceFrom || dest.price_from) ? `₹${(dest.priceFrom || dest.price_from).toLocaleString('en-IN')}` : 'Free'),
-            rating: parseFloat(dest.rating) || 0,
-            reviewsCount: (dest.reviewCount || dest.review_count) || 0,
-            bestTime: (dest.bestTimeToVisit || dest.best_time_to_visit) || 'Oct–Mar',
-            category: dest.category || '',
-            nearbyRestaurants: Array.isArray(dest.nearbyRestaurants) ? dest.nearbyRestaurants : [],
+            // 3) Normalised fields — prefer real API data, fall back to static.
+            title: dest.name || s.title,
+            slug: dest.slug || slug,
+            image: apiHero || s.heroImage?.url,
+            heroImage: { url: apiHero || s.heroImage?.url || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200', alt: dest.name || s.heroImage?.alt || 'Destination photo' },
+            gallery: (Array.isArray(apiGallery) && apiGallery.length) ? apiGallery : (s.gallery || []),
+            excerpt: (dest.shortDescription || dest.short_description) || s.excerpt || dest.description?.slice(0, 160) || '',
+            description: dest.description || s.description || '',
+            region: dest.region || s.region || 'Bengal',
+            district: dest.district || s.district || dest.region || 'West Bengal',
+            coordinates: (dest.latitude && dest.longitude) ? { lat: parseFloat(dest.latitude), lng: parseFloat(dest.longitude) } : (s.coordinates || { lat: 22.5726, lng: 88.3639 }),
+            tags: apiHighlights || s.tags || (dest.category ? [dest.category] : []),
+            priceFrom: (dest.priceRange || dest.price_range) || ((dest.priceFrom || dest.price_from) ? `₹${(dest.priceFrom || dest.price_from).toLocaleString('en-IN')}` : (s.priceFrom || 'Free')),
+            rating: parseFloat(dest.rating) || s.rating || 0,
+            reviewsCount: (dest.reviewCount || dest.review_count) || s.reviewsCount || 0,
+            bestTime: (dest.bestTimeToVisit || dest.best_time_to_visit) || s.bestTime || 'Oct–Mar',
+            category: dest.category || s.category || '',
+            nearbyRestaurants: apiRestaurants || s.nearbyRestaurants || [],
+            nearbyHotels: s.nearbyHotels || [],
           });
+        } else {
+          // API returned nothing usable — fall straight back to the static entry.
+          if (s.slug) setApiPlace({ ...s });
         }
       })
       .catch(() => {})
