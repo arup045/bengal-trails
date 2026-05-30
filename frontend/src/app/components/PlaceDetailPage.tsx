@@ -77,8 +77,10 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             // 3) Normalised fields — prefer real API data, fall back to static.
             title: dest.name || s.title,
             slug: dest.slug || slug,
-            image: apiHero || s.heroImage?.url,
-            heroImage: { url: apiHero || s.heroImage?.url || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200', alt: dest.name || s.heroImage?.alt || 'Destination photo' },
+            // Prefer the curated static hero (known-good Unsplash) over the API's
+            // imageUrl, which is frequently a broken/expired link on production.
+            image: s.heroImage?.url || apiHero,
+            heroImage: { url: s.heroImage?.url || apiHero || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200', alt: s.heroImage?.alt || dest.name || 'Destination photo' },
             gallery: (Array.isArray(apiGallery) && apiGallery.length) ? apiGallery : (s.gallery || []),
             excerpt: (dest.shortDescription || dest.short_description) || s.excerpt || dest.description?.slice(0, 160) || '',
             description: dest.description || s.description || '',
