@@ -39,19 +39,26 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
 }
 const fmtKm = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`);
 
+// Multiple Overpass mirrors — one may be down, rate-limited, or blocked. We try
+// them in order with a GET request (?data=) which avoids the CORS preflight that
+// a POST + form content-type triggers (and which the main mirror often rejects).
+const OVERPASS_MIRRORS = [
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
+];
+
 async function fetchOverpass(lat: number, lng: number, queryFilter: string, radiusMeters = 7000): Promise<Amenity[]> {
   // Overpass QL: search nodes/ways with the filter inside a radius.
-  const q = `[out:json][timeout:18];(
-    node[${queryFilter}](around:${radiusMeters},${lat},${lng});
-    way[${queryFilter}](around:${radiusMeters},${lat},${lng});
-  );out center 30;`;
-  const res = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'data=' + encodeURIComponent(q),
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
+  const q = `[out:json][timeout:18];(node[${queryFilter}](around:${radiusMeters},${lat},${lng});way[${queryFilter}](around:${radiusMeters},${lat},${lng}););out center 30;`;
+  let data: any = null;
+  for (const base of OVERPASS_MIRRORS) {
+    try {
+      const res = await fetch(`${base}?data=${encodeURIComponent(q)}`);
+      if (res.ok) { data = await res.json(); break; }
+    } catch { /* try next mirror */ }
+  }
+  if (!data) return [];
   const elements: any[] = data?.elements || [];
   return elements
     .map((el) => {
