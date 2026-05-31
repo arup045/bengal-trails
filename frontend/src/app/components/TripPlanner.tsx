@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import {
   Save, Loader2, Plus, X, Calendar, MapPin, IndianRupee, Download, Share2,
-  Trash2, Map as MapIcon, ArrowUp, ArrowDown, Sparkles, Compass, Route, Search,
+  Trash2, Map as MapIcon, ArrowUp, ArrowDown, Sparkles, Compass, Route, Search, Heart,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { API_BASE } from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useWishlistSync } from '../utils/useWishlistSync';
 import { placesData } from '../data/places-full';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import type { RouteStop } from './TripRouteMap';
@@ -96,6 +97,7 @@ function PlaceRow({
 
 export function TripPlanner() {
   const { user, accessToken } = useAuth();
+  const { wishlist } = useWishlistSync();
   const [isSaving, setIsSaving] = useState(false);
   const [tripName, setTripName] = useState('My West Bengal Trip');
   const [tripDays, setTripDays] = useState<TripDay[]>([{ id: '1', day: 1, places: [] }]);
@@ -133,6 +135,32 @@ export function TripPlanner() {
       };
     }));
     setShowPlacePicker(false);
+  };
+
+  // Saved (wishlisted) places that exist in the dataset, not already in the trip.
+  const savedAddable = useMemo(() => {
+    const inTrip = new Set(tripDays.flatMap((d) => d.places.map((p) => p.slug)));
+    const bySlug = new Map((placesData as any[]).map((p) => [p.slug, p]));
+    return (wishlist || [])
+      .map((w: any) => bySlug.get(w.slug))   // district-* wishlist slugs won't match → skipped
+      .filter((p: any) => p && !inTrip.has(p.slug));
+  }, [wishlist, tripDays]);
+
+  // One-click: pull every saved place into Day 1.
+  const addAllSaved = () => {
+    if (savedAddable.length === 0) { toast.message('No saved places to add yet.'); return; }
+    const firstDay = tripDays[0]?.day ?? 1;
+    setTripDays((prev) => prev.map((day) => {
+      if (day.day !== firstDay) return day;
+      const have = new Set(day.places.map((p) => p.slug));
+      const additions = savedAddable.filter((p: any) => !have.has(p.slug)).map((place: any) => ({
+        slug: place.slug, title: place.title, image: place.heroImage.url,
+        priceFrom: place.priceFrom || 'Free', region: place.region, district: place.district,
+        lat: place.coordinates?.lat, lng: place.coordinates?.lng,
+      }));
+      return { ...day, places: [...day.places, ...additions] };
+    }));
+    toast.success(`Added ${savedAddable.length} saved place${savedAddable.length !== 1 ? 's' : ''} to Day 1`);
   };
 
   const removePlaceFromDay = (dayNumber: number, placeSlug: string) => {
@@ -380,6 +408,15 @@ export function TripPlanner() {
                   secondaryLabel="Ask AI to plan it"
                   onSecondary={askAiOptimize}
                 />
+                {savedAddable.length > 0 && (
+                  <div className="mt-4 flex justify-center">
+                    <button onClick={addAllSaved}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 font-poppins text-sm font-medium hover:bg-rose-100 transition">
+                      <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                      Add my {savedAddable.length} saved place{savedAddable.length !== 1 ? 's' : ''}
+                    </button>
+                  </div>
+                )}
                 {popularPlaces.length > 0 && (
                   <div className="mt-6">
                     <p className="font-poppins text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3 text-center">Or start with a Bengal classic</p>
@@ -503,6 +540,14 @@ export function TripPlanner() {
                 );
               })}
             </AnimatePresence>
+
+            {/* Add saved places (only shows when the user has unused wishlist items) */}
+            {!empty && savedAddable.length > 0 && (
+              <button onClick={addAllSaved}
+                className="w-full py-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 font-poppins font-medium text-sm">
+                <Heart className="w-4 h-4 fill-rose-500 text-rose-500" /> Add my {savedAddable.length} saved place{savedAddable.length !== 1 ? 's' : ''} to Day 1
+              </button>
+            )}
 
             {/* Add another day */}
             <button onClick={addDay}
