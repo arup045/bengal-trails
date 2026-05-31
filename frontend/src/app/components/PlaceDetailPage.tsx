@@ -9,6 +9,7 @@ import { buildSrcSet } from '../utils/responsiveImage';
 import { LiveWeather } from './LiveWeather';
 import { PlaceThingsToDo } from './PlaceThingsToDo';
 import { PlaceStaysCarousel } from './PlaceStaysCarousel';
+import { PlaceFestivals } from './PlaceFestivals';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
 import { PhotoGalleryLightbox } from './PhotoGalleryLightbox';
@@ -424,6 +425,9 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
         <div className="space-y-14 mt-14">
           {/* Things to do — Activities + Food carousels (inherits district data) */}
           <PlaceThingsToDo districtSlug={districtSlug} />
+
+          {/* Festivals celebrated at this place (real cross-link from festival data) */}
+          <PlaceFestivals placeSlug={place.slug} placeName={place.title} />
 
           {/* Photos (real only) */}
           {showGallery && (
