@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://bengaltrails.vercel.app/sitemap.xml
+Sitemap: https://bengal-trails.vercel.app/sitemap.xml
 
 # Disallow admin, auth and private pages
 Disallow: /admin

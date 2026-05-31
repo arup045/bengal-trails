@@ -1,1825 +1,1939 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://bengaltrails.vercel.app/</loc>
+    <loc>https://bengal-trails.vercel.app/</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore</loc>
+    <loc>https://bengal-trails.vercel.app/explore</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/festivals</loc>
+    <loc>https://bengal-trails.vercel.app/experiences</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/food</loc>
+    <loc>https://bengal-trails.vercel.app/itineraries</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/food-map</loc>
+    <loc>https://bengal-trails.vercel.app/festivals</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/food</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/food-map</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/map</loc>
+    <loc>https://bengal-trails.vercel.app/map</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/phrasebook</loc>
+    <loc>https://bengal-trails.vercel.app/phrasebook</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/planner</loc>
+    <loc>https://bengal-trails.vercel.app/planner</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/itinerary</loc>
+    <loc>https://bengal-trails.vercel.app/itinerary</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/budget</loc>
+    <loc>https://bengal-trails.vercel.app/budget</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/compare</loc>
+    <loc>https://bengal-trails.vercel.app/compare</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/weather</loc>
+    <loc>https://bengal-trails.vercel.app/weather</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/tours</loc>
+    <loc>https://bengal-trails.vercel.app/tours</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/blog</loc>
+    <loc>https://bengal-trails.vercel.app/blog</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/partners</loc>
+    <loc>https://bengal-trails.vercel.app/partners</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/about</loc>
+    <loc>https://bengal-trails.vercel.app/about</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/emergency</loc>
+    <loc>https://bengal-trails.vercel.app/emergency</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/darjeeling</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/darjeeling</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/kalimpong</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/kalimpong</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/jalpaiguri</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/jalpaiguri</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/alipurduar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/alipurduar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/cooch-behar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/cooch-behar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/uttar-dinajpur</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/uttar-dinajpur</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/dakshin-dinajpur</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/dakshin-dinajpur</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/malda</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/malda</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/murshidabad</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/murshidabad</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/birbhum</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/birbhum</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/nadia</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/nadia</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/purba-bardhaman</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/purba-bardhaman</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/paschim-bardhaman</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/paschim-bardhaman</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/hooghly</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/hooghly</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/howrah</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/howrah</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/north-24-parganas</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/north-24-parganas</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/south-24-parganas</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/south-24-parganas</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/purba-medinipur</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/purba-medinipur</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/paschim-medinipur</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/paschim-medinipur</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/jhargram</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/jhargram</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/bankura</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/bankura</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/district/purulia</loc>
+    <loc>https://bengal-trails.vercel.app/explore/district/purulia</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/darjeeling</loc>
+    <loc>https://bengal-trails.vercel.app/explore/darjeeling</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kalimpong</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kalimpong</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kurseong</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kurseong</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mirik</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mirik</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/sundarbans-national-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/sundarbans-national-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/shantiniketan</loc>
+    <loc>https://bengal-trails.vercel.app/explore/shantiniketan</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bishnupur</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bishnupur</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/digha</loc>
+    <loc>https://bengal-trails.vercel.app/explore/digha</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mandarmani</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mandarmani</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/howrah-hooghly-riverfront</loc>
+    <loc>https://bengal-trails.vercel.app/explore/howrah-hooghly-riverfront</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/victoria-memorial-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/victoria-memorial-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kumartuli</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kumartuli</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/park-street-nightlife</loc>
+    <loc>https://bengal-trails.vercel.app/explore/park-street-nightlife</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/dakshineswar-kali-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/dakshineswar-kali-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gorumara-national-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gorumara-national-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jaldapara-national-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jaldapara-national-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/murshidabad</loc>
+    <loc>https://bengal-trails.vercel.app/explore/murshidabad</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/cooch-behar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/cooch-behar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/purulia</loc>
+    <loc>https://bengal-trails.vercel.app/explore/purulia</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/raiganj-bird-sanctuary</loc>
+    <loc>https://bengal-trails.vercel.app/explore/raiganj-bird-sanctuary</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/taki</loc>
+    <loc>https://bengal-trails.vercel.app/explore/taki</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bakkhali-fraserganj</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bakkhali-fraserganj</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tajpur</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tajpur</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bankura</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bankura</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/howrah-bridge-viewpoint</loc>
+    <loc>https://bengal-trails.vercel.app/explore/howrah-bridge-viewpoint</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/hazarduari-palace</loc>
+    <loc>https://bengal-trails.vercel.app/explore/hazarduari-palace</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/poush-mela-shantiniketan</loc>
+    <loc>https://bengal-trails.vercel.app/explore/poush-mela-shantiniketan</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/siliguri</loc>
+    <loc>https://bengal-trails.vercel.app/explore/siliguri</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chandannagar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chandannagar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/torsa-falls</loc>
+    <loc>https://bengal-trails.vercel.app/explore/torsa-falls</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/eco-park-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/eco-park-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/botanical-gardens-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/botanical-gardens-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/maidan-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/maidan-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/central-park-salt-lake</loc>
+    <loc>https://bengal-trails.vercel.app/explore/central-park-salt-lake</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/rabindra-sarobar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/rabindra-sarobar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/subhas-sarobar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/subhas-sarobar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/indian-museum</loc>
+    <loc>https://bengal-trails.vercel.app/explore/indian-museum</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/marble-palace</loc>
+    <loc>https://bengal-trails.vercel.app/explore/marble-palace</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/college-street</loc>
+    <loc>https://bengal-trails.vercel.app/explore/college-street</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/prinsep-ghat</loc>
+    <loc>https://bengal-trails.vercel.app/explore/prinsep-ghat</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/science-city</loc>
+    <loc>https://bengal-trails.vercel.app/explore/science-city</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kalighat-kali-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kalighat-kali-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/birla-temple-ballygunge</loc>
+    <loc>https://bengal-trails.vercel.app/explore/birla-temple-ballygunge</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/belur-math</loc>
+    <loc>https://bengal-trails.vercel.app/explore/belur-math</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/new-market-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/new-market-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gariahat-market</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gariahat-market</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/flurys-park-street</loc>
+    <loc>https://bengal-trails.vercel.app/explore/flurys-park-street</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kolkata-street-food</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kolkata-street-food</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/eden-gardens</loc>
+    <loc>https://bengal-trails.vercel.app/explore/eden-gardens</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kolkata-tram-ride</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kolkata-tram-ride</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jorasanko-thakur-bari</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jorasanko-thakur-bari</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/8th-day-cafe</loc>
+    <loc>https://bengal-trails.vercel.app/explore/8th-day-cafe</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/blue-tokai-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/blue-tokai-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/esplanade-chowringhee-food</loc>
+    <loc>https://bengal-trails.vercel.app/explore/esplanade-chowringhee-food</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gariahat-street-food</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gariahat-street-food</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/south-city-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/south-city-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/quest-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/quest-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mani-square-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mani-square-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/city-centre-salt-lake</loc>
+    <loc>https://bengal-trails.vercel.app/explore/city-centre-salt-lake</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/forum-courtyard</loc>
+    <loc>https://bengal-trails.vercel.app/explore/forum-courtyard</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/apex-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/apex-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/avani-riverside-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/avani-riverside-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/inox-south-city</loc>
+    <loc>https://bengal-trails.vercel.app/explore/inox-south-city</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/pvr-mani-square</loc>
+    <loc>https://bengal-trails.vercel.app/explore/pvr-mani-square</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/inox-quest-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/inox-quest-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/pvr-downtown</loc>
+    <loc>https://bengal-trails.vercel.app/explore/pvr-downtown</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/rdb-cinemas</loc>
+    <loc>https://bengal-trails.vercel.app/explore/rdb-cinemas</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/priya-cinema</loc>
+    <loc>https://bengal-trails.vercel.app/explore/priya-cinema</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/navina-cinema</loc>
+    <loc>https://bengal-trails.vercel.app/explore/navina-cinema</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/menoka-cinema</loc>
+    <loc>https://bengal-trails.vercel.app/explore/menoka-cinema</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/nandan-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/nandan-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/star-theatre</loc>
+    <loc>https://bengal-trails.vercel.app/explore/star-theatre</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/inox-forum</loc>
+    <loc>https://bengal-trails.vercel.app/explore/inox-forum</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bioscope-axis-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bioscope-axis-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/academy-of-fine-arts-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/academy-of-fine-arts-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gaganendra-art-gallery</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gaganendra-art-gallery</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/birla-academy-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/birla-academy-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/iccr-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/iccr-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/harrington-arts-centre</loc>
+    <loc>https://bengal-trails.vercel.app/explore/harrington-arts-centre</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kolkata-centre-for-creativity</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kolkata-centre-for-creativity</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/victoria-memorial-art-gallery</loc>
+    <loc>https://bengal-trails.vercel.app/explore/victoria-memorial-art-gallery</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/indian-museum-art-wing</loc>
+    <loc>https://bengal-trails.vercel.app/explore/indian-museum-art-wing</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/oxford-bookstore-kolkata</loc>
+    <loc>https://bengal-trails.vercel.app/explore/oxford-bookstore-kolkata</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kolkata-airport-ccu</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kolkata-airport-ccu</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/salt-lake-stadium</loc>
+    <loc>https://bengal-trails.vercel.app/explore/salt-lake-stadium</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mohun-bagan-ground</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mohun-bagan-ground</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/east-bengal-ground</loc>
+    <loc>https://bengal-trails.vercel.app/explore/east-bengal-ground</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kalighat-cricket-ground</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kalighat-cricket-ground</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/rabindra-sarobar-stadium</loc>
+    <loc>https://bengal-trails.vercel.app/explore/rabindra-sarobar-stadium</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tiger-hill</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tiger-hill</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/darjeeling-himalayan-railway</loc>
+    <loc>https://bengal-trails.vercel.app/explore/darjeeling-himalayan-railway</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/batasia-loop</loc>
+    <loc>https://bengal-trails.vercel.app/explore/batasia-loop</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/happy-valley-tea-estate</loc>
+    <loc>https://bengal-trails.vercel.app/explore/happy-valley-tea-estate</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/padmaja-naidu-zoo</loc>
+    <loc>https://bengal-trails.vercel.app/explore/padmaja-naidu-zoo</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/observatory-hill</loc>
+    <loc>https://bengal-trails.vercel.app/explore/observatory-hill</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/darjeeling-mall</loc>
+    <loc>https://bengal-trails.vercel.app/explore/darjeeling-mall</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/ghum-monastery</loc>
+    <loc>https://bengal-trails.vercel.app/explore/ghum-monastery</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tinchuley</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tinchuley</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/lebong-race-course</loc>
+    <loc>https://bengal-trails.vercel.app/explore/lebong-race-course</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/rock-garden-ganga-maya</loc>
+    <loc>https://bengal-trails.vercel.app/explore/rock-garden-ganga-maya</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mirik-lake</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mirik-lake</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/hmi-darjeeling</loc>
+    <loc>https://bengal-trails.vercel.app/explore/hmi-darjeeling</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/lamahatta-eco-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/lamahatta-eco-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/rockface-viewpoint-darjeeling</loc>
+    <loc>https://bengal-trails.vercel.app/explore/rockface-viewpoint-darjeeling</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/observatory-ridge-photo-walk</loc>
+    <loc>https://bengal-trails.vercel.app/explore/observatory-ridge-photo-walk</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/ghum-railway-station</loc>
+    <loc>https://bengal-trails.vercel.app/explore/ghum-railway-station</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tukvar-tea-estate</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tukvar-tea-estate</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tysons-hill</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tysons-hill</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tenzing-rock-sherpa-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tenzing-rock-sherpa-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/glenburn-river-valley</loc>
+    <loc>https://bengal-trails.vercel.app/explore/glenburn-river-valley</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/loleygaon</loc>
+    <loc>https://bengal-trails.vercel.app/explore/loleygaon</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/rocky-point-darjeeling</loc>
+    <loc>https://bengal-trails.vercel.app/explore/rocky-point-darjeeling</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/hill-cart-road-viewpoints</loc>
+    <loc>https://bengal-trails.vercel.app/explore/hill-cart-road-viewpoints</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/pashupati-market-mirik</loc>
+    <loc>https://bengal-trails.vercel.app/explore/pashupati-market-mirik</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/goke-ture</loc>
+    <loc>https://bengal-trails.vercel.app/explore/goke-ture</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/happy-valley-viewpoint</loc>
+    <loc>https://bengal-trails.vercel.app/explore/happy-valley-viewpoint</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chowrasta-handicraft-market</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chowrasta-handicraft-market</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chirping-bird-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chirping-bird-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jalpaiguri-dooars-circuit</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jalpaiguri-dooars-circuit</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/alipurduar-buxa-circuit</loc>
+    <loc>https://bengal-trails.vercel.app/explore/alipurduar-buxa-circuit</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/cooch-behar-heritage-town</loc>
+    <loc>https://bengal-trails.vercel.app/explore/cooch-behar-heritage-town</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/raiganj-kulik-bird-sanctuary</loc>
+    <loc>https://bengal-trails.vercel.app/explore/raiganj-kulik-bird-sanctuary</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/balurghat-atreyee-riverfront</loc>
+    <loc>https://bengal-trails.vercel.app/explore/balurghat-atreyee-riverfront</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/sundarbans-tiger-reserve-buffer</loc>
+    <loc>https://bengal-trails.vercel.app/explore/sundarbans-tiger-reserve-buffer</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/sajnekhali-watchtower</loc>
+    <loc>https://bengal-trails.vercel.app/explore/sajnekhali-watchtower</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/sudhanyakhali-watchtower</loc>
+    <loc>https://bengal-trails.vercel.app/explore/sudhanyakhali-watchtower</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/dobanki-canopy-walk</loc>
+    <loc>https://bengal-trails.vercel.app/explore/dobanki-canopy-walk</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bakkhali-beach</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bakkhali-beach</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/frazerganj-henrys-island</loc>
+    <loc>https://bengal-trails.vercel.app/explore/frazerganj-henrys-island</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/diamond-harbour</loc>
+    <loc>https://bengal-trails.vercel.app/explore/diamond-harbour</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gangasagar-sagar-island</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gangasagar-sagar-island</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/new-digha-beach</loc>
+    <loc>https://bengal-trails.vercel.app/explore/new-digha-beach</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/old-digha-beach</loc>
+    <loc>https://bengal-trails.vercel.app/explore/old-digha-beach</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/digha-marine-aquarium</loc>
+    <loc>https://bengal-trails.vercel.app/explore/digha-marine-aquarium</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/amravati-park-ropeway</loc>
+    <loc>https://bengal-trails.vercel.app/explore/amravati-park-ropeway</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/udaypur-beach</loc>
+    <loc>https://bengal-trails.vercel.app/explore/udaypur-beach</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/shankarpur-beach</loc>
+    <loc>https://bengal-trails.vercel.app/explore/shankarpur-beach</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tamluk-town-riverfront</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tamluk-town-riverfront</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bargabhima-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bargabhima-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/geonkhali-riverside</loc>
+    <loc>https://bengal-trails.vercel.app/explore/geonkhali-riverside</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mahishadal-rajbari</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mahishadal-rajbari</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chandannagar-strand</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chandannagar-strand</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chandannagar-museum</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chandannagar-museum</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chandannagar-church</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chandannagar-church</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chandannagar-clock-tower</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chandannagar-clock-tower</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bandel-church</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bandel-church</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/hooghly-imambara</loc>
+    <loc>https://bengal-trails.vercel.app/explore/hooghly-imambara</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/serampore-danish-heritage</loc>
+    <loc>https://bengal-trails.vercel.app/explore/serampore-danish-heritage</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tarakeswar-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tarakeswar-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tribeni-ghat</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tribeni-ghat</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chinsurah-heritage</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chinsurah-heritage</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mayapur-iskcon-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mayapur-iskcon-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/nabadwip-ghats</loc>
+    <loc>https://bengal-trails.vercel.app/explore/nabadwip-ghats</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/krishnanagar-rajbari</loc>
+    <loc>https://bengal-trails.vercel.app/explore/krishnanagar-rajbari</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/ghurni-clay-art</loc>
+    <loc>https://bengal-trails.vercel.app/explore/ghurni-clay-art</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bethuadahari-forest</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bethuadahari-forest</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/plassey-battlefield</loc>
+    <loc>https://bengal-trails.vercel.app/explore/plassey-battlefield</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/swarupganj-riverfront</loc>
+    <loc>https://bengal-trails.vercel.app/explore/swarupganj-riverfront</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/poramatala-krishnanagar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/poramatala-krishnanagar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/visva-bharati-campus</loc>
+    <loc>https://bengal-trails.vercel.app/explore/visva-bharati-campus</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/uttarayan-tagore-complex</loc>
+    <loc>https://bengal-trails.vercel.app/explore/uttarayan-tagore-complex</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kala-bhavana-art</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kala-bhavana-art</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/amar-kutir</loc>
+    <loc>https://bengal-trails.vercel.app/explore/amar-kutir</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/sonajhuri-haat</loc>
+    <loc>https://bengal-trails.vercel.app/explore/sonajhuri-haat</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/ballavpur-wildlife-sanctuary</loc>
+    <loc>https://bengal-trails.vercel.app/explore/ballavpur-wildlife-sanctuary</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kopai-river-red-earth</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kopai-river-red-earth</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bolpur-town-centre</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bolpur-town-centre</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tarapith-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tarapith-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tarapith-cremation-ground</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tarapith-cremation-ground</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bakreshwar-hot-springs</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bakreshwar-hot-springs</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/patharchapuri-dargah</loc>
+    <loc>https://bengal-trails.vercel.app/explore/patharchapuri-dargah</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/baul-akhra-generic</loc>
+    <loc>https://bengal-trails.vercel.app/explore/baul-akhra-generic</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/birbhum-artisan-villages</loc>
+    <loc>https://bengal-trails.vercel.app/explore/birbhum-artisan-villages</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/nizamat-imambara</loc>
+    <loc>https://bengal-trails.vercel.app/explore/nizamat-imambara</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/katra-mosque</loc>
+    <loc>https://bengal-trails.vercel.app/explore/katra-mosque</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/khoshbagh-tombs</loc>
+    <loc>https://bengal-trails.vercel.app/explore/khoshbagh-tombs</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/motijheel</loc>
+    <loc>https://bengal-trails.vercel.app/explore/motijheel</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/nashipur-rajbari</loc>
+    <loc>https://bengal-trails.vercel.app/explore/nashipur-rajbari</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jafarganj-cemetery</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jafarganj-cemetery</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jagat-seth-house</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jagat-seth-house</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kathgola-gardens</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kathgola-gardens</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bhubaneshwari-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bhubaneshwari-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/azimganj-jiaganj-ghats</loc>
+    <loc>https://bengal-trails.vercel.app/explore/azimganj-jiaganj-ghats</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/baranagar-temples</loc>
+    <loc>https://bengal-trails.vercel.app/explore/baranagar-temples</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bishnupur-rasmancha</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bishnupur-rasmancha</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/shyam-rai-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/shyam-rai-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jor-bangla-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jor-bangla-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/madan-mohan-temple</loc>
+    <loc>https://bengal-trails.vercel.app/explore/madan-mohan-temple</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bishnupur-art-craft</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bishnupur-art-craft</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mukutmanipur-dam</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mukutmanipur-dam</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mukutmanipur-eco-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mukutmanipur-eco-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/joypur-forest</loc>
+    <loc>https://bengal-trails.vercel.app/explore/joypur-forest</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/susunia-hill</loc>
+    <loc>https://bengal-trails.vercel.app/explore/susunia-hill</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/biharinath-hill</loc>
+    <loc>https://bengal-trails.vercel.app/explore/biharinath-hill</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bankura-red-soil-villages</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bankura-red-soil-villages</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/ajodhya-hills</loc>
+    <loc>https://bengal-trails.vercel.app/explore/ajodhya-hills</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/upper-dam-ajodhya</loc>
+    <loc>https://bengal-trails.vercel.app/explore/upper-dam-ajodhya</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/lower-dam-ajodhya</loc>
+    <loc>https://bengal-trails.vercel.app/explore/lower-dam-ajodhya</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bamni-falls</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bamni-falls</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/marble-lake-ajodhya</loc>
+    <loc>https://bengal-trails.vercel.app/explore/marble-lake-ajodhya</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/muruguma-dam</loc>
+    <loc>https://bengal-trails.vercel.app/explore/muruguma-dam</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/saheb-bandh-purulia</loc>
+    <loc>https://bengal-trails.vercel.app/explore/saheb-bandh-purulia</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/joychandi-pahar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/joychandi-pahar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/charida-chhau-village</loc>
+    <loc>https://bengal-trails.vercel.app/explore/charida-chhau-village</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chhau-performance-grounds</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chhau-performance-grounds</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/purulia-tribal-villages</loc>
+    <loc>https://bengal-trails.vercel.app/explore/purulia-tribal-villages</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/ajodhya-forest-trails</loc>
+    <loc>https://bengal-trails.vercel.app/explore/ajodhya-forest-trails</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/purulia-town</loc>
+    <loc>https://bengal-trails.vercel.app/explore/purulia-town</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bara-sona-mosque</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bara-sona-mosque</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/firoz-minar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/firoz-minar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/dakhil-darwaza</loc>
+    <loc>https://bengal-trails.vercel.app/explore/dakhil-darwaza</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/lukochuri-gate</loc>
+    <loc>https://bengal-trails.vercel.app/explore/lukochuri-gate</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/qadam-rasul-mosque</loc>
+    <loc>https://bengal-trails.vercel.app/explore/qadam-rasul-mosque</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chika-mosque</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chika-mosque</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/adina-mosque-pandua</loc>
+    <loc>https://bengal-trails.vercel.app/explore/adina-mosque-pandua</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/eklakhi-mausoleum</loc>
+    <loc>https://bengal-trails.vercel.app/explore/eklakhi-mausoleum</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/pandua-qutub-shahi-mosque</loc>
+    <loc>https://bengal-trails.vercel.app/explore/pandua-qutub-shahi-mosque</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/malda-museum</loc>
+    <loc>https://bengal-trails.vercel.app/explore/malda-museum</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/english-bazar-town</loc>
+    <loc>https://bengal-trails.vercel.app/explore/english-bazar-town</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/mahananda-riverfront-malda</loc>
+    <loc>https://bengal-trails.vercel.app/explore/mahananda-riverfront-malda</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/malda-mango-orchards</loc>
+    <loc>https://bengal-trails.vercel.app/explore/malda-mango-orchards</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jhargram-rajbari</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jhargram-rajbari</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chilkigarh-kanak-durga</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chilkigarh-kanak-durga</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kankrajhor</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kankrajhor</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/maithon-dam</loc>
+    <loc>https://bengal-trails.vercel.app/explore/maithon-dam</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/churulia</loc>
+    <loc>https://bengal-trails.vercel.app/explore/churulia</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/panchet-dam</loc>
+    <loc>https://bengal-trails.vercel.app/explore/panchet-dam</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kalna-108-shiva-temples</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kalna-108-shiva-temples</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/curzon-gate-bardhaman</loc>
+    <loc>https://bengal-trails.vercel.app/explore/curzon-gate-bardhaman</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/purbasthali-chupi-char</loc>
+    <loc>https://bengal-trails.vercel.app/explore/purbasthali-chupi-char</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gangani-garhbeta</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gangani-garhbeta</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kurumbera-fort</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kurumbera-fort</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/pathra-temple-village</loc>
+    <loc>https://bengal-trails.vercel.app/explore/pathra-temple-village</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gopegarh-eco-park</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gopegarh-eco-park</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/deolo-hill</loc>
+    <loc>https://bengal-trails.vercel.app/explore/deolo-hill</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/durpin-monastery</loc>
+    <loc>https://bengal-trails.vercel.app/explore/durpin-monastery</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/dr-grahams-homes</loc>
+    <loc>https://bengal-trails.vercel.app/explore/dr-grahams-homes</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/lava</loc>
+    <loc>https://bengal-trails.vercel.app/explore/lava</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/lolegaon</loc>
+    <loc>https://bengal-trails.vercel.app/explore/lolegaon</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/murti-river</loc>
+    <loc>https://bengal-trails.vercel.app/explore/murti-river</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chapramari-wildlife-sanctuary</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chapramari-wildlife-sanctuary</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jaldhaka</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jaldhaka</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/buxa-tiger-reserve</loc>
+    <loc>https://bengal-trails.vercel.app/explore/buxa-tiger-reserve</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/jayanti</loc>
+    <loc>https://bengal-trails.vercel.app/explore/jayanti</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chilapata-forest</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chilapata-forest</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/cooch-behar-palace</loc>
+    <loc>https://bengal-trails.vercel.app/explore/cooch-behar-palace</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/madan-mohan-temple-cooch-behar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/madan-mohan-temple-cooch-behar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/rasikbil</loc>
+    <loc>https://bengal-trails.vercel.app/explore/rasikbil</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/sagar-dighi-cooch-behar</loc>
+    <loc>https://bengal-trails.vercel.app/explore/sagar-dighi-cooch-behar</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kulik-bird-sanctuary</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kulik-bird-sanctuary</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/karnajora-park-museum</loc>
+    <loc>https://bengal-trails.vercel.app/explore/karnajora-park-museum</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/bangarh-ruins</loc>
+    <loc>https://bengal-trails.vercel.app/explore/bangarh-ruins</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/tapan-dighi</loc>
+    <loc>https://bengal-trails.vercel.app/explore/tapan-dighi</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gandhi-ghat-barrackpore</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gandhi-ghat-barrackpore</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/chandraketugarh</loc>
+    <loc>https://bengal-trails.vercel.app/explore/chandraketugarh</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/indian-botanic-garden</loc>
+    <loc>https://bengal-trails.vercel.app/explore/indian-botanic-garden</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/garchumuk</loc>
+    <loc>https://bengal-trails.vercel.app/explore/garchumuk</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/108-shiva-temples-kalna</loc>
+    <loc>https://bengal-trails.vercel.app/explore/108-shiva-temples-kalna</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/kalna-rajbari</loc>
+    <loc>https://bengal-trails.vercel.app/explore/kalna-rajbari</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/garh-jungle</loc>
+    <loc>https://bengal-trails.vercel.app/explore/garh-jungle</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/ghagra-falls</loc>
+    <loc>https://bengal-trails.vercel.app/explore/ghagra-falls</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/belpahari</loc>
+    <loc>https://bengal-trails.vercel.app/explore/belpahari</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/gangani</loc>
+    <loc>https://bengal-trails.vercel.app/explore/gangani</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bengaltrails.vercel.app/explore/hijli-shaheed-bhawan</loc>
+    <loc>https://bengal-trails.vercel.app/explore/hijli-shaheed-bhawan</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/hills-tea</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/wildlife-forests</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/sea-beaches</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/sundarbans</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/kolkata-heritage</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/temples-terracotta</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/art-culture</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/experiences/rivers-offbeat</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/darjeeling-hills-5-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/dooars-wildlife-4-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/kalimpong-eastern-hills-3-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/sundarbans-mangrove-2-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/kolkata-heritage-3-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/bengal-beaches-3-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/temples-terracotta-4-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/shantiniketan-birbhum-3-days</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bengal-trails.vercel.app/itineraries/purulia-wild-west-3-days</loc>
     <lastmod>2026-05-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

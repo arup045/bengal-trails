@@ -478,22 +478,27 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             </section>
           )}
 
-          {/* Stay — full-width carousel of real stays; falls back to the
-              place's own nearbyHotels so every place has a populated section */}
-          <Safe><PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} fallbackNames={place.nearbyHotels} /></Safe>
+          {/* Stay — a stable #stay anchor wraps BOTH the curated stays and the
+              live "more stays nearby" carousel, so the sub-nav "Where to stay"
+              tab always lands on real content (curated stays can be empty for
+              some places, but the OSM list fills the section). */}
+          <div id="stay" className="scroll-mt-32 space-y-14">
+            {/* Curated stays; falls back to the place's own nearbyHotels */}
+            <Safe><PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} fallbackNames={place.nearbyHotels} /></Safe>
 
-          {/* More real stays nearby (live OpenStreetMap, distance-sorted, deduped) */}
-          {place.coordinates && (
-            <Safe><NearbyPlacesCarousel
-              kind="hotel"
-              title={`More places to stay near ${place.title}`}
-              subtitle="Hotels, lodges, guest houses & homestays around this spot"
-              lat={place.coordinates.lat}
-              lng={place.coordinates.lng}
-              exclude={place.nearbyHotels}
-              locationLabel={place.district || place.region}
-            /></Safe>
-          )}
+            {/* More real stays nearby (live OpenStreetMap, distance-sorted, deduped) */}
+            {place.coordinates && (
+              <Safe><NearbyPlacesCarousel
+                kind="hotel"
+                title={`More places to stay near ${place.title}`}
+                subtitle="Hotels, lodges, guest houses & homestays around this spot"
+                lat={place.coordinates.lat}
+                lng={place.coordinates.lng}
+                exclude={place.nearbyHotels}
+                locationLabel={place.district || place.region}
+              /></Safe>
+            )}
+          </div>
 
           {/* Where to eat near this place — real, place-specific restaurants
               from the dataset, rendered as premium photo cards (→ Google Maps) */}

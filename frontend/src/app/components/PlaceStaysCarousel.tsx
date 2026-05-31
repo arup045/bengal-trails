@@ -5,7 +5,7 @@ import { PremiumPlaceCard } from './PremiumPlaceCard';
 // Clean rebuild of the old turquoise "Where to stay" box. Real hotel/homestay
 // data from the destination context, rendered as the unified PremiumPlaceCard
 // in a full-width horizontal carousel — no coloured pills, photo-backfilled.
-export function PlaceStaysCarousel({ destinationSlug, districtName, fallbackNames }: { destinationSlug: string; districtName?: string; fallbackNames?: string[] }) {
+export function PlaceStaysCarousel({ destinationSlug, districtName, fallbackNames, anchorId }: { destinationSlug: string; districtName?: string; fallbackNames?: string[]; anchorId?: string }) {
   const { hotels, loading } = useDestinationContext(destinationSlug);
 
   if (loading) return null;
@@ -30,7 +30,7 @@ export function PlaceStaysCarousel({ destinationSlug, districtName, fallbackName
 
   return (
     <TravelSectionRow
-      id="stay"
+      id={anchorId}
       title="Stay"
       subtitle={hasBackend
         ? `${hotels!.length} curated stays — homestays to heritage resorts`

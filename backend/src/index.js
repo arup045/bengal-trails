@@ -260,8 +260,11 @@ const geoLimiter = rateLimit({
   legacyHeaders: false,
   message: { ok: false, error: 'Too many requests' },
 });
+// Active in production OR on any Render deploy (Render sets RENDER=true), so the
+// guard isn't silently disabled if NODE_ENV is left unset on the host.
+const geoGuardActive = isProd || !!process.env.RENDER;
 function geoOriginGuard(req, res, next) {
-  if (!isProd) return next(); // allow local dev / curl in non-production
+  if (!geoGuardActive) return next(); // allow local dev / curl in non-production
   const origin = req.get('origin');
   const refererOrigin = (() => {
     try { return req.get('referer') ? new URL(req.get('referer')).origin : ''; }

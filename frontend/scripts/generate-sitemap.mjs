@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const SITE = (process.env.SITE_URL || 'https://bengaltrails.vercel.app').replace(/\/$/, '');
+const SITE = (process.env.SITE_URL || 'https://bengal-trails.vercel.app').replace(/\/$/, '');
 const today = new Date().toISOString().slice(0, 10);
 
 const read = (p) => { try { return readFileSync(join(ROOT, p), 'utf8'); } catch { return ''; } };
@@ -21,11 +21,15 @@ const uniq = (arr) => [...new Set(arr)];
 // Extract slugs from the data sources.
 const districtSlugs = uniq([...read('src/app/data/districts.ts').matchAll(/slug:\s*'([a-z0-9-]+)'/g)].map((m) => m[1]));
 const placeSlugs    = uniq([...read('src/app/data/places-full.ts').matchAll(/"slug":\s*"([a-z0-9-]+)"/g)].map((m) => m[1]));
+const experienceIds = uniq([...read('src/app/data/experiences.ts').matchAll(/id:\s*'([a-z0-9-]+)'/g)].map((m) => m[1]));
+const itineraryIds  = uniq([...read('src/app/data/itineraries.ts').matchAll(/id:\s*'([a-z0-9-]+)'/g)].map((m) => m[1]));
 
 // Public, indexable static routes (no auth/admin/profile pages).
 const staticRoutes = [
   { loc: '/',          priority: '1.0', freq: 'daily'   },
   { loc: '/explore',   priority: '0.9', freq: 'daily'   },
+  { loc: '/experiences', priority: '0.8', freq: 'weekly' },
+  { loc: '/itineraries', priority: '0.8', freq: 'weekly' },
   { loc: '/festivals', priority: '0.8', freq: 'weekly'  },
   { loc: '/food',      priority: '0.8', freq: 'weekly'  },
   { loc: '/food-map',  priority: '0.6', freq: 'monthly' },
@@ -47,6 +51,8 @@ const urls = [
   ...staticRoutes.map((r) => ({ loc: r.loc, priority: r.priority, freq: r.freq })),
   ...districtSlugs.map((s) => ({ loc: `/explore/district/${s}`, priority: '0.8', freq: 'weekly' })),
   ...placeSlugs.map((s) => ({ loc: `/explore/${s}`, priority: '0.7', freq: 'weekly' })),
+  ...experienceIds.map((s) => ({ loc: `/experiences/${s}`, priority: '0.7', freq: 'weekly' })),
+  ...itineraryIds.map((s) => ({ loc: `/itineraries/${s}`, priority: '0.7', freq: 'weekly' })),
 ];
 
 const body = urls.map(({ loc, priority, freq }) =>
@@ -56,4 +62,4 @@ const body = urls.map(({ loc, priority, freq }) =>
 const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 
 writeFileSync(join(ROOT, 'public/sitemap.xml'), xml, 'utf8');
-console.log(`sitemap.xml written: ${urls.length} URLs (${staticRoutes.length} static, ${districtSlugs.length} districts, ${placeSlugs.length} places)`);
+console.log(`sitemap.xml written: ${urls.length} URLs (${staticRoutes.length} static, ${districtSlugs.length} districts, ${placeSlugs.length} places, ${experienceIds.length} experiences, ${itineraryIds.length} itineraries)`);
