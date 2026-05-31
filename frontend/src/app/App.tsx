@@ -45,6 +45,7 @@ installGlobalErrorHandlers();
 // Lazy load heavy components for better performance
 const ExplorePage = lazy(() => import('./components/ExplorePage').then(m => ({ default: m.ExplorePage })));
 const ExperiencesPage = lazy(() => import('./components/ExperiencesPage').then(m => ({ default: m.ExperiencesPage })));
+const ItinerariesPage = lazy(() => import('./components/ItinerariesPage').then(m => ({ default: m.ItinerariesPage })));
 const DistrictDetailPage = lazy(() => import('./components/DistrictDetailPage').then(m => ({ default: m.DistrictDetailPage })));
 const SpotDetailPage = lazy(() => import('./components/SpotDetailPage').then(m => ({ default: m.SpotDetailPage })));
 const PlaceDetailPage = lazy(() => import('./components/PlaceDetailPage').then(m => ({ default: m.PlaceDetailPage })));
@@ -144,7 +145,7 @@ type RouteId =
   | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact'
   | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder'
   | 'not-found' | 'oauth-success' | 'about' | 'tours' | 'blog' | 'user'
-  | 'experiences' | 'experience';
+  | 'experiences' | 'experience' | 'itineraries' | 'itinerary-detail';
 
 interface RouteConfig { id: RouteId; title?: string; devOnly?: boolean; }
 
@@ -152,6 +153,7 @@ const STATIC_ROUTES: Record<string, RouteConfig> = {
   '/':                  { id: 'home',              title: 'Home' },
   '/explore':           { id: 'explore',           title: 'Explore Destinations' },
   '/experiences':       { id: 'experiences',       title: 'Ways to Explore West Bengal' },
+  '/itineraries':       { id: 'itineraries',       title: 'Curated West Bengal Itineraries' },
   '/signin':            { id: 'signin',            title: 'Sign In' },
   '/profile':           { id: 'profile',           title: 'User Profile' },
   '/planner':           { id: 'planner',           title: 'Trip Planner' },
@@ -220,6 +222,10 @@ function resolveRoute(hash: string): { id: RouteId; slug?: string; path: string;
   if (hash.startsWith('/experiences/')) {
     const slug = hash.replace('/experiences/', '').split(/[/?#]/)[0];
     return { id: 'experience', slug, path: `/experiences/${slug}`, title: `Experience: ${slug}` };
+  }
+  if (hash.startsWith('/itineraries/')) {
+    const slug = hash.replace('/itineraries/', '').split(/[/?#]/)[0];
+    return { id: 'itinerary-detail', slug, path: `/itineraries/${slug}`, title: `Itinerary: ${slug}` };
   }
   if (hash.startsWith('/u/')) {
     const id = hash.replace('/u/', '').split(/[/?]/)[0];
@@ -383,6 +389,12 @@ export default function App() {
         return {
           title: 'Ways to Explore West Bengal | Hills, Sundarbans, Heritage & More | Bengal Trails',
           description: 'Discover West Bengal by experience — Hills & Tea, Wildlife & Forests, Sea & Beaches, Sundarbans, Kolkata heritage, Temples & Terracotta, Art & Culture and offbeat rivers.',
+        };
+      case 'itineraries':
+      case 'itinerary-detail':
+        return {
+          title: 'Curated West Bengal Itineraries | Ready-Made Trip Plans | Bengal Trails',
+          description: 'Ready-made West Bengal trip plans — Darjeeling hills, Dooars wildlife, Sundarbans, Kolkata heritage, Bengal beaches, Bishnupur & Murshidabad. Load any into the Trip Planner.',
         };
       case 'food':
         return {
@@ -634,6 +646,10 @@ export default function App() {
               {currentPage === 'experiences' && <ExperiencesPage />}
 
               {currentPage === 'experience' && <ExperiencesPage theme={currentSlug} />}
+
+              {currentPage === 'itineraries' && <ItinerariesPage />}
+
+              {currentPage === 'itinerary-detail' && <ItinerariesPage id={currentSlug} />}
 
               {currentPage === 'district' && <DistrictDetailPage slug={currentSlug} />}
 

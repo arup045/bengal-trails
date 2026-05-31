@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Home',      href: '/',          tKey: 'nav.home'      },
   { label: 'Explore',   href: '/explore',   tKey: 'nav.explore'   },
   { label: 'Experiences', href: '/experiences' },
+  { label: 'Itineraries', href: '/itineraries' },
   { label: 'Festivals', href: '/festivals', tKey: 'nav.festivals' },
   { label: 'Food',      href: '/food',      tKey: 'nav.food'      },
   { label: 'About Us',  href: '/about',     tKey: 'nav.about'     },
