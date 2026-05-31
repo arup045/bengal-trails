@@ -471,7 +471,8 @@ export function FestivalCalendar() {
   const thisMonthFestivals = festivalMonthMap[thisMonth] || [];
 
   const handleLocationClick = (slug: string) => {
-    window.location.hash = `#/explore/${slug}`;
+    // Path-based SPA navigation (the app no longer uses hash routes).
+    import('../utils/navigation').then(({ navigate }) => navigate(`/explore/${slug}`));
   };
 
   const handleSave = (f: Festival) => {
