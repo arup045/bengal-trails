@@ -1,7 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MapPin, Star, DollarSign, UtensilsCrossed, Leaf, Search, ChevronRight } from 'lucide-react';
 import { restaurants } from '../data/restaurants';
+import { API_BASE } from '../utils/api';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+
+// Real photo for a restaurant via the backend photo proxy (Unsplash → Wikipedia,
+// cached). Falls back to a clean gradient + utensils icon when nothing is found —
+// never a broken image, never a fake placeholder URL.
+function RestaurantPhoto({ name, location }: { name: string; location: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch(`${API_BASE}/geo/photo?query=${encodeURIComponent(`${name} ${location} restaurant West Bengal`)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive && d?.url) setUrl(d.url); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [name, location]);
+
+  if (!url) {
+    return (
+      <div className="relative h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+        <UtensilsCrossed className="w-20 h-20 text-orange-300" />
+      </div>
+    );
+  }
+  return (
+    <div className="relative h-48 overflow-hidden bg-orange-100">
+      <ImageWithFallback src={url} alt={name} optimizeWidth={640} className="w-full h-full object-cover" />
+      <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+    </div>
+  );
+}
 
 // Map a restaurant's free-form `categories` tags to one of our filter buckets.
 // Order matters: sweets/bakery/street are checked before the generic fallback so
@@ -130,10 +161,8 @@ export function FoodMap() {
               transition={{ delay: index * 0.1 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-2xl transition-all"
             >
-              {/* Image */}
-              <div className="relative h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                <UtensilsCrossed className="w-20 h-20 text-orange-300" />
-              </div>
+              {/* Real photo via backend proxy (graceful icon fallback) */}
+              <RestaurantPhoto name={spot.name} location={spot.location} />
 
               {/* Content */}
               <div className="p-6">
