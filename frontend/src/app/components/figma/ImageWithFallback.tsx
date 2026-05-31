@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { getOptimizedSrc } from '../../utils/imageOptimize'
+import { getOptimizedSrc, getSrcSet } from '../../utils/imageOptimize'
 
 interface Props extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Largest width (px) to request from the CDN. Defaults to 1280. */
@@ -18,12 +18,18 @@ export function ImageWithFallback(props: Props) {
     setDidError(true)
   }
 
-  const { src, alt, style, className, loading = 'lazy', optimizeWidth, decoding, ...rest } = props
+  const { src, alt, style, className, loading = 'lazy', optimizeWidth, decoding, sizes, ...rest } = props
 
   // Ask the CDN (Cloudinary/Unsplash) for an auto-format (WebP/AVIF),
   // auto-quality, width-capped image instead of the full-resolution original.
   // No-op for data/blob/other URLs. Small cards pass a smaller `optimizeWidth`.
-  const optimizedSrc = typeof src === 'string' ? getOptimizedSrc(src, optimizeWidth ?? 1280) : src
+  const cap = optimizeWidth ?? 1280
+  const optimizedSrc = typeof src === 'string' ? getOptimizedSrc(src, cap) : src
+  // Responsive candidates so phones don't download desktop-sized images. `sizes`
+  // defaults to the capped width (the most this image is ever rendered at), so
+  // the browser never fetches larger than needed.
+  const srcSet = typeof src === 'string' ? getSrcSet(src) : ''
+  const sizesAttr = sizes ?? `${cap}px`
 
   return didError ? (
     // Clean on-brand placeholder — soft slate gradient + a muted mountain icon.
@@ -45,6 +51,7 @@ export function ImageWithFallback(props: Props) {
     <img
       ref={imgRef}
       src={optimizedSrc}
+      {...(srcSet ? { srcSet, sizes: sizesAttr } : {})}
       alt={alt}
       // Fade in once decoded so images glide in instead of popping.
       className={`${className ?? ''} transition-opacity duration-700 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
