@@ -373,6 +373,24 @@ export default function App() {
         };
       }
     }
+    // Per-theme / per-itinerary previews (humanised from the slug — no heavy
+    // data import, so this stays out of the main bundle).
+    if (currentPage === 'experience' && currentSlug) {
+      const name = currentSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      return {
+        title: `${name} in West Bengal | Bengal Trails`,
+        description: `Discover the best of ${name} across West Bengal — real places, distances and travel tips. Plan your trip with Bengal Trails.`,
+        url: `${SITE_URL}/experiences/${currentSlug}`,
+      };
+    }
+    if (currentPage === 'itinerary-detail' && currentSlug) {
+      const name = currentSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      return {
+        title: `${name} | West Bengal Itinerary | Bengal Trails`,
+        description: `A ready-made West Bengal itinerary — ${name}. A day-by-day plan you can load straight into the Trip Planner.`,
+        url: `${SITE_URL}/itineraries/${currentSlug}`,
+      };
+    }
     switch (currentPage) {
       case 'home':
         return {
