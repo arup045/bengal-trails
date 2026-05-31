@@ -73,9 +73,11 @@ function buildDigestEmail(name, recommendations, frontendUrl) {
 // Triggered by a cron job (or manually by admin)
 router.post('/send-weekly', async (req, res) => {
   try {
-    // Simple auth: check secret header (set CRON_SECRET in .env)
+    // Auth: require a matching CRON_SECRET header. DENY BY DEFAULT — if the
+    // secret isn't configured at all, refuse rather than leave this bulk-email
+    // endpoint open to the public (an attacker could otherwise spam every user).
     const secret = req.headers['x-cron-secret'];
-    if (process.env.CRON_SECRET && secret !== process.env.CRON_SECRET) {
+    if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 

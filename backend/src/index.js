@@ -1,4 +1,23 @@
 require('dotenv').config();
+
+// ── Critical-env guard ──────────────────────────────────────────────────────
+// Fail loud at boot if a security-critical secret is missing, rather than
+// starting up and only breaking (or running insecurely) at first request.
+(() => {
+  const REQUIRED = ['JWT_SECRET', 'DATABASE_URL'];
+  const missing = REQUIRED.filter((k) => !process.env[k] || !String(process.env[k]).trim());
+  if (missing.length) {
+    // eslint-disable-next-line no-console
+    console.error(`[FATAL] Missing required env var(s): ${missing.join(', ')}. Refusing to start.`);
+    process.exit(1);
+  }
+  if (process.env.NODE_ENV === 'production' && String(process.env.JWT_SECRET).length < 24) {
+    // eslint-disable-next-line no-console
+    console.error('[FATAL] JWT_SECRET is too short for production (need ≥24 chars). Refusing to start.');
+    process.exit(1);
+  }
+})();
+
 const express = require('express');
 const { initSentry, sentryErrorHandler } = require('./utils/sentry');
 const cors = require('cors');
