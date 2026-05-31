@@ -30,12 +30,21 @@ function cacheSet(key, v, ttlMs) {
   }
 }
 
+// A descriptive User-Agent is REQUIRED by Overpass and Wikipedia (their abuse
+// policy 406/403s requests with a missing or generic "node" UA — which is why
+// every mirror failed from the server). Send it (+ Accept) on every call.
+const UA = 'BengalTrails/1.0 (https://bengal-trails.vercel.app; travel guide)';
+
 // fetch with an abort timeout — never let a slow upstream hang a request.
 async function fetchT(url, opts = {}, timeoutMs = 12000) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    return await fetch(url, { ...opts, signal: ctrl.signal });
+    return await fetch(url, {
+      ...opts,
+      signal: ctrl.signal,
+      headers: { 'User-Agent': UA, Accept: 'application/json', ...(opts.headers || {}) },
+    });
   } finally {
     clearTimeout(t);
   }
@@ -82,7 +91,7 @@ router.get('/amenities', async (req, res) => {
 
   for (const base of OVERPASS_MIRRORS) {
     try {
-      const r = await fetchT(`${base}?data=${encodeURIComponent(body)}`, {}, 16000);
+      const r = await fetchT(`${base}?data=${encodeURIComponent(body)}`, {}, 24000);
       if (!r.ok) continue;
       const data = await r.json();
       const items = (data?.elements || [])
