@@ -6,6 +6,9 @@ interface Props {
   children: ReactNode;
   /** When true, renders a compact inline fallback instead of a full-page one. */
   inline?: boolean;
+  /** When true, renders nothing on error (the section just disappears). Still
+   *  reports the error server-side. Use for non-critical data carousels. */
+  silent?: boolean;
 }
 
 interface State {
@@ -43,6 +46,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.silent) {
+        return null;
+      }
       if (this.props.inline) {
         return (
           <div className="flex flex-col items-center justify-center py-20 px-4 text-center">

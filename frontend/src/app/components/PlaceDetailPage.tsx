@@ -1,5 +1,5 @@
 import { API_BASE } from '../utils/api';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { MapPin, Star, Calendar, ChevronRight, Navigation, Share2, Facebook, Twitter, MessageCircle, Copy, Camera, Heart, Clock, Tag, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,6 +12,7 @@ import { PlaceStaysCarousel } from './PlaceStaysCarousel';
 import { LocalSpotsCarousel } from './LocalSpotsCarousel';
 import { PlaceThingsHere } from './PlaceThingsHere';
 import { NearbyPlacesCarousel } from './NearbyPlacesCarousel';
+import { ErrorBoundary } from './ErrorBoundary';
 import { PlaceFestivals } from './PlaceFestivals';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
@@ -42,6 +43,13 @@ interface PlaceDetailPageProps { slug: string; }
 function splitSentences(text: string): string[] {
   if (!text) return [];
   return (text.match(/[^.!?]+[.!?]+(\s|$)/g) || [text]).map(s => s.trim()).filter(Boolean);
+}
+
+// Isolates a single page section: if its data/render throws, only that section
+// disappears (reported server-side) — it never blanks the rest of the page.
+// Renders no wrapper DOM node, so parent `space-y-*` spacing is preserved.
+function Safe({ children }: { children: ReactNode }) {
+  return <ErrorBoundary silent>{children}</ErrorBoundary>;
 }
 
 export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
@@ -385,13 +393,15 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
                 Food / Stays / Parks / ATMs / Hospitals / Fuel / Police layers
                 fetched live from Overpass. Takes the prime sidebar slot. */}
             {place.coordinates && (
-              <Suspense fallback={<div className="h-[460px] rounded-3xl bg-gray-100 animate-pulse" />}>
-                <PlaceInteractiveMap lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
-              </Suspense>
+              <Safe>
+                <Suspense fallback={<div className="h-[460px] rounded-3xl bg-gray-100 animate-pulse" />}>
+                  <PlaceInteractiveMap lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
+                </Suspense>
+              </Safe>
             )}
 
             {/* Current weather — now BELOW the explore-area map */}
-            <LiveWeather lat={place.coordinates.lat} lon={place.coordinates.lng} cityName={place.title} bestTime={place.bestTime} />
+            <Safe><LiveWeather lat={place.coordinates.lat} lon={place.coordinates.lng} cityName={place.title} bestTime={place.bestTime} /></Safe>
 
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 sticky top-32">
               <h3 className="font-poppins text-lg font-bold text-slate-900 mb-4">Quick info</h3>
@@ -425,25 +435,25 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             Logistics · Reviews · Around here · Nearby) ─────────────────── */}
         <div className="space-y-14 mt-14">
           {/* Place-specific "things to do" derived from this place's own tags */}
-          <PlaceThingsHere tags={place.tags} placeName={place.title} />
+          <Safe><PlaceThingsHere tags={place.tags} placeName={place.title} /></Safe>
 
           {/* Things to do — Activities + Food carousels (inherits district data) */}
-          <PlaceThingsToDo districtSlug={districtSlug} />
+          <Safe><PlaceThingsToDo districtSlug={districtSlug} /></Safe>
 
           {/* Real attractions & sights nearby (live OpenStreetMap, distance-sorted) */}
           {place.coordinates && (
-            <NearbyPlacesCarousel
+            <Safe><NearbyPlacesCarousel
               kind="attraction"
               title={`More to see near ${place.title}`}
               subtitle="Attractions, viewpoints, museums & landmarks within reach"
               lat={place.coordinates.lat}
               lng={place.coordinates.lng}
               locationLabel={place.district || place.region}
-            />
+            /></Safe>
           )}
 
           {/* Festivals celebrated at this place (real cross-link from festival data) */}
-          <PlaceFestivals placeSlug={place.slug} placeName={place.title} />
+          <Safe><PlaceFestivals placeSlug={place.slug} placeName={place.title} /></Safe>
 
           {/* Photos (real only) */}
           {showGallery && (
@@ -465,11 +475,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
           {/* Stay — full-width carousel of real stays; falls back to the
               place's own nearbyHotels so every place has a populated section */}
-          <PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} fallbackNames={place.nearbyHotels} />
+          <Safe><PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} fallbackNames={place.nearbyHotels} /></Safe>
 
           {/* More real stays nearby (live OpenStreetMap, distance-sorted, deduped) */}
           {place.coordinates && (
-            <NearbyPlacesCarousel
+            <Safe><NearbyPlacesCarousel
               kind="hotel"
               title={`More places to stay near ${place.title}`}
               subtitle="Hotels, lodges, guest houses & homestays around this spot"
@@ -477,23 +487,23 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               lng={place.coordinates.lng}
               exclude={place.nearbyHotels}
               locationLabel={place.district || place.region}
-            />
+            /></Safe>
           )}
 
           {/* Where to eat near this place — real, place-specific restaurants
               from the dataset, rendered as premium photo cards (→ Google Maps) */}
-          <LocalSpotsCarousel
+          <Safe><LocalSpotsCarousel
             id="eat"
             title={`Where to eat near ${place.title}`}
             subtitle="Local favourites and well-known spots visitors love"
             names={place.nearbyRestaurants}
             kind="food"
             locationLabel={place.district || place.region}
-          />
+          /></Safe>
 
           {/* More real places to eat nearby (live OpenStreetMap, distance-sorted) */}
           {place.coordinates && (
-            <NearbyPlacesCarousel
+            <Safe><NearbyPlacesCarousel
               kind="food"
               title={`More places to eat near ${place.title}`}
               subtitle="Restaurants, cafés and eateries around this spot"
@@ -501,7 +511,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               lng={place.coordinates.lng}
               exclude={place.nearbyRestaurants}
               locationLabel={place.district || place.region}
-            />
+            /></Safe>
           )}
 
           {/* Logistics & Practicalities */}
@@ -512,32 +522,32 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             </div>
             {place.coordinates && (
               <div className="space-y-6">
-                <PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} />
-                <PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
-                <PlaceLogistics
+                <Safe><PlaceQuickFacts lat={place.coordinates.lat} lng={place.coordinates.lng} /></Safe>
+                <Safe><PlaceWeatherForecast lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} /></Safe>
+                <Safe><PlaceLogistics
                   lat={place.coordinates.lat}
                   lng={place.coordinates.lng}
                   region={place.region}
                   district={place.district}
                   placeName={place.title}
-                />
+                /></Safe>
               </div>
             )}
           </section>
 
           {/* Reviews */}
           <section id="reviews" className="scroll-mt-32">
-            <ReviewsSystem destinationSlug={place.slug} destinationName={place.title} />
+            <Safe><ReviewsSystem destinationSlug={place.slug} destinationName={place.title} /></Safe>
           </section>
 
           {/* Around here — live amenities (ATMs/hospitals/police/fuel) */}
           {place.coordinates && (
-            <PlaceNearbyAmenities lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} />
+            <Safe><PlaceNearbyAmenities lat={place.coordinates.lat} lng={place.coordinates.lng} placeName={place.title} /></Safe>
           )}
 
           {/* Nearby */}
           <section id="nearby" className="scroll-mt-32">
-            <NearbyPlacesSection destinationSlug={place.slug} />
+            <Safe><NearbyPlacesSection destinationSlug={place.slug} /></Safe>
             {nearbyPlaces.length > 0 && (
               <div className="mt-10">
                 <TravelSectionRow
@@ -564,12 +574,12 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
 
         {/* AI travel tips */}
         <div className="mt-14">
-          <AiFaq slug={place.slug} name={place.title} />
+          <Safe><AiFaq slug={place.slug} name={place.title} /></Safe>
         </div>
 
         {/* Booking */}
         <div id="booking-section" className="mt-14 scroll-mt-32">
-          <BookingSystem destinationSlug={place.slug} destinationName={place.title} destinationImage={place.heroImage.url} basePrice={parseInt(String(place.priceFrom).replace(/[^0-9]/g, '') || '2500')} />
+          <Safe><BookingSystem destinationSlug={place.slug} destinationName={place.title} destinationImage={place.heroImage.url} basePrice={parseInt(String(place.priceFrom).replace(/[^0-9]/g, '') || '2500')} /></Safe>
         </div>
 
         <div className="mt-10 mb-4"><ReportIssueButton slug={place.slug} /></div>
