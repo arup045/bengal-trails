@@ -10,6 +10,7 @@ import { LiveWeather } from './LiveWeather';
 import { PlaceThingsToDo } from './PlaceThingsToDo';
 import { PlaceStaysCarousel } from './PlaceStaysCarousel';
 import { LocalSpotsCarousel } from './LocalSpotsCarousel';
+import { PlaceThingsHere } from './PlaceThingsHere';
 import { PlaceFestivals } from './PlaceFestivals';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
@@ -422,6 +423,9 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
         {/* ── Full-width sections (Activities · Food · Photos · Stay ·
             Logistics · Reviews · Around here · Nearby) ─────────────────── */}
         <div className="space-y-14 mt-14">
+          {/* Place-specific "things to do" derived from this place's own tags */}
+          <PlaceThingsHere tags={place.tags} placeName={place.title} />
+
           {/* Things to do — Activities + Food carousels (inherits district data) */}
           <PlaceThingsToDo districtSlug={districtSlug} />
 
