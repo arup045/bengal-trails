@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
-import { Search, MapPin, Compass, ArrowRight, X, Navigation, Loader2, LayoutGrid, Map as MapIcon } from 'lucide-react';
+import { Search, MapPin, Compass, ArrowRight, X, Navigation, Loader2, LayoutGrid, Map as MapIcon, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { getDistrictsWithMeta, type BengalRegion, type DistrictWithMeta } from '../data/districts';
@@ -65,6 +65,11 @@ export function ExplorePage() {
   const [minRating, setMinRating] = useState(0);
   const [budget, setBudget] = useState<'all' | '$' | '$$' | '$$$'>('all');
   const [kidFriendly, setKidFriendly] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false); // mobile filter bottom-sheet
+  useEffect(() => {
+    document.body.style.overflow = sheetOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [sheetOpen]);
 
   // "Near me": geolocate (browser API — free, no map key) then sort by distance.
   const findNearMe = async () => {
@@ -262,7 +267,21 @@ export function ExplorePage() {
       {/* ── Refine filters (rating / budget / kid-friendly) ────────────────── */}
       {view === 'grid' && (
         <div className="max-w-7xl mx-auto px-5 sm:px-8 mt-3">
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Mobile: open the filters bottom-sheet instead of a cramped row */}
+          <button
+            onClick={() => setSheetOpen(true)}
+            className="sm:hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 font-poppins text-sm font-medium text-gray-700 active:scale-95 transition-transform"
+          >
+            <SlidersHorizontal className="w-4 h-4" /> Filters
+            {(minRating > 0 || budget !== 'all' || kidFriendly) && (
+              <span className="ml-0.5 w-5 h-5 rounded-full bg-purple-600 text-white text-[11px] font-semibold flex items-center justify-center">
+                {[minRating > 0, budget !== 'all', kidFriendly].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+
+          {/* Desktop / tablet: inline controls */}
+          <div className="hidden sm:flex flex-wrap items-center gap-2">
             <div className="flex items-center bg-white border border-gray-200 rounded-full p-0.5" role="group" aria-label="Minimum rating">
               {[0, 3, 4, 4.5].map((r) => (
                 <button key={r} onClick={() => setMinRating(r)}
@@ -444,6 +463,59 @@ export function ExplorePage() {
           </>
         )}
       </div>
+
+      {/* ── Mobile filter bottom-sheet ─────────────────────────────────────── */}
+      {sheetOpen && (
+        <div className="fixed inset-0 z-[60] sm:hidden" role="dialog" aria-modal="true" aria-label="Filters">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-3xl p-5 pb-8 shadow-2xl">
+            <div className="mx-auto w-10 h-1 rounded-full bg-gray-200 mb-4" />
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-poppins text-lg font-bold text-slate-900">Filters</h3>
+              <button onClick={() => setSheetOpen(false)} aria-label="Close filters"
+                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 active:scale-90 transition-transform">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="font-poppins text-sm font-semibold text-slate-700 mb-2">Minimum rating</p>
+            <div className="grid grid-cols-4 gap-2 mb-5">
+              {[0, 3, 4, 4.5].map((r) => (
+                <button key={r} onClick={() => setMinRating(r)}
+                  className={`py-3 rounded-xl font-poppins text-sm font-medium border transition ${minRating === r ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-200'}`}>
+                  {r === 0 ? 'Any' : `${r}+ ★`}
+                </button>
+              ))}
+            </div>
+
+            <p className="font-poppins text-sm font-semibold text-slate-700 mb-2">Budget</p>
+            <div className="grid grid-cols-4 gap-2 mb-5">
+              {([['all', 'Any'], ['$', '₹'], ['$$', '₹₹'], ['$$$', '₹₹₹']] as const).map(([k, l]) => (
+                <button key={k} onClick={() => setBudget(k)}
+                  className={`py-3 rounded-xl font-poppins text-sm font-medium border transition ${budget === k ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-200'}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+
+            <button onClick={() => setKidFriendly((v) => !v)}
+              className={`w-full py-3 rounded-xl font-poppins text-sm font-medium border transition mb-6 ${kidFriendly ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-gray-700 border-gray-200'}`}>
+              👨‍👩‍👧 Kid-friendly{kidFriendly ? '  ✓' : ''}
+            </button>
+
+            <div className="flex gap-3">
+              <button onClick={() => { clearFilters(); setSheetOpen(false); }}
+                className="flex-1 py-3.5 rounded-xl font-poppins text-sm font-semibold text-gray-700 bg-gray-100 active:scale-95 transition-transform">
+                Clear all
+              </button>
+              <button onClick={() => setSheetOpen(false)}
+                className="flex-1 py-3.5 rounded-xl font-poppins text-sm font-semibold text-white bg-purple-600 active:scale-95 transition-transform">
+                Show results
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
