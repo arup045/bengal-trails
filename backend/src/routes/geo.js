@@ -72,6 +72,8 @@ const OVERPASS_FILTERS = {
   food:     'node["amenity"~"^(restaurant|cafe|fast_food|food_court)$"]',
   hotel:    'node["tourism"~"^(hotel|hostel|guest_house|motel|apartment)$"]',
   park:     'node["leisure"~"^(park|garden)$"]',
+  // Things to see nearby — named tourist attractions + notable historic sites.
+  attraction: 'node["tourism"~"^(attraction|viewpoint|museum|artwork|gallery|zoo|theme_park)$"];node["historic"~"^(monument|memorial|castle|fort|ruins|archaeological_site)$"];node["leisure"="park"]',
 };
 
 router.get('/amenities', async (req, res) => {

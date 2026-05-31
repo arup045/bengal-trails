@@ -11,6 +11,7 @@ import { PlaceThingsToDo } from './PlaceThingsToDo';
 import { PlaceStaysCarousel } from './PlaceStaysCarousel';
 import { LocalSpotsCarousel } from './LocalSpotsCarousel';
 import { PlaceThingsHere } from './PlaceThingsHere';
+import { NearbyPlacesCarousel } from './NearbyPlacesCarousel';
 import { PlaceFestivals } from './PlaceFestivals';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
@@ -429,6 +430,18 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
           {/* Things to do — Activities + Food carousels (inherits district data) */}
           <PlaceThingsToDo districtSlug={districtSlug} />
 
+          {/* Real attractions & sights nearby (live OpenStreetMap, distance-sorted) */}
+          {place.coordinates && (
+            <NearbyPlacesCarousel
+              kind="attraction"
+              title={`More to see near ${place.title}`}
+              subtitle="Attractions, viewpoints, museums & landmarks within reach"
+              lat={place.coordinates.lat}
+              lng={place.coordinates.lng}
+              locationLabel={place.district || place.region}
+            />
+          )}
+
           {/* Festivals celebrated at this place (real cross-link from festival data) */}
           <PlaceFestivals placeSlug={place.slug} placeName={place.title} />
 
@@ -454,6 +467,19 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               place's own nearbyHotels so every place has a populated section */}
           <PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} fallbackNames={place.nearbyHotels} />
 
+          {/* More real stays nearby (live OpenStreetMap, distance-sorted, deduped) */}
+          {place.coordinates && (
+            <NearbyPlacesCarousel
+              kind="hotel"
+              title={`More places to stay near ${place.title}`}
+              subtitle="Hotels, lodges, guest houses & homestays around this spot"
+              lat={place.coordinates.lat}
+              lng={place.coordinates.lng}
+              exclude={place.nearbyHotels}
+              locationLabel={place.district || place.region}
+            />
+          )}
+
           {/* Where to eat near this place — real, place-specific restaurants
               from the dataset, rendered as premium photo cards (→ Google Maps) */}
           <LocalSpotsCarousel
@@ -464,6 +490,19 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             kind="food"
             locationLabel={place.district || place.region}
           />
+
+          {/* More real places to eat nearby (live OpenStreetMap, distance-sorted) */}
+          {place.coordinates && (
+            <NearbyPlacesCarousel
+              kind="food"
+              title={`More places to eat near ${place.title}`}
+              subtitle="Restaurants, cafés and eateries around this spot"
+              lat={place.coordinates.lat}
+              lng={place.coordinates.lng}
+              exclude={place.nearbyRestaurants}
+              locationLabel={place.district || place.region}
+            />
+          )}
 
           {/* Logistics & Practicalities */}
           <section id="getting-there" className="scroll-mt-32">
