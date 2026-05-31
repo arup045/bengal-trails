@@ -246,7 +246,32 @@ app.use('/api/wishlist',         wishlistRoutes);
 app.use('/api/recently-viewed',  recentlyViewedRoutes);
 app.use('/api/place-images',     placeImagesRoutes); // per-item district photos
 app.use('/api/bengal',           bengalRoutes);  // festivals, food, transport, hotels, subplaces
-app.use('/api/geo',              require('./routes/geo')); // proxy+cache: Overpass/Wikipedia/OSRM/elevation/sunrise/Unsplash
+// ── Geo proxy protection ────────────────────────────────────────────────────
+// /api/geo/* relays free third-party APIs (Overpass/Unsplash/Wikipedia/…). Left
+// open, anyone could use this backend as a free relay and exhaust our upstream
+// rate limits (so our real photos/data stop loading). Two guards:
+//   1) Origin/Referer allowlist — our browser app always sends an Origin on its
+//      cross-origin fetches; raw curl/scripts don't, so they're rejected in prod.
+//   2) A dedicated per-IP limiter as defence-in-depth.
+const geoLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 240,                 // generous for real browsing, bounds scripted abuse
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'Too many requests' },
+});
+function geoOriginGuard(req, res, next) {
+  if (!isProd) return next(); // allow local dev / curl in non-production
+  const origin = req.get('origin');
+  const refererOrigin = (() => {
+    try { return req.get('referer') ? new URL(req.get('referer')).origin : ''; }
+    catch { return ''; }
+  })();
+  const ok = (val) => !!val && (allowedOrigins.includes(val) || PREVIEW_PATTERNS.some((p) => p.test(val)));
+  if (ok(origin) || ok(refererOrigin)) return next();
+  return res.status(403).json({ ok: false, error: 'forbidden' });
+}
+app.use('/api/geo', geoLimiter, geoOriginGuard, require('./routes/geo')); // proxy+cache: Overpass/Wikipedia/OSRM/elevation/sunrise/Unsplash
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
