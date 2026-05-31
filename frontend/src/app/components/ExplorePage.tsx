@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { getDistrictsWithMeta, type BengalRegion, type DistrictWithMeta } from '../data/districts';
 import { placesData } from '../data/places-full';
 import { DistrictCard } from './explore/DistrictCard';
+import { ExperienceCard } from './ExperienceCard';
+import { experiences } from '../data/experiences';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { EmptyState } from './EmptyState';
 import { CountUp } from './CountUp';
@@ -289,6 +291,26 @@ export function ExplorePage() {
                 Clear filters
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Explore by experience (WB themes) — shown in the default browse state ── */}
+      {!query.trim() && (
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-8">
+          <div className="flex items-end justify-between gap-4 mb-5 flex-wrap">
+            <div>
+              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Explore by experience</h2>
+              <p className="font-poppins text-sm text-slate-500 mt-1">From Himalayan tea hills to the mangrove sea — pick your kind of trip.</p>
+            </div>
+            <a href="/experiences" className="font-poppins text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors hidden sm:inline">
+              All experiences →
+            </a>
+          </div>
+          <div className="flex gap-5 overflow-x-auto pb-2 px-1 scrollbar-hide snap-x" style={{ scrollbarWidth: 'none' as any }}>
+            {experiences.map((e) => (
+              <ExperienceCard key={e.id} experience={e} compact />
+            ))}
           </div>
         </div>
       )}
