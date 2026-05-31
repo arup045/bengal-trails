@@ -9,6 +9,7 @@ import { buildSrcSet } from '../utils/responsiveImage';
 import { LiveWeather } from './LiveWeather';
 import { PlaceThingsToDo } from './PlaceThingsToDo';
 import { PlaceStaysCarousel } from './PlaceStaysCarousel';
+import { LocalSpotsCarousel } from './LocalSpotsCarousel';
 import { PlaceFestivals } from './PlaceFestivals';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
@@ -212,8 +213,6 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     .filter((img, i, arr) => arr.findIndex((x) => x.src === img.src) === i)
     .slice(0, 16);
   const showGallery = galleryImages.length >= 2;
-
-  const restaurants = (place.nearbyRestaurants || []).map((name: string) => ({ name }));
 
   // Does this place's parent district have Activities / Food content? If not,
   // PlaceThingsToDo renders nothing — so we must NOT show those nav tabs
@@ -447,25 +446,20 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
             </section>
           )}
 
-          {/* Stay — full-width carousel of real stays (unified card theme) */}
-          <PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} />
+          {/* Stay — full-width carousel of real stays; falls back to the
+              place's own nearbyHotels so every place has a populated section */}
+          <PlaceStaysCarousel destinationSlug={place.slug} districtName={place.district} fallbackNames={place.nearbyHotels} />
 
-          {/* Where to eat nearby (names are real; opens Google Maps) */}
-          {restaurants.length > 0 && (
-            <section className="scroll-mt-32">
-              <h2 className="font-poppins text-2xl font-bold text-slate-900 mb-5">Where to eat nearby</h2>
-              <div className="flex flex-wrap gap-2">
-                {restaurants.map((r: { name: string }) => (
-                  <a key={r.name}
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name}, ${place.district || place.region}, West Bengal`)}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full font-poppins text-sm text-gray-700 hover:border-rose-300 hover:text-rose-600 transition-colors">
-                    <MapPin className="w-3.5 h-3.5 text-rose-500" />{r.name}
-                  </a>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Where to eat near this place — real, place-specific restaurants
+              from the dataset, rendered as premium photo cards (→ Google Maps) */}
+          <LocalSpotsCarousel
+            id="eat"
+            title={`Where to eat near ${place.title}`}
+            subtitle="Local favourites and well-known spots visitors love"
+            names={place.nearbyRestaurants}
+            kind="food"
+            locationLabel={place.district || place.region}
+          />
 
           {/* Logistics & Practicalities */}
           <section id="getting-there" className="scroll-mt-32">

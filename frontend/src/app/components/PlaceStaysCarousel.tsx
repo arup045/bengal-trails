@@ -5,10 +5,16 @@ import { PremiumPlaceCard } from './PremiumPlaceCard';
 // Clean rebuild of the old turquoise "Where to stay" box. Real hotel/homestay
 // data from the destination context, rendered as the unified PremiumPlaceCard
 // in a full-width horizontal carousel — no coloured pills, photo-backfilled.
-export function PlaceStaysCarousel({ destinationSlug, districtName }: { destinationSlug: string; districtName?: string }) {
+export function PlaceStaysCarousel({ destinationSlug, districtName, fallbackNames }: { destinationSlug: string; districtName?: string; fallbackNames?: string[] }) {
   const { hotels, loading } = useDestinationContext(destinationSlug);
 
-  if (loading || !hotels || hotels.length === 0) return null;
+  if (loading) return null;
+
+  const hasBackend = !!hotels && hotels.length > 0;
+  // Real, place-specific stays from the dataset (nearbyHotels) — used whenever
+  // the backend has no curated stays, so every place gets a populated section.
+  const names = (fallbackNames || []).filter(Boolean);
+  if (!hasBackend && names.length === 0) return null;
 
   // Maps deep-link is the honest action — individual hotels aren't booked in-app.
   const mapsHref = (name: string) =>
@@ -26,22 +32,34 @@ export function PlaceStaysCarousel({ destinationSlug, districtName }: { destinat
     <TravelSectionRow
       id="stay"
       title="Stay"
-      subtitle={`${hotels.length} curated stays — homestays to heritage resorts`}
-      count={hotels.length}
+      subtitle={hasBackend
+        ? `${hotels!.length} curated stays — homestays to heritage resorts`
+        : `${names.length} popular places to stay near ${districtName || 'here'}`}
+      count={hasBackend ? hotels!.length : names.length}
     >
-      {hotels.map((h, i) => (
-        <PremiumPlaceCard
-          key={`${h.name}-${i}`}
-          title={h.name}
-          image={h.image}
-          href={mapsHref(h.name)}
-          location={h.type || 'Stay'}
-          rating={h.rating}
-          price={leadPrice(h.priceRange)}
-          priceNote="/ night"
-          fallbackKind="stay"
-        />
-      ))}
+      {hasBackend
+        ? hotels!.map((h, i) => (
+            <PremiumPlaceCard
+              key={`${h.name}-${i}`}
+              title={h.name}
+              image={h.image}
+              href={mapsHref(h.name)}
+              location={h.type || 'Stay'}
+              rating={h.rating}
+              price={leadPrice(h.priceRange)}
+              priceNote="/ night"
+              fallbackKind="stay"
+            />
+          ))
+        : names.map((name, i) => (
+            <PremiumPlaceCard
+              key={`${name}-${i}`}
+              title={name}
+              href={mapsHref(name)}
+              location="Stay nearby"
+              fallbackKind="stay"
+            />
+          ))}
     </TravelSectionRow>
   );
 }
