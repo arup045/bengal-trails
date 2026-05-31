@@ -5,6 +5,8 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { API_BASE } from '../utils/api';
 import { getDistrict, placesForDistrict } from '../data/districts';
 import { getDistrictContent } from '../data/districtContent';
+import { useLanguage } from '../contexts/LanguageContext';
+import { localizeDistrictAbout } from '../utils/localize';
 import { type SectionKey } from './explore/ItemCard';
 import { useWishlistSync } from '../utils/useWishlistSync';
 import { usePlaceImages } from '../lib/queries';
@@ -26,6 +28,8 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
   const district = useMemo(() => getDistrict(slug), [slug]);
   const places = useMemo(() => placesForDistrict(slug), [slug]);
   const content = useMemo(() => getDistrictContent(slug), [slug]);
+  const { language } = useLanguage();
+  const aboutText = localizeDistrictAbout(slug, content?.about, language);
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistSync();
 
   const [aiQuery, setAiQuery] = useState('');
@@ -200,10 +204,10 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         {/* About */}
-        {content?.about && (
+        {aboutText && (
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 -mt-10 relative z-10">
             <h2 className="font-poppins text-xl font-bold text-slate-900 mb-2">About {district.name}</h2>
-            <p className="font-poppins text-gray-600 leading-relaxed">{content.about}</p>
+            <p className="font-poppins text-gray-600 leading-relaxed">{aboutText}</p>
           </div>
         )}
 

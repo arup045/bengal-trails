@@ -13,6 +13,8 @@ import { LocalSpotsCarousel } from './LocalSpotsCarousel';
 import { PlaceThingsHere } from './PlaceThingsHere';
 import { NearbyPlacesCarousel } from './NearbyPlacesCarousel';
 import { ErrorBoundary } from './ErrorBoundary';
+import { useLanguage } from '../contexts/LanguageContext';
+import { localizePlace } from '../utils/localize';
 import { PlaceFestivals } from './PlaceFestivals';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
@@ -127,8 +129,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     // eslint-disable-next-line
   }, [slug]);
 
+  const { language } = useLanguage();
   const staticPlace = placesData.find(p => p.slug === slug);
-  const place = apiPlace || staticPlace;
+  // Overlay Bengali content when the user has switched to বাংলা (falls back to
+  // English per-field when a translation is missing).
+  const place = localizePlace(apiPlace || staticPlace, language);
 
   // Recently viewed (hook stays unconditional; guards on `place`)
   useEffect(() => {
