@@ -378,4 +378,17 @@ function gracefulShutdown(signal) {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
 
+// Last-resort safety nets so a stray async error can't silently kill the dyno.
+//   • unhandledRejection: log and keep serving (one bad promise shouldn't take
+//     the whole API down).
+//   • uncaughtException: the process state is now undefined, so shut down
+//     cleanly and let the platform restart us instead of running corrupted.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason instanceof Error ? reason.stack : reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err && err.stack ? err.stack : err);
+  gracefulShutdown('uncaughtException');
+});
+
 module.exports = app;

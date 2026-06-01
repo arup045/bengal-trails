@@ -112,7 +112,7 @@ router.post('/image', authenticate, limiters.upload, upload.single('image'), asy
     });
   } catch (err) {
     console.error('upload error:', err);
-    return res.status(500).json({ error: err.message || 'Upload failed' });
+    return res.status(500).json({ error: 'Upload failed' });
   }
 });
 
@@ -145,7 +145,8 @@ router.post('/multiple', authenticate, limiters.upload, upload.array('images', 8
 
     return res.json({ uploads: urls });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('multiple upload error:', err);
+    return res.status(500).json({ error: 'Upload failed' });
   }
 });
 
@@ -175,7 +176,8 @@ router.delete('/:publicId', authenticate, async (req, res) => {
     await cld.uploader.destroy(publicId);
     return res.json({ success: true });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('delete upload error:', err);
+    return res.status(500).json({ error: 'Delete failed' });
   }
 });
 
