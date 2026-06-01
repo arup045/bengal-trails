@@ -31,6 +31,7 @@ const staticRoutes = [
   { loc: '/experiences', priority: '0.8', freq: 'weekly' },
   { loc: '/itineraries', priority: '0.8', freq: 'weekly' },
   { loc: '/festivals', priority: '0.8', freq: 'weekly'  },
+  { loc: '/durga-puja', priority: '0.8', freq: 'weekly' },
   { loc: '/food',      priority: '0.8', freq: 'weekly'  },
   { loc: '/food-map',  priority: '0.6', freq: 'monthly' },
   { loc: '/map',       priority: '0.6', freq: 'monthly' },

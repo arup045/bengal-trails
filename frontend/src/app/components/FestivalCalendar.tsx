@@ -502,6 +502,12 @@ export function FestivalCalendar() {
           <p className="text-white/90 mt-2 max-w-2xl text-sm sm:text-base">
             {festivals.length} pujas, melas, and celebrations across the year — with dates, places to go, must-try foods, and one-click Google Calendar reminders.
           </p>
+          <a
+            href="/durga-puja"
+            className="inline-flex items-center gap-2 mt-4 w-fit bg-white text-purple-700 hover:bg-purple-50 font-semibold text-sm px-4 py-2.5 rounded-full transition-colors shadow-lg"
+          >
+            🪔 Explore the Kolkata Durga Puja pandal map →
+          </a>
         </div>
       </div>
 

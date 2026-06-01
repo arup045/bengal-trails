@@ -46,6 +46,7 @@ installGlobalErrorHandlers();
 // Lazy load heavy components for better performance
 const ExplorePage = lazy(() => import('./components/ExplorePage').then(m => ({ default: m.ExplorePage })));
 const ExperiencesPage = lazy(() => import('./components/ExperiencesPage').then(m => ({ default: m.ExperiencesPage })));
+const DurgaPujaPage = lazy(() => import('./components/DurgaPujaPage').then(m => ({ default: m.DurgaPujaPage })));
 const ItinerariesPage = lazy(() => import('./components/ItinerariesPage').then(m => ({ default: m.ItinerariesPage })));
 const DistrictDetailPage = lazy(() => import('./components/DistrictDetailPage').then(m => ({ default: m.DistrictDetailPage })));
 const SpotDetailPage = lazy(() => import('./components/SpotDetailPage').then(m => ({ default: m.SpotDetailPage })));
@@ -146,7 +147,7 @@ type RouteId =
   | 'social' | 'community' | 'privacy' | 'terms' | 'cookies' | 'contact'
   | 'emergency' | 'partners' | 'vendor-onboarding' | 'itinerary-builder'
   | 'not-found' | 'oauth-success' | 'about' | 'tours' | 'blog' | 'user'
-  | 'experiences' | 'experience' | 'itineraries' | 'itinerary-detail';
+  | 'experiences' | 'experience' | 'itineraries' | 'itinerary-detail' | 'durga-puja';
 
 interface RouteConfig { id: RouteId; title?: string; devOnly?: boolean; }
 
@@ -154,6 +155,7 @@ const STATIC_ROUTES: Record<string, RouteConfig> = {
   '/':                  { id: 'home',              title: 'Home' },
   '/explore':           { id: 'explore',           title: 'Explore Destinations' },
   '/experiences':       { id: 'experiences',       title: 'Ways to Explore West Bengal' },
+  '/durga-puja':        { id: 'durga-puja',        title: 'Durga Puja Pandal Map — Kolkata' },
   '/itineraries':       { id: 'itineraries',       title: 'Curated West Bengal Itineraries' },
   '/signin':            { id: 'signin',            title: 'Sign In' },
   '/profile':           { id: 'profile',           title: 'User Profile' },
@@ -409,6 +411,11 @@ export default function App() {
           title: 'Ways to Explore West Bengal | Hills, Sundarbans, Heritage & More | Bengal Trails',
           description: 'Discover West Bengal by experience — Hills & Tea, Wildlife & Forests, Sea & Beaches, Sundarbans, Kolkata heritage, Temples & Terracotta, Art & Culture and offbeat rivers.',
         };
+      case 'durga-puja':
+        return {
+          title: 'Durga Puja Pandal Map & Hopping Guide — Kolkata | Bengal Trails',
+          description: 'Interactive map of Kolkata’s most iconic Durga Puja pandals — Bagbazar, College Square, Sreebhumi, Ekdalia, Suruchi & more — with curated pandal-hopping trails and tips.',
+        };
       case 'itineraries':
       case 'itinerary-detail':
         return {
@@ -663,6 +670,8 @@ export default function App() {
               {currentPage === 'explore' && <ExplorePage />}
 
               {currentPage === 'experiences' && <ExperiencesPage />}
+
+              {currentPage === 'durga-puja' && <DurgaPujaPage />}
 
               {currentPage === 'experience' && <ExperiencesPage theme={currentSlug} />}
 
