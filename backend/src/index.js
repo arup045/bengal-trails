@@ -133,9 +133,13 @@ app.use(cookieParser()); // Parses httpOnly cookies (used by OAuth refresh-token
 app.use(camelCaseResponseMiddleware);
 
 // ── Rate Limiting ─────────────────────────────────────────────────────────────
+// Global circuit-breaker. Set VERY high so real users browsing a data-rich
+// site (each place page fires ~15-20 API calls) never hit it — it only trips
+// on a single runaway client that would otherwise saturate the dyno and slow
+// the site down for everyone. ~160 req/sec-avg headroom per IP.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: 2400,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -186,10 +190,11 @@ const aiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Light limiter for search suggestions — called frequently as user types
+// Limiter for the general /api routes (search-as-you-type, bookings, etc.).
+// Raised high so active browsing never trips it; still caps scripted floods.
 const searchLimiter = rateLimit({
   windowMs: 60 * 1000,      // 1 minute
-  max: 60,                   // 60 searches/min (1/sec average)
+  max: 300,                  // 300/min (5/sec average) per IP
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -255,7 +260,8 @@ app.use('/api/bengal',           bengalRoutes);  // festivals, food, transport, 
 //   2) A dedicated per-IP limiter as defence-in-depth.
 const geoLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 240,                 // generous for real browsing, bounds scripted abuse
+  max: 800,                 // very generous for real browsing (geo is cached
+                            // 24h, so most calls are instant) — bounds abuse only
   standardHeaders: true,
   legacyHeaders: false,
   message: { ok: false, error: 'Too many requests' },
