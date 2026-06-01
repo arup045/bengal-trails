@@ -318,7 +318,8 @@ const server = app.listen(PORT, () => {
   console.log(`[server] Frontend: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
 
   // Keep-alive: ping own /health every 9 min so Render free tier never cold-starts.
-  if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
+  // Activates on any Render deploy (RENDER=true) even if NODE_ENV is left unset.
+  if ((isProd || process.env.RENDER) && process.env.RENDER_EXTERNAL_URL) {
     const url = process.env.RENDER_EXTERNAL_URL + '/health';
     setInterval(() => {
       fetch(url).catch(() => {});

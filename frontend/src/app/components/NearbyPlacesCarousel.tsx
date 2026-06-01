@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Hotel, Utensils, Camera, Navigation, MapPin } from 'lucide-react';
 import { API_BASE } from '../utils/api';
 import { TravelSectionRow } from './TravelSectionRow';
+import { useInView } from '../utils/useInView';
 
 type Kind = 'hotel' | 'food' | 'attraction';
 
@@ -44,9 +45,12 @@ export function NearbyPlacesCarousel({
   exclude?: string[]; locationLabel: string; radius?: number; limit?: number;
 }) {
   const [items, setItems] = useState<(OsmItem & { km: number })[]>([]);
+  // Defer the OSM fetch until the user scrolls near this section, so a place
+  // page doesn't fire every "nearby" request on initial load.
+  const [sentinelRef, inView] = useInView<HTMLDivElement>();
 
   useEffect(() => {
-    if (lat == null || lng == null) return;
+    if (!inView || lat == null || lng == null) return;
     let alive = true;
     const skip = new Set((exclude || []).map(norm));
     fetch(`${API_BASE}/geo/amenities?lat=${lat}&lng=${lng}&type=${kind}&radius=${radius}`)
@@ -64,8 +68,11 @@ export function NearbyPlacesCarousel({
       })
       .catch(() => {});
     return () => { alive = false; };
-  }, [lat, lng, kind, radius, limit, exclude]);
+  }, [inView, lat, lng, kind, radius, limit, exclude]);
 
+  // Until the section scrolls into view, render a tiny sentinel the observer can
+  // watch (so we know when to fetch). After that: the carousel, or nothing.
+  if (!inView) return <div ref={sentinelRef} aria-hidden className="h-px" />;
   if (items.length === 0) return null;
   const Icon = ICON[kind];
 
