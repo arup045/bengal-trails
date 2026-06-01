@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_BASE } from './api';
+import { PLACE_COUNT_LABEL } from '../data/stats';
 
 const CACHE_KEY = 'bt_site_content';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -43,7 +44,7 @@ export interface SiteContent {
 const DEFAULTS: SiteContent = {
   hero: {
     title: 'Discover the Heart\nof West Bengal',
-    subtitle: '232+ destinations, 100 festivals, authentic Bengali food and curated journeys — all in one place, always free.',
+    subtitle: `${PLACE_COUNT_LABEL} destinations, 100 festivals, authentic Bengali food and curated journeys — all in one place, always free.`,
     backgroundImage: 'https://images.unsplash.com/photo-1679418536818-7a7fb2db49bc?q=80&w=1600&auto=format&fit=crop',
     ctaText: 'Explore Now',
     ctaLink: '#/explore',

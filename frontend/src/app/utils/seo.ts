@@ -2,6 +2,9 @@
 // and meta description reflect the current page. This is more SEO-friendly
 // than a single static <title> in index.html.
 
+import { SITE_URL } from './siteConfig';
+import { PLACE_COUNT_LABEL } from '../data/stats';
+
 interface PageMeta {
   title: string;
   description: string;
@@ -10,7 +13,6 @@ interface PageMeta {
 }
 
 const SITE_NAME = 'Bengal Trails';
-const SITE_URL = 'https://bengaltrails.netlify.app';
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200';
 
 export function setPageMeta(meta: PageMeta) {
@@ -49,12 +51,12 @@ function setMeta(attr: 'name' | 'property', key: string, value: string) {
 export const PAGE_META = {
   home: {
     title: 'West Bengal Travel Guide — Destinations, Festivals, Food',
-    description: '221+ destinations across West Bengal — Darjeeling, Sundarbans, Kolkata, Shantiniketan. 100 festivals, authentic Bengali food, AI trip planning.',
+    description: `${PLACE_COUNT_LABEL} destinations across West Bengal — Darjeeling, Sundarbans, Kolkata, Shantiniketan. 100 festivals, authentic Bengali food, AI trip planning.`,
     url: SITE_URL,
   },
   explore: {
     title: 'Explore West Bengal Destinations',
-    description: 'Browse 221+ destinations across West Bengal — hills, beaches, temples, wildlife. Filter by region, category, and budget.',
+    description: `Browse ${PLACE_COUNT_LABEL} destinations across West Bengal — hills, beaches, temples, wildlife. Filter by region, category, and budget.`,
     url: `${SITE_URL}/explore`,
   },
   festivals: {
@@ -69,7 +71,7 @@ export const PAGE_META = {
   },
   map: {
     title: 'West Bengal Travel Map',
-    description: 'Interactive map of all 221 destinations across North, Central, and South Bengal.',
+    description: `Interactive map of all ${PLACE_COUNT_LABEL} destinations across North, Central, and South Bengal.`,
     url: `${SITE_URL}/map`,
   },
   community: {

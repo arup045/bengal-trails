@@ -38,6 +38,7 @@ import { setPageMeta, PAGE_META } from './utils/seo';
 import { SITE_URL } from './utils/siteConfig';
 import { toPath, isAuthFragment, navigate } from './utils/navigation';
 import { getDistrict } from './data/districts';
+import { PLACE_COUNT_LABEL } from './data/stats';
 
 
 installGlobalErrorHandlers();
@@ -395,12 +396,12 @@ export default function App() {
       case 'home':
         return {
           title: 'Bengal Trails - Discover West Bengal Tourism | Authentic Travel Experiences',
-          description: 'Explore 197+ authentic West Bengal destinations. Plan trips, discover Bengali cuisine, book experiences. Your trusted Bengal travel companion with trip planner, maps & guides.',
+          description: `Explore ${PLACE_COUNT_LABEL} authentic West Bengal destinations. Plan trips, discover Bengali cuisine, book experiences. Your trusted Bengal travel companion with trip planner, maps & guides.`,
         };
       case 'explore':
         return {
           title: 'Explore West Bengal Destinations | Bengal Trails Travel Guide',
-          description: 'Browse 197+ West Bengal tourist destinations including Darjeeling, Sundarbans, Kolkata heritage sites. Filter by region, category, budget. Plan your Bengal adventure.',
+          description: `Browse ${PLACE_COUNT_LABEL} West Bengal tourist destinations including Darjeeling, Sundarbans, Kolkata heritage sites. Filter by region, category, budget. Plan your Bengal adventure.`,
         };
       case 'experiences':
       case 'experience':

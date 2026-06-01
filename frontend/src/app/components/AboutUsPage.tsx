@@ -1,8 +1,9 @@
 import { MapPin, Heart, Users, Star, Shield, Compass, Camera, Globe, Award, Mail, Phone, ArrowRight } from 'lucide-react';
+import { PLACE_COUNT_LABEL, DISTRICT_COUNT } from '../data/stats';
 
 const STATS = [
-  { value: '197+', label: 'Destinations',     icon: MapPin },
-  { value: '23',   label: 'Districts',        icon: Globe },
+  { value: PLACE_COUNT_LABEL, label: 'Destinations', icon: MapPin },
+  { value: String(DISTRICT_COUNT), label: 'Districts', icon: Globe },
   { value: '100%', label: 'Authentic Content',icon: Shield },
   { value: 'New',  label: 'Just Launched',    icon: Award },
 ];
@@ -61,7 +62,7 @@ const TEAM = [
 const TIMELINE = [
   { year: '2023', event: 'Idea born — frustrated by the lack of quality travel information for West Bengal' },
   { year: '2024', event: 'Platform launched with our first batch of curated destinations' },
-  { year: '2025', event: 'Expanded to 197+ destinations across all 23 districts. Launched AI Trip Planner.' },
+  { year: '2025', event: `Expanded to ${PLACE_COUNT_LABEL} destinations across all ${DISTRICT_COUNT} districts. Launched AI Trip Planner.` },
   { year: '2026', event: 'Vendor marketplace launched. Still growing, every day.' },
 ];
 

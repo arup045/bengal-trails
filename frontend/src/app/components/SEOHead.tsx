@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SITE_URL } from '../utils/siteConfig';
+import { PLACE_COUNT_LABEL } from '../data/stats';
 
 interface SEOProps {
   title?: string;
@@ -14,7 +15,7 @@ interface SEOProps {
 
 const DEFAULT_SEO = {
   title: 'Bengal Trails - Discover West Bengal Tourism | Authentic Travel Experiences',
-  description: 'Explore the authentic beauty of West Bengal with Bengal Trails. Discover 197+ destinations, plan trips, find Bengali cuisine, and experience culture. Your trusted Bengal travel companion.',
+  description: `Explore the authentic beauty of West Bengal with Bengal Trails. Discover ${PLACE_COUNT_LABEL} destinations, plan trips, find Bengali cuisine, and experience culture. Your trusted Bengal travel companion.`,
   keywords: 'West Bengal tourism, Bengal travel, Darjeeling, Sundarbans, Kolkata tourism, Bengali culture, India travel, heritage tourism, tea gardens, Bengali food, Durga Puja, travel planner',
   image: 'https://images.unsplash.com/photo-1697817665440-f988c6d5080f?w=1200',
   url: typeof window !== 'undefined' ? window.location.href : SITE_URL,
