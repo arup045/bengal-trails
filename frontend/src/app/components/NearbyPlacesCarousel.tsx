@@ -22,6 +22,10 @@ const GENERIC = new Set([
   'viewpoint', 'museum', 'house', 'my house', 'untitled',
 ]);
 
+// For stays, OSM "accommodation" also tags student hostels, university halls,
+// messes, campus guest houses, PGs etc. — never recommend those as "where to stay".
+const NOT_LODGING = /hostel|\bmess\b|\bhall\b|universit|\bcollege\b|\binstitute\b|\bschool\b|students?|\bboys?\b|\bgirls?\b|missionar|\bsociety\b|campus|\bdept|\bpg\b|hospital|paying guest|\bblock\b|\bquarters?\b|staff\s+apartment|\bbari\b|(?:muslim|hindu)\s+hotel|\bofficers?\b|inspection bungalow|\bbhawan\b|\bbhavan\b/i;
+
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
@@ -60,6 +64,7 @@ export function NearbyPlacesCarousel({
         const seen = new Set<string>();
         const list = (d.items as OsmItem[])
           .filter((it) => it.name && !GENERIC.has(it.name.trim().toLowerCase()) && it.name.trim().length > 2)
+          .filter((it) => kind !== 'hotel' || !NOT_LODGING.test(it.name))
           .filter((it) => { const n = norm(it.name); if (skip.has(n) || seen.has(n)) return false; seen.add(n); return true; })
           .map((it) => ({ ...it, km: haversineKm(lat, lng, it.lat, it.lon) }))
           .sort((a, b) => a.km - b.km)

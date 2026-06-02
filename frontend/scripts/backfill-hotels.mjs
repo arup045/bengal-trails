@@ -11,6 +11,10 @@ const ORIGIN = 'https://bengal-trails.vercel.app';
 const FILE = 'src/app/data/places-full.ts';
 
 const GENERIC = new Set(['place','hotel','hostel','motel','apartment','guest_house','guesthouse','house','my house','lodge','resort','untitled','home','homestay']);
+// Reject OSM "accommodation" that isn't tourist lodging — student hostels,
+// university halls, messes, campus guest houses, PGs, hospitals etc.
+const BAD = /hostel|\bmess\b|\bhall\b|universit|\bcollege\b|\binstitute\b|\bschool\b|students?|\bboys?\b|\bgirls?\b|missionar|\bsociety\b|campus|\bdept|\bpg\b|hospital|paying guest|\bblock\b|\bquarters?\b|staff\s+apartment|\bbari\b|(?:muslim|hindu)\s+hotel|\bofficers?\b|inspection bungalow|\bbhawan\b|\bbhavan\b/i;
+const isLodging = (name) => !BAD.test(name);
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g,'');
 const km = (aLat,aLng,bLat,bLng) => { const R=6371,r=d=>d*Math.PI/180; const dLat=r(bLat-aLat),dLng=r(bLng-aLng); const x=Math.sin(dLat/2)**2+Math.cos(r(aLat))*Math.cos(r(bLat))*Math.sin(dLng/2)**2; return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); };
 const sleep = (ms) => new Promise((r)=>setTimeout(r,ms));
@@ -39,7 +43,7 @@ async function hotelsFor(p) {
   const { lat, lng } = p.coordinates;
   const seen = new Set();
   const pick = (items) => items
-    .filter((it)=>it.name && !GENERIC.has(it.name.trim().toLowerCase()) && it.name.trim().length>2)
+    .filter((it)=>it.name && !GENERIC.has(it.name.trim().toLowerCase()) && it.name.trim().length>2 && isLodging(it.name))
     .filter((it)=>{ const n=norm(it.name); if(seen.has(n))return false; seen.add(n); return true; })
     .map((it)=>({ name: it.name.trim(), km: km(lat,lng,it.lat,it.lon) }))
     .sort((x,y)=>x.km-y.km).slice(0,4).map((x)=>x.name);
