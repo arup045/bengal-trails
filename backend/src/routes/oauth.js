@@ -323,7 +323,7 @@ router.get('/facebook', (req, res) => {
     scope: 'email,public_profile',
     state,
   });
-  return res.redirect(`https://www.facebook.com/v18.0/dialog/oauth?${params.toString()}`);
+  return res.redirect(`https://www.facebook.com/v21.0/dialog/oauth?${params.toString()}`);
 });
 
 // ── GET /api/auth/facebook/callback ────────────────────────────────────────────
@@ -351,7 +351,7 @@ router.get('/facebook/callback', async (req, res) => {
     const callbackUrl = process.env.FACEBOOK_CALLBACK_URL || `${callbackBase(req)}/api/auth/facebook/callback`;
 
     // Exchange code for access token
-    const tokenUrl = `https://graph.facebook.com/v18.0/oauth/access_token?${new URLSearchParams({
+    const tokenUrl = `https://graph.facebook.com/v21.0/oauth/access_token?${new URLSearchParams({
       client_id: process.env.FACEBOOK_APP_ID,
       client_secret: process.env.FACEBOOK_APP_SECRET,
       redirect_uri: callbackUrl,
@@ -365,7 +365,7 @@ router.get('/facebook/callback', async (req, res) => {
     }
 
     // Fetch profile
-    const profileUrl = `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${tokenData.access_token}`;
+    const profileUrl = `https://graph.facebook.com/v21.0/me?fields=id,name,email,picture&access_token=${tokenData.access_token}`;
     const profileRes = await fetch(profileUrl);
     const profile = await profileRes.json();
     if (!profile.email) {
