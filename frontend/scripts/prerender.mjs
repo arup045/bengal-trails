@@ -62,8 +62,10 @@ function render({ title, description, url, image, jsonLd }) {
   set(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${esc(title)}$2`);
   set(/(<meta name="twitter:description" content=")[^"]*(")/, `$1${esc(description)}$2`);
   set(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${esc(image)}$2`);
-  // Replace the site-level JSON-LD with the per-page one.
-  set(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, `<script type="application/ld+json">\n${JSON.stringify(jsonLd)}\n</script>`);
+  // Replace the site-level JSON-LD with the per-page one. Escape "<" to < so
+  // a stray "</script>" (or "<!--") in any field can't break out of the tag.
+  const ld = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+  set(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, `<script type="application/ld+json">\n${ld}\n</script>`);
   return h;
 }
 
