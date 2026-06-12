@@ -69,7 +69,9 @@ export const ReviewsSystem: React.FC<ReviewsSystemProps> = ({
         setReviews(data.reviews || []);
       }
     } catch (error) {
-      console.error('Error loading reviews:', error);
+      // Transient (offline / cold start) — degrade quietly to an empty list
+      // instead of spamming the production console with red errors.
+      if (import.meta.env.DEV) console.debug('Reviews load failed (transient):', error);
     } finally {
       setLoading(false);
     }
