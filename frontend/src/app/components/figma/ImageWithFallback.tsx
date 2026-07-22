@@ -11,9 +11,6 @@ export function ImageWithFallback(props: Props) {
   const [loaded, setLoaded] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
-  // Cached images may already be complete before React attaches onLoad.
-  useEffect(() => { if (imgRef.current?.complete) setLoaded(true) }, [])
-
   const handleError = () => {
     setDidError(true)
   }
@@ -30,6 +27,26 @@ export function ImageWithFallback(props: Props) {
   // the browser never fetches larger than needed.
   const srcSet = typeof src === 'string' ? getSrcSet(src) : ''
   const sizesAttr = sizes ?? `${cap}px`
+
+  // Reveal the image once it has actually decoded. React's synthetic onLoad is
+  // unreliable for <img> (it can silently miss loads that finish after mount),
+  // which left images loaded-but-invisible at opacity-0. So we attach a NATIVE
+  // load/error listener (reliable), check `complete` for cached images, and keep
+  // a safety net — re-keyed on the resolved src so it re-runs when the src swaps.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img) return;
+    let done = false;
+    const reveal = () => { if (!done) { done = true; setLoaded(true); } };
+    const fail = () => { if (!done) { done = true; setDidError(true); } };
+    if (img.complete) { img.naturalWidth > 0 ? reveal() : fail(); return; }
+    img.addEventListener('load', reveal);
+    img.addEventListener('error', fail);
+    // Belt-and-suspenders: if neither event fires (rare browser/HMR quirk) but
+    // the image did decode, reveal it anyway so it can never stay invisible.
+    const t = setTimeout(() => { if (!done && img.naturalWidth > 0) reveal(); }, 600);
+    return () => { img.removeEventListener('load', reveal); img.removeEventListener('error', fail); clearTimeout(t); };
+  }, [optimizedSrc, didError]);
 
   return didError ? (
     // Clean on-brand placeholder — soft slate gradient + a muted mountain icon.
