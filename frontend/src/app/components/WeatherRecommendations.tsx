@@ -104,7 +104,7 @@ export function WeatherRecommendations() {
   const recommendations = getSeasonalRecommendations(selectedSeason);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-32 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 pt-32 pb-20">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -130,7 +130,7 @@ export function WeatherRecommendations() {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">{data.region}</h3>
-                <data.Icon className="w-8 h-8 text-blue-500" />
+                <data.Icon className="w-8 h-8 text-purple-500" />
               </div>
 
               {data.loading ? (
@@ -168,7 +168,7 @@ export function WeatherRecommendations() {
                   </div>
 
                   <div className="pt-4 border-t border-gray-100">
-                    <p className="text-sm text-blue-600 font-semibold">{data.note}</p>
+                    <p className="text-sm text-purple-600 font-semibold">{data.note}</p>
                   </div>
                 </>
               )}
@@ -190,8 +190,8 @@ export function WeatherRecommendations() {
                 onClick={() => setSelectedSeason(season.id)}
                 className={`p-4 rounded-2xl border-2 transition-all ${
                   selectedSeason === season.id
-                    ? 'border-blue-600 bg-blue-50 shadow-lg'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? 'border-purple-600 bg-purple-50 shadow-lg'
+                    : 'border-gray-200 hover:border-purple-300'
                 }`}
               >
                 <div className="text-4xl mb-2">{season.icon}</div>
@@ -223,12 +223,12 @@ export function WeatherRecommendations() {
                     alt={place.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-blue-500 text-white rounded-full text-sm font-semibold">
+                  <div className="absolute top-4 right-4 px-3 py-1 bg-black/55 text-white backdrop-blur-sm rounded-full text-sm font-medium">
                     {place.bestTime}
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
                     {place.title}
                   </h3>
                   <div className="flex items-center gap-2 text-gray-600 mb-3">
@@ -247,7 +247,7 @@ export function WeatherRecommendations() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white"
+          className="mt-12 bg-gradient-to-r from-purple-600 to-purple-600 rounded-3xl p-8 text-white"
         >
           <h3 className="text-2xl font-bold mb-4">🌤️ Weather Travel Tips</h3>
           <div className="grid md:grid-cols-2 gap-4">

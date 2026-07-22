@@ -171,9 +171,9 @@ export function FoodMap() {
                     <h3 className="text-xl font-bold text-gray-900 mb-1">{spot.name}</h3>
                     <p className="text-sm text-gray-600">{spot.type}</p>
                   </div>
-                  <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded-full">
-                    <Star className="w-4 h-4 text-yellow-600 fill-yellow-400" />
-                    <span className="text-sm font-semibold text-yellow-900">{spot.rating}</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-full">
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <span className="text-sm font-semibold text-slate-800">{spot.rating}</span>
                   </div>
                 </div>
 
@@ -193,7 +193,7 @@ export function FoodMap() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-2">Must Try:</h4>
                   <div className="flex flex-wrap gap-2">
                     {spot.mustTry.map((dish, idx) => (
-                      <span key={idx} className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-full">
+                      <span key={idx} className="text-xs px-3 py-1 bg-slate-100 text-slate-700 rounded-full">
                         {dish}
                       </span>
                     ))}

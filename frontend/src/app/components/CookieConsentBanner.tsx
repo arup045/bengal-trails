@@ -49,7 +49,7 @@ export function CookieConsentBanner() {
               <h3 className="text-sm font-semibold text-gray-900 mb-1">We use cookies</h3>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Essential cookies keep you signed in. Analytics cookies help us improve Bengal Trails. Read our{' '}
-                <a href="/cookies" className="text-[#7d1f2e] underline">
+                <a href="/cookies" className="text-purple-600 underline">
                   Cookie Policy
                 </a>
                 .
@@ -57,7 +57,7 @@ export function CookieConsentBanner() {
               <div className="flex flex-wrap gap-2 mt-3">
                 <button
                   onClick={() => choose('accepted')}
-                  className="px-4 py-2 rounded-full bg-[#7d1f2e] text-white text-sm hover:bg-[#5a1621] transition-colors"
+                  className="px-4 py-2 rounded-full bg-purple-600 text-white text-sm hover:bg-purple-700 transition-colors"
                 >
                   Accept all
                 </button>

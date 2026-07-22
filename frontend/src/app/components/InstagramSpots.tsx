@@ -351,7 +351,7 @@ export function InstagramSpots() {
             <br />Tag us and get featured on our page!
           </p>
           <div className="flex justify-center gap-4">
-            <span className="px-4 py-2 bg-pink-100 text-pink-600 rounded-full text-sm font-semibold">
+            <span className="px-4 py-2 bg-purple-50 text-purple-700 rounded-full text-sm font-semibold">
               Best Photo This Month Wins!
             </span>
           </div>

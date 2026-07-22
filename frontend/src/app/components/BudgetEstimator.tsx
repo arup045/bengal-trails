@@ -190,16 +190,16 @@ export function BudgetEstimator() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setDays(Math.max(1, days - 1))}
-                  className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full hover:bg-orange-200 transition-colors font-bold text-xl"
+                  className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full hover:bg-purple-200 transition-colors font-bold text-xl"
                 >
                   -
                 </button>
-                <span className="text-4xl font-bold text-orange-600 w-16 text-center">
+                <span className="text-4xl font-bold text-purple-600 w-16 text-center">
                   {days}
                 </span>
                 <button
                   onClick={() => setDays(days + 1)}
-                  className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full hover:bg-orange-200 transition-colors font-bold text-xl"
+                  className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full hover:bg-purple-200 transition-colors font-bold text-xl"
                 >
                   +
                 </button>

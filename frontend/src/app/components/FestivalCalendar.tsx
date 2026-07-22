@@ -67,8 +67,9 @@ function buildGoogleCalendarUrl(festival: Festival): string {
 }
 
 function significanceColor(sig?: string) {
-  if (sig === 'highest') return 'bg-rose-100 text-rose-800 border-rose-200';
-  if (sig === 'high') return 'bg-amber-100 text-amber-800 border-amber-200';
+  // Top-tier festivals get the brand purple accent; the rest are neutral slate
+  // chips — no arbitrary rose/amber pills (design-system rule).
+  if (sig === 'highest') return 'bg-purple-100 text-purple-700 border-purple-200';
   return 'bg-slate-100 text-slate-700 border-slate-200';
 }
 
@@ -82,15 +83,10 @@ function categoryIcon(cat?: string) {
   }
 }
 
-function categoryColor(cat?: string) {
-  switch (cat) {
-    case 'religious': return 'bg-rose-50 text-rose-700 border-rose-200';
-    case 'cultural': return 'bg-purple-50 text-purple-700 border-purple-200';
-    case 'harvest': return 'bg-amber-50 text-amber-700 border-amber-200';
-    case 'fair': return 'bg-pink-50 text-pink-700 border-pink-200';
-    case 'music': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-    default: return 'bg-slate-50 text-slate-700 border-slate-200';
-  }
+function categoryColor(_cat?: string) {
+  // Neutral chip — the category is conveyed by categoryIcon(), not by colour
+  // (avoids the arbitrary rose/amber/pink/indigo pills on festival cards).
+  return 'bg-slate-50 text-slate-700 border-slate-200';
 }
 
 function cardAccent(monthIdx: number): string {
