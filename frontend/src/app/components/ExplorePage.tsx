@@ -448,12 +448,17 @@ export function ExplorePage() {
               <MapPin className="w-4 h-4 text-purple-600" />
               {filtered.length} district{filtered.length !== 1 ? 's' : ''}{region !== 'All' ? ` in ${region}` : ''}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Contact-sheet layout: first district is the featured lead (2×2),
+                the rest flow with editorial 01–NN index numerals. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filtered.map((d, i) => (
                 <DistrictCard
                   key={d.slug}
                   district={d}
                   index={i}
+                  featured={i === 0}
+                  showIndex
+                  className={i === 0 ? 'sm:col-span-2 lg:row-span-2' : ''}
                   saved={isInWishlist(wishlistSlug(d))}
                   onToggleSave={() => onToggleSave(d)}
                   distanceKm={userLoc ? d._distance : undefined}

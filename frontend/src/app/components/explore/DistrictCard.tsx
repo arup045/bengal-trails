@@ -12,12 +12,15 @@ interface Props {
   saved: boolean;
   onToggleSave: () => void;
   distanceKm?: number;   // set when "Near me" is active
-  index?: number;        // staggered reveal delay
+  index?: number;        // staggered reveal delay + contact-sheet numeral
   onHover?: (slug: string | null) => void; // map↔list hover sync
   highlighted?: boolean; // matching map pin is hovered
+  featured?: boolean;    // contact-sheet lead cell — taller image, larger title
+  showIndex?: boolean;   // render the editorial 01–NN index numeral + hairline
+  className?: string;    // grid-span etc. applied to the card root
 }
 
-export function DistrictCard({ district, saved, onToggleSave, distanceKm, index = 0, onHover, highlighted }: Props) {
+export function DistrictCard({ district, saved, onToggleSave, distanceKm, index = 0, onHover, highlighted, featured = false, showIndex = false, className = '' }: Props) {
   const go = (e?: React.MouseEvent) => {
     if (e) morphImageFromEvent(e, district.image);
     window.location.hash = `#/explore/district/${district.slug}`;
@@ -54,10 +57,10 @@ export function DistrictCard({ district, saved, onToggleSave, distanceKm, index 
       onMouseEnter={() => { prefetch(); onHover?.(district.slug); }}
       onMouseLeave={() => onHover?.(null)}
       onFocus={prefetch}
-      className={`group relative bg-white rounded-3xl overflow-hidden border shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col ${highlighted ? 'border-purple-400 ring-2 ring-purple-300 shadow-2xl -translate-y-1' : 'border-gray-100'}`}
+      className={`group relative bg-white rounded-3xl overflow-hidden border shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col ${highlighted ? 'border-purple-400 ring-2 ring-purple-300 shadow-2xl -translate-y-1' : 'border-gray-100'} ${className}`}
     >
       {/* Image */}
-      <div className="relative h-52 overflow-hidden">
+      <div className={`relative overflow-hidden ${featured ? 'h-72 sm:h-96' : 'h-52'}`}>
         <ImageWithFallback
           src={district.image}
           alt={district.name}
@@ -98,7 +101,7 @@ export function DistrictCard({ district, saved, onToggleSave, distanceKm, index 
 
         {/* Title overlaid */}
         <div className="absolute bottom-3 left-4 right-4">
-          <h3 className="text-white text-2xl font-poppins font-bold leading-tight drop-shadow">{district.name}</h3>
+          <h3 className={`text-white font-poppins font-bold leading-tight drop-shadow ${featured ? 'text-3xl sm:text-5xl' : 'text-2xl'}`}>{district.name}</h3>
           <p className="text-white/85 text-xs font-poppins flex items-center gap-1 mt-0.5">
             <MapPin className="w-3 h-3" />
             {district.placeCount > 0 ? `${district.placeCount} place${district.placeCount > 1 ? 's' : ''} to explore` : 'Explore the district'}
@@ -108,6 +111,13 @@ export function DistrictCard({ district, saved, onToggleSave, distanceKm, index 
 
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
+        {showIndex && (
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <span className="font-mono text-[11px] font-medium text-purple-400 tabular-nums">{String(index + 1).padStart(2, '0')}</span>
+            <span className="h-px flex-1 bg-gray-100" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-gray-300">{district.region}</span>
+          </div>
+        )}
         <p className="text-gray-600 text-sm font-poppins line-clamp-2 mb-4 min-h-[2.5rem]">{district.blurb}</p>
         <button
           onClick={(e) => { e.stopPropagation(); go(); }}

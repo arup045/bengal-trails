@@ -1,6 +1,7 @@
 import { API_BASE } from '../utils/api';
-import { useState, useEffect, lazy, Suspense, type ReactNode } from 'react';
-import { motion } from 'motion/react';
+import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'react';
+import { motion, useScroll, useTransform } from 'motion/react';
+import { HeroAtmosphere } from './HeroAtmosphere';
 import { MapPin, Star, Calendar, ChevronRight, Navigation, Share2, Facebook, Twitter, MessageCircle, Copy, Camera, Heart, Clock, Tag, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { placesData } from '../data/places-full';
@@ -65,6 +66,11 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [apiPlace, setApiPlace] = useState<any | null>(null);
   const [activeNavId, setActiveNavId] = useState<string>('about');
+
+  // Subtle depth: the hero photo drifts slower than the page as you scroll away.
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '16%']);
 
   const fetchPlace = (isAlive: () => boolean = () => true) => {
     if (!slug) return;
@@ -263,9 +269,15 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── Immersive hero ───────────────────────────────────────────────────── */}
-      <div className="relative h-[72vh] min-h-[440px] overflow-hidden">
-        <ImageWithFallback src={place.heroImage.url} alt={place.heroImage.alt} className="w-full h-full object-cover" loading="eager" decoding="async" srcSet={buildSrcSet(place.heroImage.url)} sizes="100vw" />
+      <div ref={heroRef} className="relative h-[72vh] min-h-[440px] overflow-hidden">
+        {/* Parallax depth: photo drifts slower than the page (scaled up so the
+            drift never reveals an edge). */}
+        <motion.div style={{ y: heroY }} className="absolute inset-0 will-change-transform">
+          <ImageWithFallback src={place.heroImage.url} alt={place.heroImage.alt} className="w-full h-full object-cover scale-110" loading="eager" decoding="async" srcSet={buildSrcSet(place.heroImage.url)} sizes="100vw" />
+        </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+        {/* Live-weather ambient layer (rain / mist / snow / clear glow) */}
+        <HeroAtmosphere lat={place.coordinates?.lat} lng={place.coordinates?.lng} />
         <div className="absolute inset-0 flex items-end">
           <div className="max-w-7xl mx-auto w-full px-5 sm:px-8 pb-12">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
