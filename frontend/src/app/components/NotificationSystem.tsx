@@ -2,6 +2,7 @@ import { API_BASE, getToken} from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, Heart, MessageCircle, UserPlus, Award, Calendar, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { clickable } from '../utils/a11y';
 import { useAuth } from '../contexts/AuthContext';
 
 interface Notification {
@@ -107,6 +108,7 @@ export const NotificationSystem: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
+        aria-label="Notifications"
         className="relative p-2 hover:bg-purple-50 rounded-lg transition-colors"
       >
         <Bell className="w-6 h-6 text-gray-700" />
@@ -138,6 +140,7 @@ export const NotificationSystem: React.FC = () => {
                 )}
                 <button
                   onClick={() => setShowDropdown(false)}
+                  aria-label="Close notifications"
                   className="p-1 hover:bg-purple-100 rounded"
                 >
                   <X className="w-5 h-5" />
@@ -157,16 +160,16 @@ export const NotificationSystem: React.FC = () => {
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-4 hover:bg-purple-50 transition-colors cursor-pointer ${
-                        !notification.read ? 'bg-purple-50/50' : ''
-                      }`}
-                      onClick={() => {
+                      {...clickable(() => {
                         markAsRead(notification.id);
                         if (notification.actionUrl) {
                           window.location.hash = notification.actionUrl;
                           setShowDropdown(false);
                         }
-                      }}
+                      }, notification.title || 'Open notification')}
+                      className={`p-4 hover:bg-purple-50 transition-colors cursor-pointer ${
+                        !notification.read ? 'bg-purple-50/50' : ''
+                      }`}
                     >
                       <div className="flex gap-3">
                         <div className="flex-shrink-0">

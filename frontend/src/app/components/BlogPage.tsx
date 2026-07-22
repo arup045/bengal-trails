@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, Tag, Search, ArrowRight, BookOpen, TrendingUp } from 'lucide-react';
 import { API_BASE } from '../utils/api';
 import { sanitizeRichText } from '../utils/sanitize';
+import { clickable } from '../utils/a11y';
 
 interface Article {
   id: string;
@@ -82,7 +83,7 @@ const FALLBACK_ARTICLES: Article[] = [
 
 function ArticleCard({ article, onClick }: { article: Article; onClick: () => void }) {
   return (
-    <div onClick={onClick} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer group">
+    <div {...clickable(onClick, `Read article: ${article.title}`)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer group">
       <div className="relative h-48 overflow-hidden bg-gray-100">
         <img src={article.image_url} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800'; }} />
         <span className="absolute top-3 left-3 bg-purple-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">{article.category}</span>
@@ -211,7 +212,7 @@ export function BlogPage() {
 
         {/* Featured Article */}
         {filtered.length > 0 && activeCategory === 'All' && !search && (
-          <div onClick={() => setSelectedArticle(filtered[0])}
+          <div {...clickable(() => setSelectedArticle(filtered[0]), `Read featured article: ${filtered[0].title}`)}
             className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer mb-8 group">
             <div className="grid md:grid-cols-2">
               <div className="h-64 md:h-auto overflow-hidden bg-gray-100">

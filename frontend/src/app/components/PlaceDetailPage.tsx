@@ -15,6 +15,7 @@ import { NearbyPlacesCarousel } from './NearbyPlacesCarousel';
 import { ErrorBoundary } from './ErrorBoundary';
 import { useLanguage } from '../contexts/LanguageContext';
 import { localizePlace } from '../utils/localize';
+import { clickable } from '../utils/a11y';
 import { PlaceFestivals } from './PlaceFestivals';
 import { NearbyPlacesSection } from './NearbyPlacesSection';
 import { ShareButton } from './ShareButton';
@@ -475,7 +476,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
               <PhotoGalleryLightbox images={galleryImages} open={lightboxOpen} index={lightboxIndex} onClose={() => setLightboxOpen(false)} />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {galleryImages.map((img, idx) => (
-                  <div key={idx} className="relative group cursor-pointer overflow-hidden rounded-2xl" onClick={() => { setLightboxOpen(true); setLightboxIndex(idx); }}>
+                  <div key={idx} {...clickable(() => { setLightboxOpen(true); setLightboxIndex(idx); }, `Open photo ${idx + 1} in gallery`)} className="relative group cursor-pointer overflow-hidden rounded-2xl">
                     <ImageWithFallback src={img.src} alt={img.alt} className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-500" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                       <Camera className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />

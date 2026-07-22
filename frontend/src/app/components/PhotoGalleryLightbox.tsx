@@ -139,12 +139,16 @@ export function PhotoGalleryLightbox({ images, open, index, onClose }: PhotoGall
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm"
         onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Photo gallery"
       >
         {/* Close Button */}
         <motion.button
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={onClose}
+          aria-label="Close gallery"
           className="absolute top-4 right-4 z-50 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all"
         >
           <X className="w-6 h-6" />
@@ -170,6 +174,7 @@ export function PhotoGalleryLightbox({ images, open, index, onClose }: PhotoGall
                 zoomOut();
               }}
               disabled={zoomLevel <= 1}
+              aria-label="Zoom out"
               className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ZoomOut className="w-5 h-5" />
@@ -183,6 +188,7 @@ export function PhotoGalleryLightbox({ images, open, index, onClose }: PhotoGall
                 zoomIn();
               }}
               disabled={zoomLevel >= 3}
+              aria-label="Zoom in"
               className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ZoomIn className="w-5 h-5" />
@@ -250,6 +256,7 @@ export function PhotoGalleryLightbox({ images, open, index, onClose }: PhotoGall
               e.stopPropagation();
               goToPrevious();
             }}
+            aria-label="Previous photo"
             className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all"
           >
             <ChevronLeft className="w-8 h-8" />
@@ -264,6 +271,7 @@ export function PhotoGalleryLightbox({ images, open, index, onClose }: PhotoGall
               e.stopPropagation();
               goToNext();
             }}
+            aria-label="Next photo"
             className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all"
           >
             <ChevronRight className="w-8 h-8" />

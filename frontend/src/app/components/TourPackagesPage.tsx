@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, Users, MapPin, Star, ChevronRight, CheckCircle, X, Calendar, DollarSign } from 'lucide-react';
+import { clickable } from '../utils/a11y';
 
 interface Tour {
   id: string;
@@ -179,12 +180,17 @@ const TOURS: Tour[] = [
 const CATEGORIES = ['All', 'Hill Station', 'Wildlife', 'Cultural', 'Beach', 'Nature', 'Complete Tour'];
 
 function TourModal({ tour, onClose }: { tour: Tour; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div role="dialog" aria-modal="true" aria-label={`${tour.title} — tour details`} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="relative h-56 overflow-hidden rounded-t-3xl">
           <img src={tour.image} alt={tour.title} className="w-full h-full object-cover" />
-          <button onClick={onClose} className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors">
+          <button onClick={onClose} aria-label="Close tour details" className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors">
             <X className="w-5 h-5 text-gray-700" />
           </button>
           {tour.badge && <span className="absolute top-4 left-4 bg-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-full">{tour.badge}</span>}
@@ -327,7 +333,7 @@ export function TourPackagesPage() {
         {/* Tour Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map(tour => (
-            <div key={tour.id} onClick={() => setSelectedTour(tour)}
+            <div key={tour.id} {...clickable(() => setSelectedTour(tour), `View tour: ${tour.title}`)}
               className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer group">
               <div className="relative h-48 overflow-hidden bg-gray-100">
                 <img src={tour.image} alt={tour.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
