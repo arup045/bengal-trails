@@ -357,7 +357,10 @@ router.get('/search/suggestions', async (req, res) => {
     let foodItems = [];
     try {
       const foodModule = require('../data/bengaliFood');
-      const foods = foodModule.foods || foodModule || [];
+      // bengaliFood exports { categories, dishes, foodStreets } — the dishes
+      // array is what we search (the old `foods` key never existed, so `.filter`
+      // was throwing on the module object and silently returning no food results).
+      const foods = Array.isArray(foodModule.dishes) ? foodModule.dishes : [];
       foodItems = foods
         .filter((f) => {
           const hay = `${f.name || ''} ${f.bengaliName || ''} ${f.description || ''} ${(f.category || '')}`.toLowerCase();

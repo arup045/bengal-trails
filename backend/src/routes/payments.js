@@ -84,8 +84,12 @@ async function logEvent(bookingId, userId, eventType, payload) {
 router.post('/create-order', authenticate, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { bookingId, currency = 'INR' } = req.body || {};
+    const { bookingId } = req.body || {};
     if (!bookingId) return res.status(400).json({ error: 'bookingId required' });
+    // Currency is ALWAYS INR — booking amounts are stored in rupees. Never take
+    // this from the client, or a mismatched currency would let a booking be paid
+    // in a weaker unit for a fraction of the real price.
+    const currency = 'INR';
 
     // Load booking & verify ownership + that it hasn't already been paid.
     // COALESCE(total_amount, total) handles legacy rows created before the

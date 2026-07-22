@@ -480,7 +480,10 @@ export default function App() {
       const path = window.location.pathname;
       const r = resolveRoute(path);
       setCurrentPage(r.id);
-      if ((r.id === 'place' || r.id === 'district' || r.id === 'spot') && r.slug) setCurrentSlug(r.slug);
+      // Set the slug for ANY slug-carrying route (place/district/spot/user/
+      // experience/itinerary-detail) — otherwise those pages render the stale
+      // previous slug on client-side navigation.
+      if (r.slug) setCurrentSlug(r.slug);
       // oauth-success handles its own scroll behavior; all other pages reset.
       if (r.id !== 'oauth-success') {
         window.scrollTo({ top: 0, behavior: 'smooth' });

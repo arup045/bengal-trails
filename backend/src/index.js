@@ -341,7 +341,11 @@ const server = app.listen(PORT, () => {
     try {
       const del1 = await pool.query(
         `DELETE FROM reviews WHERE user_id IN (
-           SELECT id FROM users WHERE email = ANY($1::text[]) OR avatar_url LIKE '%pravatar.cc%'
+           SELECT id FROM users
+           WHERE email = ANY($1::text[])
+              -- pravatar match is scoped to seed-domain, non-admin accounts so a
+              -- REAL user who happens to pick a pravatar.cc avatar never loses reviews
+              OR (avatar_url LIKE '%pravatar.cc%' AND email LIKE '%@bengaltrails.com' AND role <> 'admin')
          )`, [seedEmails]);
       const del2 = await pool.query(
         `DELETE FROM users WHERE email = ANY($1::text[])`, [seedEmails]);

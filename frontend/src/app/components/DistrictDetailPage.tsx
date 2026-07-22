@@ -114,23 +114,10 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [places, content, items, slug]);
 
-  if (!district) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Compass className="w-14 h-14 text-purple-300 mx-auto mb-4" />
-          <h1 className="font-poppins text-2xl font-semibold text-slate-900 mb-2">District not found</h1>
-          <a href="/explore" className="inline-flex items-center gap-2 mt-2 text-purple-600 font-poppins font-medium">
-            <ArrowLeft className="w-4 h-4" /> Back to all districts
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   // ── Sticky sub-nav: cleaner taxonomy + scroll-spy active state ──────────────
+  // NOTE: these hooks are declared BEFORE the `if (!district)` early return so the
+  // hook count stays stable when the same mounted instance re-renders from an
+  // invalid slug to a valid one (otherwise React throws "rendered more hooks").
   const NAV_LABEL: Record<string, string> = {
     'sec-places':     'Places',
     'sec-plan':       'Plan visit',
@@ -172,6 +159,23 @@ export function DistrictDetailPage({ slug }: { slug: string }) {
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, [navItems]);
+
+  // Early return AFTER all hooks (Rules of Hooks) — hook count stays stable.
+  if (!district) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Compass className="w-14 h-14 text-purple-300 mx-auto mb-4" />
+          <h1 className="font-poppins text-2xl font-semibold text-slate-900 mb-2">District not found</h1>
+          <a href="/explore" className="inline-flex items-center gap-2 mt-2 text-purple-600 font-poppins font-medium">
+            <ArrowLeft className="w-4 h-4" /> Back to all districts
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const aiChips = [`Best 2-day plan for ${district.name}`, `Where to eat in ${district.name}`, `How to reach ${district.name}`];
 
