@@ -65,7 +65,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
   const [apiPlace, setApiPlace] = useState<any | null>(null);
   const [activeNavId, setActiveNavId] = useState<string>('about');
 
-  const fetchPlace = () => {
+  const fetchPlace = (isAlive: () => boolean = () => true) => {
     if (!slug) return;
     // The backend `destinations` table is SPARSE (no district, no gallery, no
     // nearby hotels/restaurants). The static dataset is RICH. So we use the
@@ -76,6 +76,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     fetch(`${API_BASE}/destinations/${slug}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
+        if (!isAlive()) return; // slug changed mid-flight — don't overwrite the newer place
         const dest = d?.destination;
         if (dest) {
           const apiGallery = (dest.galleryImages || dest.gallery_images);
@@ -116,10 +117,17 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
         }
       })
       .catch(() => {})
-      .finally(() => setIsLoading(false));
+      .finally(() => { if (isAlive()) setIsLoading(false); });
   };
 
-  useEffect(() => { setIsLoading(true); fetchPlace(); /* eslint-disable-next-line */ }, [slug]);
+  useEffect(() => {
+    let alive = true;
+    setIsLoading(true);
+    setApiPlace(null); // drop the previous place so it can't render under the new URL
+    fetchPlace(() => alive);
+    return () => { alive = false; };
+    // eslint-disable-next-line
+  }, [slug]);
 
   // Refresh rating/review count when a review changes for this place
   useEffect(() => {
@@ -208,9 +216,9 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank', 'noopener,noreferrer');
   };
   const url = typeof window !== 'undefined' ? window.location.href : '';
-  const shareOnFacebook = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-  const shareOnTwitter = () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out ${place.title} on Bengal Trails`)}`, '_blank');
-  const shareOnWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out ${place.title} on Bengal Trails: ${url}`)}`, '_blank');
+  const shareOnFacebook = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
+  const shareOnTwitter = () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out ${place.title} on Bengal Trails`)}`, '_blank', 'noopener,noreferrer');
+  const shareOnWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out ${place.title} on Bengal Trails: ${url}`)}`, '_blank', 'noopener,noreferrer');
   const copyLink = () => { navigator.clipboard.writeText(url); toast.success('Link copied!'); setShowShareMenu(false); };
 
   const nearbyPlaces = placesData.filter(p => p.slug !== slug && p.region === place.region).slice(0, 4);

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Star, Calendar, MapPin, DollarSign, Users, Check, ArrowRight } from 'lucide-react';
 import { placesData } from '../data/places-full';
+import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface SelectedPlace {
   slug: string;
@@ -96,8 +97,8 @@ export function ComparisonTool() {
                   >
                     <X className="w-5 h-5" />
                   </button>
-                  <img
-                    src={selectedPlaces[index].data.heroImage.url}
+                  <ImageWithFallback
+                    src={selectedPlaces[index].data.heroImage?.url}
                     alt={selectedPlaces[index].data.title}
                     className="w-full h-48 object-cover rounded-2xl mb-4"
                   />
@@ -282,8 +283,8 @@ export function ComparisonTool() {
                       onClick={() => addPlace(place.slug)}
                       className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl hover:bg-purple-50 hover:border-purple-200 border-2 border-transparent transition-all text-left group"
                     >
-                      <img
-                        src={place.heroImage.url}
+                      <ImageWithFallback
+                        src={place.heroImage?.url}
                         alt={place.title}
                         className="w-20 h-20 object-cover rounded-xl"
                       />

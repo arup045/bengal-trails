@@ -226,7 +226,7 @@ router.get('/notifications', authenticate, async (req, res) => {
   try {
     const { rows } = await pool.query(
       'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
-      [req.user.id, Math.min(parseInt(req.query.limit) || 50, 100), parseInt(req.query.offset) || 0]
+      [req.user.id, Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 100), Math.max(parseInt(req.query.offset) || 0, 0)]
     );
     return res.json({ notifications: rows });
   } catch (err) {
@@ -270,7 +270,9 @@ router.post('/notifications/read-all', authenticate, limiters.write, async (req,
 // name > region/category > description), and ILIKE for festivals & food data.
 router.get('/search/suggestions', async (req, res) => {
   try {
-    const q = (req.query.q || '').toLowerCase().trim();
+    // Coerce to a string — a duplicated ?q=a&q=b arrives as an array and would
+    // throw on .toLowerCase() (500). Take the first value.
+    const q = String(Array.isArray(req.query.q) ? req.query.q[0] : (req.query.q || '')).toLowerCase().trim();
     const limit = Math.min(parseInt(req.query.limit, 10) || 8, 15);
     if (!q || q.length < 2) return res.json({ suggestions: [] });
 

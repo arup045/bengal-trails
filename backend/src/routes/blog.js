@@ -17,8 +17,13 @@ router.get('/', cacheMiddleware(600), async (req, res) => {
     const { rows } = await pool.query(q, params);
     return res.json({ posts: rows });
   } catch (err) {
-    // Table might not exist yet — return empty
-    return res.json({ posts: [] });
+    // If the table genuinely doesn't exist yet, an empty list is the correct
+    // (and cacheable) answer. ANY other error is transient — return 503 so the
+    // cache middleware (which only stores 200s) doesn't blank the blog for all
+    // visitors for the full TTL on one hiccup.
+    if (err.code === '42P01') return res.json({ posts: [] });
+    console.error('blog list error:', err.message);
+    return res.status(503).json({ error: 'Blog temporarily unavailable' });
   }
 });
 

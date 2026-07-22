@@ -13,7 +13,7 @@ router.get('/', cacheMiddleware(60), async (req, res) => {
     // Clamp search length to prevent extremely long LIKE patterns
     const search   = typeof req.query.search === 'string' ? req.query.search.slice(0, 100) : undefined;
     const pageNum  = Math.max(1,   parseInt(req.query.page)  || 1);
-    const limitNum = Math.min(100, parseInt(req.query.limit) || 24);
+    const limitNum = Math.min(100, Math.max(1, parseInt(req.query.limit) || 24));
     const offset   = (pageNum - 1) * limitNum;
 
     const clauses = ["status = 'published'"];

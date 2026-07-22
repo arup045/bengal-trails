@@ -34,8 +34,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
     const { slug } = req.params;
     const sort = req.query.sort || 'recent';
     const rating = req.query.rating ? parseInt(req.query.rating) : null;
-    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const offset = parseInt(req.query.offset) || 0;
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+    const offset = Math.max(parseInt(req.query.offset) || 0, 0);
 
     let query = `
       SELECT r.*, u.name AS user_name, u.avatar_url AS user_avatar,

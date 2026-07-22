@@ -60,7 +60,8 @@ export function WishlistPage() {
     if (destination) {
       window.open(
         `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination.title + ', West Bengal')}`,
-        '_blank'
+        '_blank',
+        'noopener,noreferrer'
       );
     }
   };
