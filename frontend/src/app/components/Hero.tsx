@@ -102,8 +102,9 @@ export function Hero() {
             </div>
           </div>
           {/* Search bar */}
+          {/* No `key={tab}` — switching tabs must NOT remount and wipe what the
+              user has already typed; only the placeholder hint changes. */}
           <SmartSearchBar
-            key={tab}
             size="lg"
             showButton={true}
             placeholder={`Search ${tabHints[tab]}`}

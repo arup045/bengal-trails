@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { SmartSearchBar } from './SmartSearchBar';
 import { NotificationSystem } from './NotificationSystem';
+import { navigate } from '../utils/navigation';
 import {
   Sheet,
   SheetContent,
@@ -78,10 +79,10 @@ export function Header() {
                   placeholder="Destinations, festivals, food..."
                   onSelect={(result) => {
                     if (result.type === 'query') {
-                      window.location.hash = `/explore?q=${encodeURIComponent((result as any).query)}`;
+                      navigate(`/explore?q=${encodeURIComponent((result as any).query)}`);
                     } else {
                       const url = (result as any).url as string;
-                      if (url) window.location.hash = url.startsWith('#') ? url.slice(1) : url;
+                      if (url) navigate(url.startsWith('#') ? url.slice(1) : url);
                     }
                   }}
                 />
@@ -189,11 +190,12 @@ export function Header() {
                   size="sm"
                   placeholder="Destinations, festivals, food..."
                   onSelect={(result) => {
+                    setMenuOpen(false); // close the sheet, like every other nav item
                     if (result.type === 'query') {
-                      window.location.hash = `/explore?q=${encodeURIComponent((result as any).query)}`;
+                      navigate(`/explore?q=${encodeURIComponent((result as any).query)}`);
                     } else {
                       const url = (result as any).url as string;
-                      if (url) window.location.hash = url.startsWith('#') ? url.slice(1) : url;
+                      if (url) navigate(url.startsWith('#') ? url.slice(1) : url);
                     }
                   }}
                 /></div>
