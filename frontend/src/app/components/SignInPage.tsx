@@ -115,10 +115,18 @@ export function SignInPage() {
   // Surface OAuth errors when redirected back from a failed/cancelled flow
   // (e.g. /#/signin?error=oauth_cancelled)
   useEffect(() => {
+    // The backend redirects failures to `/#/signin?error=CODE`, but App.tsx's
+    // hash→path bridge rewrites that to `/signin?error=CODE` (it is NOT an auth
+    // fragment), so by the time we mount the params may live in the QUERY
+    // STRING instead of the hash. Read whichever survived — otherwise a failed
+    // OAuth attempt bounces the user back here with no explanation at all.
     const hash = window.location.hash || '';
     const queryStart = hash.indexOf('?');
-    if (queryStart === -1) return;
-    const params = new URLSearchParams(hash.slice(queryStart + 1));
+    const raw = queryStart !== -1
+      ? hash.slice(queryStart + 1)
+      : (window.location.search || '').replace(/^\?/, '');
+    if (!raw) return;
+    const params = new URLSearchParams(raw);
     const errorCode = params.get('error');
     if (!errorCode) return;
     const messages: Record<string, string> = {
@@ -129,6 +137,11 @@ export function SignInPage() {
       token_exchange_failed: 'Sign-in failed. Please try again.',
       oauth_callback_failed: 'Sign-in completed but we couldn\'t verify your session. Try again.',
       oauth_failed: 'Something went wrong with social sign-in. Please try again.',
+      // Emitted by the backend but previously unmapped — users saw a raw code.
+      account_exists_local: 'You already have an account with this email. Sign in with your email and password instead (then you can link social sign-in).',
+      oauth_state_mismatch: 'Your sign-in session expired or was opened in another tab. Please try again.',
+      no_code: 'Sign-in was interrupted before it completed. Please try again.',
+      access_denied: 'Sign-in cancelled. You can try again any time.',
     };
     const message = messages[errorCode] || `Sign-in error: ${errorCode}`;
     setApiError(message);

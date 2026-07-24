@@ -3,6 +3,7 @@ import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 
 import { useAuth } from '../contexts/AuthContext';
+import { navigate } from '../utils/navigation';
 
 /**
  * Handles the redirect back from the backend OAuth flow.
@@ -23,20 +24,27 @@ export function OAuthSuccessPage() {
   useEffect(() => {
     const handleOAuth = async () => {
       try {
-        // Parse ?token=...&refresh_token=... from the URL fragment
-        // (e.g. /#/oauth-success?token=xxx&refresh_token=yyy)
+        // The backend redirects to `/#/oauth-success?token=…&refresh_token=…`,
+        // BUT App.tsx's legacy hash→path bridge rewrites `#/x` to `/x` with
+        // replaceState before this component mounts — which moves the params
+        // from the fragment into the query string (and can drop the fragment
+        // entirely). So read from WHICHEVER survived: fragment first, then query.
         const hash = window.location.hash;
         const queryStart = hash.indexOf('?');
-        if (queryStart === -1) throw new Error('No token in URL');
+        const raw = queryStart !== -1
+          ? hash.slice(queryStart + 1)
+          : window.location.search.replace(/^\?/, '');
+        if (!raw) throw new Error('No token in URL');
 
-        const params = new URLSearchParams(hash.slice(queryStart + 1));
+        const params = new URLSearchParams(raw);
         const token = params.get('token') || params.get('access_token');
         const refreshToken = params.get('refresh_token') || undefined;
         if (!token) throw new Error('No token in URL');
 
         // SECURITY: strip the tokens from the URL bar BEFORE any async work so they
         // can't be captured by browser history, session-replay tools, or screenshot.
-        try { history.replaceState(null, '', '#/oauth-success'); } catch { /* non-fatal */ }
+        // Clear BOTH the query string and the fragment, wherever they landed.
+        try { history.replaceState(null, '', '/oauth-success'); } catch { /* non-fatal */ }
 
         // setSessionFromToken stores the access token in memory, persists the refresh
         // token (so the session survives reloads), fetches the user, and returns it.
@@ -48,13 +56,13 @@ export function OAuthSuccessPage() {
         // Use the returned user (not React state) to avoid a stale-closure race.
         setTimeout(() => {
           const isAdmin = resolvedUser?.role === 'admin';
-          window.location.hash = isAdmin ? '#/admin' : '#/';
+          navigate(isAdmin ? '/admin' : '/');
         }, 800);
       } catch (err: any) {
         setStatus('error');
         setErrorMessage(err?.message || 'Sign-in failed');
         setTimeout(() => {
-          window.location.hash = '#/signin?error=oauth_callback_failed';
+          navigate('/signin?error=oauth_callback_failed');
         }, 2000);
       }
     };
