@@ -19,7 +19,7 @@ require('dotenv').config();
 })();
 
 const express = require('express');
-const { initSentry, sentryErrorHandler } = require('./utils/sentry');
+const { initSentry, sentryErrorHandler, captureException, captureMessage } = require('./utils/sentry');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { camelCaseResponseMiddleware } = require('./utils/keyTransform');
@@ -144,6 +144,23 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use(limiter);
+
+// ── Server-error telemetry ──────────────────────────────────────────────────
+// Routes in this codebase handle their own errors (res.status(500) without
+// next(err)), so the Sentry error-handler middleware never sees them. This
+// listener fires on every response and reports any 5xx to Sentry with route +
+// user context, so real failures surface instead of only living in logs.
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    if (res.statusCode >= 500) {
+      captureMessage(`HTTP ${res.statusCode} ${req.method} ${req.path}`, {
+        tags: { route: req.path, method: req.method, status: String(res.statusCode) },
+        user: req.user ? { id: req.user.id } : undefined,
+      });
+    }
+  });
+  next();
+});
 
 // Stricter limiter for auth endpoints (sign-in, password reset, etc.)
 const authLimiter = rateLimit({
@@ -396,9 +413,11 @@ process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
 //     cleanly and let the platform restart us instead of running corrupted.
 process.on('unhandledRejection', (reason) => {
   console.error('[unhandledRejection]', reason instanceof Error ? reason.stack : reason);
+  captureException(reason instanceof Error ? reason : new Error(String(reason)), { tags: { kind: 'unhandledRejection' } });
 });
 process.on('uncaughtException', (err) => {
   console.error('[uncaughtException]', err && err.stack ? err.stack : err);
+  captureException(err, { tags: { kind: 'uncaughtException' } });
   gracefulShutdown('uncaughtException');
 });
 

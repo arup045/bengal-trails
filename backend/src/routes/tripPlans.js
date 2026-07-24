@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db/pool');
 const { authenticate } = require('../middleware/auth');
+const { validate, schemas } = require('../middleware/validate');
 
 router.use(authenticate);
 
@@ -18,7 +19,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /trip-plans
-router.post('/', async (req, res) => {
+router.post('/', validate(schemas.tripPlan), async (req, res) => {
   try {
     const { name, description, startDate, endDate, destinations, totalBudget, status } = req.body;
     if (!name) return res.status(400).json({ error: 'name required' });
@@ -36,8 +37,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /trip-plans/:id
-router.put('/:id', async (req, res) => {
+// PUT /trip-plans/:id — partial update, so all fields optional
+router.put('/:id', validate(schemas.tripPlan.partial()), async (req, res) => {
   try {
     const allowed = ['name', 'description', 'start_date', 'end_date', 'destinations', 'total_budget', 'status'];
     const updates = [];

@@ -2,6 +2,7 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 const { limiters } = require('../middleware/rateLimit');
 const { authenticate, optionalAuth } = require('../middleware/auth');
+const { validate, schemas } = require('../middleware/validate');
 
 // ── GET /forum/threads ────────────────────────────────────────────────────────
 router.get('/threads', optionalAuth, async (req, res) => {
@@ -35,7 +36,7 @@ router.get('/threads', optionalAuth, async (req, res) => {
 });
 
 // ── POST /forum/threads ───────────────────────────────────────────────────────
-router.post('/threads', authenticate, limiters.write, async (req, res) => {
+router.post('/threads', authenticate, limiters.write, validate(schemas.forumThread), async (req, res) => {
   try {
     const { title, content, category, tags } = req.body;
     if (!title || !content) return res.status(400).json({ error: 'title and content required' });
@@ -73,7 +74,7 @@ router.get('/threads/:id/replies', async (req, res) => {
 });
 
 // ── POST /forum/threads/:id/replies ──────────────────────────────────────────
-router.post('/threads/:id/replies', authenticate, limiters.write, async (req, res) => {
+router.post('/threads/:id/replies', authenticate, limiters.write, validate(schemas.forumReply), async (req, res) => {
   try {
     const { content } = req.body;
     if (!content) return res.status(400).json({ error: 'content required' });

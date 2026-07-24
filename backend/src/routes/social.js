@@ -2,6 +2,7 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 const { limiters } = require('../middleware/rateLimit');
 const { authenticate, optionalAuth } = require('../middleware/auth');
+const { validate, schemas } = require('../middleware/validate');
 
 // ── GET /social/feed/discover ──────────────────────────────────────────────────
 router.get('/feed/discover', optionalAuth, async (req, res) => {
@@ -69,7 +70,7 @@ router.get('/suggested-users', optionalAuth, async (req, res) => {
 });
 
 // ── POST /social/posts ────────────────────────────────────────────────────────
-router.post('/posts', authenticate, limiters.write, async (req, res) => {
+router.post('/posts', authenticate, limiters.write, validate(schemas.socialPost), async (req, res) => {
   try {
     const { content, destinationSlug, visitDate, images } = req.body;
     if (!content) return res.status(400).json({ error: 'content required' });
@@ -129,7 +130,7 @@ router.get('/posts/:id/comments', async (req, res) => {
 });
 
 // ── POST /social/posts/:id/comments ──────────────────────────────────────────
-router.post('/posts/:id/comments', authenticate, limiters.write, async (req, res) => {
+router.post('/posts/:id/comments', authenticate, limiters.write, validate(schemas.comment), async (req, res) => {
   try {
     const { content } = req.body;
     if (!content) return res.status(400).json({ error: 'content required' });

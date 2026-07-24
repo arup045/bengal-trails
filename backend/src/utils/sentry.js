@@ -42,4 +42,18 @@ function sentryErrorHandler() {
   };
 }
 
-module.exports = { initSentry, sentryErrorHandler };
+// Direct capture helpers — safe no-ops when Sentry isn't configured. Use these
+// where the app handles errors itself (routes that res.status(500) without
+// calling next(err), process-level crash handlers) so those errors still reach
+// Sentry instead of vanishing.
+function captureException(err, ctx = {}) {
+  if (!Sentry) return;
+  try { Sentry.captureException(err, ctx); } catch { /* never throw from telemetry */ }
+}
+
+function captureMessage(message, ctx = {}) {
+  if (!Sentry) return;
+  try { Sentry.captureMessage(message, { level: 'error', ...ctx }); } catch { /* noop */ }
+}
+
+module.exports = { initSentry, sentryErrorHandler, captureException, captureMessage };
