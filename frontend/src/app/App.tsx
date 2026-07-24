@@ -12,6 +12,7 @@ import { AnnouncementBar } from './components/AnnouncementBar';
 import { MobileNav } from './components/MobileNav';
 import { DestinationGridSkeleton } from './components/Skeletons';
 import { Footer } from './components/Footer';
+import { SupportButton } from './components/SupportButton';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -784,6 +785,9 @@ export default function App() {
             <CookieConsentBanner />
           </Deferred>
         </Suspense>
+
+        {/* Support / help affordance (hidden on admin + auth screens) */}
+        {currentPage !== 'signin' && !String(currentPage).startsWith('admin') && <SupportButton />}
 
         {/* Scroll to Top Button */}
         <AnimatePresence>

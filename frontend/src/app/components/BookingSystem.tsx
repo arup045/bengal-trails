@@ -1,6 +1,6 @@
 import { authFetch } from '../utils/api';
 import React, { useState } from 'react';
-import { Calendar, Users, Home, MapPin, CheckCircle, CreditCard, Shield, Clock, Download } from 'lucide-react';
+import { Calendar, Users, Home, MapPin, CheckCircle, CreditCard, Shield, ShieldCheck, Zap, RefreshCcw, Mail, Clock, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
@@ -492,6 +492,21 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
               </div>
             </div>
 
+            {/* Trust bar — reassurance right before the commit step */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { Icon: ShieldCheck, label: 'Secure payment' },
+                { Icon: Zap, label: 'Instant confirmation' },
+                { Icon: RefreshCcw, label: 'Free cancellation · 48h' },
+                { Icon: Mail, label: 'Voucher emailed' },
+              ].map(({ Icon, label }) => (
+                <div key={label} className="flex flex-col items-center text-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50/60 py-3 px-2">
+                  <Icon className="w-5 h-5 text-purple-600" strokeWidth={2} />
+                  <span className="font-poppins text-[11px] font-medium text-slate-600 leading-tight">{label}</span>
+                </div>
+              ))}
+            </div>
+
             <div className="flex gap-3">
               <button
                 onClick={() => setStep('details')}
@@ -524,11 +539,16 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
               <p className="text-gray-600">Your payment information is encrypted and secure</p>
             </div>
 
-            <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl">
-              <p className="text-blue-800 font-semibold mb-2">Payment</p>
-              <p className="text-blue-700 text-sm">
-                You'll be redirected to Razorpay's secure checkout. If the backend doesn't have Razorpay keys configured yet, the booking will be recorded without a charge (dev mode).
-              </p>
+            <div className="p-5 bg-slate-50 border border-slate-100 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard className="w-4 h-4 text-purple-600" />
+                <p className="text-slate-800 font-semibold font-poppins">You'll pay securely via Razorpay</p>
+              </div>
+              <ul className="text-slate-600 text-sm font-poppins space-y-1">
+                <li className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-purple-600 shrink-0" /> Cards, UPI, net-banking & wallets accepted</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-purple-600 shrink-0" /> Booking confirmed instantly + voucher emailed</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-purple-600 shrink-0" /> Free cancellation up to 48 hours before arrival</li>
+              </ul>
             </div>
 
             <div className="text-center">
