@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
-import { Search, MapPin, Compass, ArrowRight, X, Navigation, Loader2, LayoutGrid, Map as MapIcon, SlidersHorizontal } from 'lucide-react';
+import { Search, MapPin, Compass, ArrowRight, X, Navigation, Loader2, LayoutGrid, Map as MapIcon, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { getDistrictsWithMeta, type BengalRegion, type DistrictWithMeta } from '../data/districts';
@@ -65,6 +65,7 @@ export function ExplorePage() {
   const [minRating, setMinRating] = useState(0);
   const [budget, setBudget] = useState<'all' | '$' | '$$' | '$$$'>('all');
   const [kidFriendly, setKidFriendly] = useState(false);
+  const [sort, setSort] = useState<'recommended' | 'rating' | 'name' | 'distance'>('recommended');
   const [sheetOpen, setSheetOpen] = useState(false); // mobile filter bottom-sheet
   useEffect(() => {
     document.body.style.overflow = sheetOpen ? 'hidden' : '';
@@ -124,10 +125,10 @@ export function ExplorePage() {
 
   const filtersActive = q.length >= 2 || category !== 'all' || minRating > 0 || budget !== 'all' || kidFriendly;
 
-  // Unified place results: text + category + rating + budget + kid-friendly.
+  // Unified place results: text + category + rating + budget + kid-friendly, then sorted.
   const placeResults = useMemo(() => {
     if (!filtersActive) return [];
-    return placesData.filter((p: any) => {
+    let list = placesData.filter((p: any) => {
       if (q.length >= 2) {
         const hay = `${p.title} ${p.excerpt} ${p.district} ${p.region}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -137,9 +138,21 @@ export function ExplorePage() {
       if (budget !== 'all' && priceBand(p.priceFrom) !== budget) return false;
       if (kidFriendly && !isKidFriendly(p)) return false;
       return true;
-    }).slice(0, 24);
+    });
+    // Sort BEFORE slicing so the top 24 are the sorted best.
+    if (sort === 'distance' && userLoc) {
+      list = list
+        .map((p: any) => ({ ...p, _distance: p.coordinates ? calculateDistance(userLoc, { latitude: p.coordinates.lat, longitude: p.coordinates.lng }) : Infinity }))
+        .sort((a: any, b: any) => a._distance - b._distance);
+    } else if (sort === 'rating') {
+      list = [...list].sort((a: any, b: any) => (Number(b.rating) || 0) - (Number(a.rating) || 0) || (b.reviewsCount || 0) - (a.reviewsCount || 0));
+    } else if (sort === 'name') {
+      list = [...list].sort((a: any, b: any) => String(a.title).localeCompare(String(b.title)));
+    }
+    // 'recommended' keeps the curated dataset order.
+    return list.slice(0, 24);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, category, minRating, budget, kidFriendly, filtersActive]);
+  }, [q, category, minRating, budget, kidFriendly, filtersActive, sort, userLoc]);
 
   const clearFilters = () => { setCategory('all'); setMinRating(0); setBudget('all'); setKidFriendly(false); setQuery(''); };
 
@@ -148,13 +161,16 @@ export function ExplorePage() {
       (region === 'All' || d.region === region) &&
       (!q || d.name.toLowerCase().includes(q) || d.region.toLowerCase().includes(q) || d.blurb.toLowerCase().includes(q)),
     );
-    if (userLoc) {
+    if (userLoc && (sort === 'distance' || sort === 'recommended')) {
       list = list
         .map((d) => ({ ...d, _distance: calculateDistance(userLoc, { latitude: d.lat, longitude: d.lng }) }))
         .sort((a, b) => (a._distance ?? 0) - (b._distance ?? 0));
+    } else if (sort === 'name') {
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     }
+    // 'recommended' (no location) / 'rating' keep the curated district order.
     return list;
-  }, [districts, q, region, userLoc]);
+  }, [districts, q, region, userLoc, sort]);
 
   const totalPlaces = useMemo(() => districts.reduce((s, d) => s + d.placeCount, 0), [districts]);
 
@@ -282,6 +298,22 @@ export function ExplorePage() {
 
           {/* Desktop / tablet: inline controls */}
           <div className="hidden sm:flex flex-wrap items-center gap-2">
+            {/* Sort */}
+            <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-full pl-3 pr-1">
+              <ArrowUpDown className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as typeof sort)}
+                aria-label="Sort results"
+                className="bg-transparent font-poppins text-xs font-medium text-gray-700 py-2 pr-6 focus:outline-none cursor-pointer"
+              >
+                <option value="recommended">Recommended</option>
+                <option value="rating">Top rated</option>
+                <option value="name">A–Z</option>
+                <option value="distance">Nearest{userLoc ? '' : ' (turn on location)'}</option>
+              </select>
+            </div>
+
             <div className="flex items-center bg-white border border-gray-200 rounded-full p-0.5" role="group" aria-label="Minimum rating">
               {[0, 3, 4, 4.5].map((r) => (
                 <button key={r} onClick={() => setMinRating(r)}
@@ -301,7 +333,7 @@ export function ExplorePage() {
             </div>
 
             <button onClick={() => setKidFriendly((v) => !v)}
-              className={`px-4 py-2 rounded-full font-poppins text-sm font-medium transition ${kidFriendly ? 'bg-emerald-500 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'}`}>
+              className={`px-4 py-2 rounded-full font-poppins text-sm font-medium transition ${kidFriendly ? 'bg-purple-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'}`}>
               👨‍👩‍👧 Kid-friendly
             </button>
 
@@ -483,6 +515,16 @@ export function ExplorePage() {
               </button>
             </div>
 
+            <p className="font-poppins text-sm font-semibold text-slate-700 mb-2">Sort by</p>
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              {([['recommended', 'Recommended'], ['rating', 'Top rated'], ['name', 'A–Z'], ['distance', 'Nearest']] as const).map(([k, l]) => (
+                <button key={k} onClick={() => setSort(k)}
+                  className={`py-3 rounded-xl font-poppins text-sm font-medium border transition ${sort === k ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-200'}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+
             <p className="font-poppins text-sm font-semibold text-slate-700 mb-2">Minimum rating</p>
             <div className="grid grid-cols-4 gap-2 mb-5">
               {[0, 3, 4, 4.5].map((r) => (
@@ -504,7 +546,7 @@ export function ExplorePage() {
             </div>
 
             <button onClick={() => setKidFriendly((v) => !v)}
-              className={`w-full py-3 rounded-xl font-poppins text-sm font-medium border transition mb-6 ${kidFriendly ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-gray-700 border-gray-200'}`}>
+              className={`w-full py-3 rounded-xl font-poppins text-sm font-medium border transition mb-6 ${kidFriendly ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-200'}`}>
               👨‍👩‍👧 Kid-friendly{kidFriendly ? '  ✓' : ''}
             </button>
 
