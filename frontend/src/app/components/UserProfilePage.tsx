@@ -5,10 +5,13 @@ import {
   User, Mail, Calendar, MapPin, Heart, Phone,
   Edit2, Save, X, Camera, Globe, Mountain, Sparkles,
   CheckCircle2, Loader2, LogOut, Shield, Trash2,
-  Star, BookOpen, Compass, ChevronRight, Upload, AlertTriangle, Share2
+  Star, BookOpen, Compass, ChevronRight, Upload, AlertTriangle, Share2,
+  Ticket, CalendarPlus, Download
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { uploadImage, authFetch } from '../utils/api';
+import { useWishlistSync } from '../utils/useWishlistSync';
+import { normalizeBooking, nightsBetween, openVoucher, googleCalendarUrl, downloadIcs } from '../utils/bookingUtils';
 import { Achievements } from './Achievements';
 import { EmptyState } from './EmptyState';
 
@@ -79,6 +82,7 @@ export function UserProfilePage() {
   const [myReviews,       setMyReviews]       = useState<any[]>([]);
   const [reviewsLoading,  setReviewsLoading]  = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { wishlist } = useWishlistSync(); // hub tile count
 
   const [form, setForm] = useState({
     name:      user?.name      || '',
@@ -106,24 +110,26 @@ export function UserProfilePage() {
     }
   }, [user]);
 
+  // Load hub data ONCE on mount (not per-tab) so the overview tiles can show
+  // real counts no matter which tab you're on.
   useEffect(() => {
-    if (activeTab === 'trips') {
-      setBookingsLoading(true);
-      Promise.allSettled([
-        authFetch('/bookings').then(r => r.ok ? r.json() : { bookings: [] }),
-        authFetch('/trip-plans').then(r => r.ok ? r.json() : { tripPlans: [] }),
-      ])
-        .then(([bk, tp]) => {
-          setBookings(bk.status === 'fulfilled' ? (bk.value.bookings || []) : []);
-          const plans = tp.status === 'fulfilled' ? (tp.value.tripPlans || tp.value.trip_plans || tp.value.plans || []) : [];
-          setTripPlans(Array.isArray(plans) ? plans : []);
-        })
-        .finally(() => setBookingsLoading(false));
-    }
-    if (activeTab === 'reviews') {
-      loadMyReviews();
-    }
-  }, [activeTab]);
+    let alive = true;
+    setBookingsLoading(true);
+    Promise.allSettled([
+      authFetch('/bookings').then(r => r.ok ? r.json() : { bookings: [] }),
+      authFetch('/trip-plans').then(r => r.ok ? r.json() : { tripPlans: [] }),
+    ])
+      .then(([bk, tp]) => {
+        if (!alive) return;
+        setBookings(bk.status === 'fulfilled' ? (bk.value.bookings || []) : []);
+        const plans = tp.status === 'fulfilled' ? (tp.value.tripPlans || tp.value.trip_plans || tp.value.plans || []) : [];
+        setTripPlans(Array.isArray(plans) ? plans : []);
+      })
+      .finally(() => { if (alive) setBookingsLoading(false); });
+    loadMyReviews();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadMyReviews = () => {
     setReviewsLoading(true);
@@ -545,27 +551,51 @@ export function UserProfilePage() {
                     </div>
                   )}
 
-                  {/* Quick Actions */}
+                  {/* ── Travel hub: everything in one place, with real counts ── */}
                   <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-                    <h2 className="font-poppins text-base font-semibold text-slate-900 mb-4">Quick Actions</h2>
-                    <div className="grid sm:grid-cols-3 gap-3">
+                    <div className="flex items-baseline justify-between mb-4">
+                      <h2 className="font-poppins text-base font-semibold text-slate-900">Your travel hub</h2>
+                      <span className="font-poppins text-xs text-slate-400">Everything in one place</span>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                       {[
-                        { icon: Heart,    label: 'My Wishlist',   href: '/wishlist',       color: 'text-rose-600  bg-rose-50'    },
-                        { icon: Compass,  label: 'Plan a Trip',   href: '/planner',        color: 'text-purple-600 bg-purple-50' },
-                        { icon: Star,     label: 'My Reviews',    onClick: () => setActiveTab('reviews'), color: 'text-amber-600 bg-amber-50' },
-                      ].map(({ icon: Icon, label, href, onClick, color }) => {
-                        const Tag = href ? 'a' : 'button';
-                        const props: any = href ? { href } : { onClick };
+                        { icon: Ticket,  label: 'Bookings',    count: bookings.length,  onClick: () => setActiveTab('trips')   },
+                        { icon: Compass, label: 'Saved trips', count: tripPlans.length, onClick: () => setActiveTab('trips')   },
+                        { icon: Star,    label: 'Reviews',     count: myReviews.length, onClick: () => setActiveTab('reviews') },
+                        { icon: Heart,   label: 'Wishlist',    count: wishlist.length,  href: '/wishlist'                      },
+                      ].map(({ icon: Icon, label, count, href, onClick }) => {
+                        const Tag: any = href ? 'a' : 'button';
+                        const props: any = href ? { href } : { onClick, type: 'button' };
                         return (
-                          <Tag key={label} {...props} className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors group w-full text-left">
-                            <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center shrink-0`}>
+                          <Tag
+                            key={label}
+                            {...props}
+                            className="group text-left rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-purple-50 hover:border-purple-200 p-4 transition-colors"
+                          >
+                            <span className="w-9 h-9 rounded-xl bg-white border border-slate-100 text-purple-600 flex items-center justify-center mb-3 group-hover:border-purple-200 transition-colors">
                               <Icon className="w-4 h-4" />
-                            </div>
-                            <span className="font-poppins text-sm font-medium text-slate-700 flex-1">{label}</span>
-                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                            </span>
+                            <p className="font-poppins text-2xl font-bold text-slate-900 leading-none tabular-nums">{count}</p>
+                            <p className="font-poppins text-xs text-slate-500 mt-1.5 flex items-center gap-0.5">
+                              {label}
+                              <ChevronRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                            </p>
                           </Tag>
                         );
                       })}
+                    </div>
+
+                    {/* Primary next-step actions */}
+                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
+                      <a href="/planner" className="inline-flex items-center gap-1.5 font-poppins text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-full transition-colors">
+                        <Compass className="w-3.5 h-3.5" /> Plan a trip
+                      </a>
+                      <a href="/explore" className="inline-flex items-center gap-1.5 font-poppins text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-full transition-colors">
+                        <MapPin className="w-3.5 h-3.5" /> Explore destinations
+                      </a>
+                      <a href="/itineraries" className="inline-flex items-center gap-1.5 font-poppins text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-full transition-colors">
+                        <BookOpen className="w-3.5 h-3.5" /> Curated itineraries
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -625,34 +655,71 @@ export function UserProfilePage() {
                   />
                 ) : (
                   <div className="space-y-4">
-                    {bookings.map((b: any) => (
-                      <div key={b.id} className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-gray-50">
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
-                          <MapPin className="w-6 h-6 text-purple-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-poppins font-semibold text-slate-900 text-sm">{b.destinationName || b.destination_name || 'Destination'}</p>
-                          <p className="font-poppins text-xs text-gray-500 mt-0.5">
-                            {b.checkIn || b.check_in} · {b.guests || 1} guest(s)
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className={`font-poppins text-xs font-semibold px-2.5 py-1 rounded-full ${
-                            b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                            b.status === 'pending'   ? 'bg-amber-100 text-amber-700' :
-                            b.status === 'cancelled' ? 'bg-gray-200 text-gray-500' :
-                            'bg-gray-100 text-gray-600'}`}>
-                            {b.status}
-                          </span>
-                          {['pending', 'created', 'confirmed'].includes(b.status) && (
-                            <button onClick={() => cancelBooking(b.bookingId || b.booking_id)}
-                              className="font-poppins text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors">
-                              Cancel
+                    {bookings.map((raw: any) => {
+                      const b = normalizeBooking(raw);
+                      const nights = nightsBetween(b.checkIn, b.checkOut);
+                      const live = ['pending', 'created', 'confirmed'].includes(b.status);
+                      return (
+                        <div key={b.id || raw.id} className="rounded-2xl border border-slate-100 bg-white hover:shadow-md transition-shadow p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
+                              <MapPin className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-poppins font-semibold text-slate-900 text-sm truncate">{b.name}</p>
+                                <span className={`font-poppins text-[11px] font-semibold px-2.5 py-0.5 rounded-full capitalize ${
+                                  b.status === 'cancelled' ? 'bg-slate-100 text-slate-500' : 'bg-purple-50 text-purple-700'}`}>
+                                  {b.status}
+                                </span>
+                              </div>
+                              <p className="font-poppins text-xs text-slate-500 mt-1">
+                                {b.checkIn || '—'}{b.checkOut ? ` → ${b.checkOut}` : ''}
+                                {nights ? ` · ${nights} night${nights > 1 ? 's' : ''}` : ''}
+                                {` · ${b.guests} guest${b.guests > 1 ? 's' : ''} · ${b.rooms} room${b.rooms > 1 ? 's' : ''}`}
+                              </p>
+                              {b.id && <p className="font-mono text-[11px] text-slate-400 mt-0.5">{b.id}</p>}
+                            </div>
+                            {b.total > 0 && (
+                              <div className="text-right shrink-0">
+                                <p className="font-poppins text-[11px] text-slate-400">Total</p>
+                                <p className="font-poppins font-bold text-purple-600">₹{b.total.toLocaleString('en-IN')}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Manage actions */}
+                          <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                            <button
+                              onClick={() => { if (!openVoucher(raw)) toast.error('Allow pop-ups to open your voucher'); }}
+                              className="inline-flex items-center gap-1.5 font-poppins text-xs font-medium text-slate-700 hover:text-purple-700 bg-slate-50 hover:bg-purple-50 px-3 py-1.5 rounded-lg transition-colors">
+                              <Ticket className="w-3.5 h-3.5" /> E-voucher
                             </button>
-                          )}
+                            {b.checkIn && live && (
+                              <>
+                                <a
+                                  href={googleCalendarUrl(raw)} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 font-poppins text-xs font-medium text-slate-700 hover:text-purple-700 bg-slate-50 hover:bg-purple-50 px-3 py-1.5 rounded-lg transition-colors">
+                                  <CalendarPlus className="w-3.5 h-3.5" /> Add to calendar
+                                </a>
+                                <button
+                                  onClick={() => downloadIcs(raw)} aria-label="Download .ics calendar file"
+                                  title="Download .ics (Apple / Outlook)"
+                                  className="inline-flex items-center justify-center w-8 h-8 text-slate-500 hover:text-purple-700 bg-slate-50 hover:bg-purple-50 rounded-lg transition-colors">
+                                  <Download className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
+                            {live && (
+                              <button onClick={() => cancelBooking(b.id)}
+                                className="ml-auto font-poppins text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
+                                Cancel booking
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
