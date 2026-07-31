@@ -33,6 +33,15 @@ export function CountUp({ value, duration = 1.4, className, prefix = '', suffix 
     return () => cancelAnimationFrame(raf);
   }, [inView, value, duration, reduce]);
 
+  // Safety net: never leave a real number frozen at "0". If the in-view observer
+  // never fires (e.g. the tab was never composited, or the element mounts far
+  // off-screen), reveal the final value shortly after mount instead of a stuck 0.
+  useEffect(() => {
+    if (value === 0) return;
+    const id = setTimeout(() => setDisplay((d) => (d === 0 ? value : d)), 1200);
+    return () => clearTimeout(id);
+  }, [value]);
+
   return (
     <span ref={ref} className={className}>
       {prefix}{display.toLocaleString('en-IN')}{suffix}
