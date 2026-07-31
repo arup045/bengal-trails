@@ -10,6 +10,14 @@ services:
     startCommand: npm run start:prod
     healthCheckPath: /health
     envVars:
+      # Auto-wire the DB connection string from the managed Postgres below, so it
+      # can NEVER go stale when the database is recreated/upgraded. (Previously
+      # DATABASE_URL was set manually in the dashboard — when the DB was recreated
+      # the app kept pointing at the old one and every query 500'd.)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gobro-postgres
+          property: connectionString
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
