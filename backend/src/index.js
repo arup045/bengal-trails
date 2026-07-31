@@ -225,6 +225,24 @@ const health = (req, res) => res.json({ status: 'ok', service: 'bengal-trails-ap
 app.get('/health', health);
 app.get('/healthz', health);
 
+// DEEP health check: actually pings the database. The plain /health above is
+// DB-free (kept fast for the keep-warm pinger), which means it reports "ok" even
+// when the DB is unreachable — so an expired/suspended Postgres goes unnoticed
+// until users hit 500s. Point uptime monitoring at THIS endpoint; it returns 503
+// the moment the database can't be reached, so you find out immediately.
+app.get('/health/db', async (req, res) => {
+  const pool = require('./db/pool');
+  const started = Date.now();
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', db: 'up', latencyMs: Date.now() - started });
+  } catch (err) {
+    console.error('[health] DATABASE UNREACHABLE:', err.message);
+    captureMessage('Database health check failed', { tags: { kind: 'db_down' }, extra: { error: err.message } });
+    res.status(503).json({ status: 'error', db: 'down', error: 'database unreachable' });
+  }
+});
+
 // ══════════════════════════════════════════════════════════════════════════════
 // ROUTES
 // The prefix mirrors what the Supabase edge function used so the frontend
