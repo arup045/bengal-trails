@@ -436,31 +436,41 @@ async function migrate() {
     const isProd   = process.env.NODE_ENV === 'production';
     const adminEmail = process.env.FIRST_ADMIN_EMAIL || 'admin@bengaltrails.com';
 
+    // CRITICAL: a missing/weak admin password must NEVER abort the migration.
+    // This block runs INSIDE the schema transaction — throwing here triggers the
+    // ROLLBACK in the catch below, which wipes every CREATE TABLE and leaves a
+    // fresh DB with NO schema (every query then 500s). Schema creation is
+    // critical; seeding the first admin is optional and can happen on a later
+    // deploy once the password is set. So: warn and skip — never throw.
     let adminPlainPass = process.env.FIRST_ADMIN_PASSWORD;
-    if (!adminPlainPass) {
-      if (isProd) {
-        throw new Error(
-          'FIRST_ADMIN_PASSWORD env var is required in production. ' +
-          'Set a strong password (12+ chars) in your Render/Railway dashboard before deploying.'
-        );
-      }
+    if (!adminPlainPass && !isProd) {
       // Dev convenience: generate a strong random password
       adminPlainPass = crypto.randomBytes(12).toString('base64').replace(/[+/=]/g, '');
     }
-    if (adminPlainPass.length < 12) {
-      throw new Error('FIRST_ADMIN_PASSWORD must be at least 12 characters long.');
+
+    let adminWasCreated = false;
+    if (!adminPlainPass) {
+      console.warn(
+        '⚠️  FIRST_ADMIN_PASSWORD not set — skipping first-admin seed. ' +
+        'Schema is fully created; the site works and users can sign up normally. ' +
+        'Set FIRST_ADMIN_PASSWORD (12+ chars) in the dashboard and redeploy to create the admin account.'
+      );
+    } else if (adminPlainPass.length < 12) {
+      console.warn(
+        '⚠️  FIRST_ADMIN_PASSWORD is under 12 characters — skipping first-admin seed. ' +
+        'Use a longer password and redeploy to create the admin account.'
+      );
+    } else {
+      const adminPass = await bcrypt.hash(adminPlainPass, 12); // cost 12 (was 10; P1-15)
+      // Check if the admin user actually got inserted (vs. already existed).
+      const adminInsert = await client.query(`
+        INSERT INTO users (email, password, name, role, status)
+        VALUES ($1, $2, 'Admin', 'admin', 'active')
+        ON CONFLICT (email) DO NOTHING
+        RETURNING id;
+      `, [adminEmail, adminPass]);
+      adminWasCreated = adminInsert.rows.length > 0;
     }
-
-    const adminPass = await bcrypt.hash(adminPlainPass, 12); // cost 12 (was 10; P1-15)
-
-    // Check if the admin user actually got inserted (vs. already existed).
-    const adminInsert = await client.query(`
-      INSERT INTO users (email, password, name, role, status)
-      VALUES ($1, $2, 'Admin', 'admin', 'active')
-      ON CONFLICT (email) DO NOTHING
-      RETURNING id;
-    `, [adminEmail, adminPass]);
-    const adminWasCreated = adminInsert.rows.length > 0;
 
     // ── Safe column additions for already-migrated databases ──────────────────
     await client.query(`
