@@ -1,16 +1,15 @@
 /**
  * backup-db.js — Daily PostgreSQL backup to stdout or a file.
  *
- * Usage:
+ * Usage (manual / local plaintext dump):
  *   node scripts/backup-db.js                    → prints pg_dump to stdout
  *   node scripts/backup-db.js > backup.sql       → saves to file
  *
- * Schedule on Render:
- *   Render → your service → Jobs → "Daily DB Backup"
- *   Command: node scripts/backup-db.js > /tmp/backup_$(date +%Y%m%d).sql
- *
- * For automated S3 upload:
- *   Set BACKUP_S3_BUCKET + AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY in env.
+ * NOTE: the AUTOMATED nightly backup does NOT use this script. It runs in
+ * .github/workflows/db-backup.yml (free GitHub Actions), which pg_dumps the
+ * Render DB, AES-256 encrypts it, and stores it as an artifact. Restore with
+ * backend/scripts/restore-db.sh. This script remains for ad-hoc local dumps.
+ * Output here is PLAINTEXT — never commit it or upload it to the public repo.
  */
 'use strict';
 

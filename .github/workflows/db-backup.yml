@@ -1,0 +1,140 @@
+name: Nightly DB backup
+
+# Bengal Trails runs on Render's FREE Postgres, which has NO built-in backups
+# and can be wiped/recreated. This workflow takes an encrypted pg_dump every
+# night and stores it as a GitHub Actions artifact — off-platform, so it
+# survives a Render DB reset (unlike the DB itself).
+#
+# ⚠️  SECURITY: this repo is PUBLIC and the dump contains user emails + bcrypt
+# password hashes. The dump is therefore AES-256 encrypted BEFORE it is ever
+# written to an artifact, and the job FAILS CLOSED if the encryption key is
+# missing — a plaintext dump can never be uploaded.
+#
+# ── One-time setup — repo → Settings → Secrets and variables → Actions → New secret ──
+#   BACKUP_DATABASE_URL    the EXTERNAL connection string from Render
+#                          (Render → gobro-postgres → "External Database URL").
+#                          The internal URL is NOT reachable from GitHub runners.
+#   BACKUP_ENCRYPTION_KEY  a long random passphrase you generate and SAVE in a
+#                          password manager. You need it to restore — lose it and
+#                          every backup is unreadable. Generate one with:
+#                            openssl rand -base64 32
+#
+# ── Restore, when you ever need it ──
+#   Download the newest artifact from this workflow's run, then locally run:
+#     BACKUP_ENCRYPTION_KEY='<key>' DATABASE_URL='<target>' \
+#       backend/scripts/restore-db.sh bengal-trails-YYYYMMDD-HHMMSS.pgc.enc
+
+on:
+  schedule:
+    - cron: '0 21 * * *'    # 21:00 UTC = 02:30 IST daily (low-traffic window)
+  workflow_dispatch: {}      # allow manual runs from the Actions tab
+
+# Never let two backups overlap (a slow dump + the next schedule).
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Fail early if required secrets are missing
+        env:
+          DB: ${{ secrets.BACKUP_DATABASE_URL }}
+          KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          missing=0
+          if [ -z "$DB" ];  then echo "::error::BACKUP_DATABASE_URL secret is not set"; missing=1; fi
+          if [ -z "$KEY" ]; then echo "::error::BACKUP_ENCRYPTION_KEY secret is not set"; missing=1; fi
+          if [ "$missing" = "1" ]; then
+            echo "Add the secrets under Settings → Secrets and variables → Actions, then re-run."
+            exit 1
+          fi
+          echo "Required secrets present."
+
+      - name: Install PostgreSQL 18 client (matches the server major)
+        run: |
+          set -euo pipefail
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update
+          # Pinned to 18 to match the Render server. If the server is upgraded to
+          # a newer major, bump this number (pg_dump must be >= the server major).
+          sudo apt-get install -y postgresql-client-18
+          pg_dump --version
+
+      - name: Dump + encrypt (never writes plaintext to the artifact)
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          set -euo pipefail
+          stamp="$(date -u +%Y%m%d-%H%M%S)"
+          plain="bengal-trails-${stamp}.pgc"
+          enc="${plain}.enc"
+
+          # Custom format (-Fc): compressed + supports selective/parallel restore.
+          pg_dump "$DATABASE_URL" --no-owner --no-acl -Fc -f "$plain"
+          echo "Dump size:"; ls -lh "$plain" | awk '{print $5, $9}'
+
+          # Guard: a suspiciously tiny dump usually means an auth/connection error
+          # produced an almost-empty file. Fail loudly rather than store junk.
+          bytes="$(stat -c%s "$plain")"
+          if [ "$bytes" -lt 1024 ]; then
+            echo "::error::Dump is only ${bytes} bytes — treating as a failed backup."
+            exit 1
+          fi
+
+          # Encrypt at rest (AES-256-CBC + PBKDF2). Public repo → confidentiality
+          # comes entirely from this step.
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in "$plain" -out "$enc" -pass env:BACKUP_ENCRYPTION_KEY
+
+          # Prove the artifact ROUND-TRIPS with the same key a restore will need,
+          # BEFORE deleting the plaintext and uploading. Catches a bad/rotated key
+          # or a corrupt dump now (set -e fails the job) — not during a real
+          # disaster when the DB is already gone. This is the single most
+          # important safeguard: a backup you can't restore is not a backup.
+          openssl enc -d -aes-256-cbc -pbkdf2 \
+            -in "$enc" -out "${plain}.verify" -pass env:BACKUP_ENCRYPTION_KEY
+          pg_restore --list "${plain}.verify" > /dev/null
+          rm -f "${plain}.verify"
+          echo "Verified: artifact decrypts with the key AND is a valid pg_dump archive."
+
+          rm -f "$plain"
+          echo "Encrypted artifact:"; ls -lh "$enc" | awk '{print $5, $9}'
+
+          echo "ARTIFACT_NAME=bengal-trails-backup-${stamp}" >> "$GITHUB_ENV"
+          echo "ARTIFACT_FILE=${enc}" >> "$GITHUB_ENV"
+
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.ARTIFACT_FILE }}
+          retention-days: 90        # GitHub free-tier maximum
+          if-no-files-found: error
+
+      # Optional dead-man's-switch. GitHub emails you when a run FAILS, but NOT
+      # when runs silently stop — e.g. a public-repo scheduled workflow is
+      # auto-disabled after 60 days with no commits/pushes. A monitor that
+      # expects a daily ping catches both. No-op until you set the secret.
+      - name: Backup heartbeat (optional)
+        if: success()
+        env:
+          HEARTBEAT_URL: ${{ secrets.BACKUP_HEARTBEAT_URL }}
+        run: |
+          if [ -n "${HEARTBEAT_URL:-}" ]; then
+            curl -fsS --retry 3 --max-time 20 "$HEARTBEAT_URL" > /dev/null \
+              && echo "Heartbeat sent." \
+              || echo "Heartbeat ping failed (non-fatal)."
+          else
+            echo "No BACKUP_HEARTBEAT_URL secret set — skipping heartbeat (optional)."
+            echo "Tip: create a free healthchecks.io check (period: 1 day, grace: 1 day)"
+            echo "and store its ping URL as BACKUP_HEARTBEAT_URL to be alerted if a"
+            echo "nightly backup ever fails OR stops running."
+          fi
