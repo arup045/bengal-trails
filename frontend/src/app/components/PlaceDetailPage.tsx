@@ -1,4 +1,4 @@
-import { API_BASE } from '../utils/api';
+import { authFetch } from '../utils/api';
 import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { HeroAtmosphere } from './HeroAtmosphere';
@@ -80,7 +80,7 @@ export function PlaceDetailPage({ slug }: PlaceDetailPageProps) {
     // review count, latest description) on top — otherwise sections silently
     // empty out on production and the page looks broken vs. the full design.
     const s: any = placesData.find(p => p.slug === slug) || {};
-    fetch(`${API_BASE}/destinations/${slug}`)
+    authFetch(`/destinations/${slug}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
         if (!isAlive()) return; // slug changed mid-flight — don't overwrite the newer place

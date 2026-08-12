@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { optimiseImage } from '../utils/imageOptimise';
 import { ArrowRight, MapPin, Star } from 'lucide-react';
-import { API_BASE } from '../utils/api';
+import { authFetch } from '../utils/api';
 
 interface Place { name: string; slug: string; image_url?: string; imageUrl?: string; region?: string; rating?: number; category?: string; }
 
@@ -63,7 +63,7 @@ export function BentoGrid() {
 
   useEffect(() => {
     let alive = true;
-    fetch(`${API_BASE}/destinations?featured=true&limit=5`)
+    authFetch(`/destinations?featured=true&limit=5`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (alive && d?.destinations?.length >= 5) setPlaces(d.destinations.slice(0, 5));

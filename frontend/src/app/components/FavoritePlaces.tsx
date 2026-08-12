@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { buildSrcSet } from '../utils/responsiveImage';
-import { API_BASE } from '../utils/api';
+import { authFetch } from '../utils/api';
 
 const PlaceCardMemo = memo(({ place }: { place: { name: string; slug: string; image: string } }) => (
   <a 
@@ -66,7 +66,7 @@ export function FavoritePlaces() {
 
   useEffect(() => {
     let alive = true;
-    fetch(`${API_BASE}/destinations?sort=popular&limit=5`)
+    authFetch(`/destinations?sort=popular&limit=5`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!alive || !d?.destinations) return;

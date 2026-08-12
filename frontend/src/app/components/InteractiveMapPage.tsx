@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Navigation, X, Star, ChevronRight, Loader2 } from 'lucide-react';
-import { API_BASE } from '../utils/api';
+import { authFetch } from '../utils/api';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { getCurrentLocation, LocationCoords, formatDistance, calculateDistance } from '../utils/location';
 
@@ -18,7 +18,7 @@ export function InteractiveMapPage() {
   const [places, setPlaces] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/destinations?limit=100`)
+    authFetch(`/destinations?limit=100`)
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.destinations?.length) setPlaces(d.destinations); })
       .catch(() => {});

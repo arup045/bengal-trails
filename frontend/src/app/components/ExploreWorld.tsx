@@ -2,7 +2,7 @@ import { Star, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { OptimizedImage } from './OptimizedImage';
-import { API_BASE } from '../utils/api';
+import { authFetch } from '../utils/api';
 
 interface ApiDestination {
   slug: string;
@@ -68,11 +68,11 @@ export function ExploreWorld() {
     (async () => {
       try {
         let list: ApiDestination[] = [];
-        const r1 = await fetch(`${API_BASE}/destinations?limit=25&featured=false`).then(r => r.ok ? r.json() : null).catch(() => null);
+        const r1 = await authFetch(`/destinations?limit=25&featured=false`).then(r => r.ok ? r.json() : null).catch(() => null);
         list = r1?.destinations || [];
         if (list.length < MIN) {
           // Not enough non-featured rows — show the general list instead.
-          const r2 = await fetch(`${API_BASE}/destinations?limit=25`).then(r => r.ok ? r.json() : null).catch(() => null);
+          const r2 = await authFetch(`/destinations?limit=25`).then(r => r.ok ? r.json() : null).catch(() => null);
           if ((r2?.destinations || []).length > list.length) list = r2.destinations;
         }
         if (!alive) return;
