@@ -26,6 +26,25 @@ function localeToCountry(locale: string): string | null {
   return m ? m[1].toUpperCase() : null;
 }
 
+// Country code → flag emoji, purely client-side (Unicode regional indicators).
+// No network call — the old REST Countries API was unreliable (host migration +
+// missing CORS on its redirect target), so we derive the flag locally instead.
+function flagEmoji(cc: string): string {
+  if (!/^[A-Za-z]{2}$/.test(cc)) return '';
+  return cc.toUpperCase().replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)));
+}
+
+// Currency for the common countries WB welcomes international visitors from.
+// (Frankfurter provides the live INR rate; this just maps country → currency
+// without an extra API round-trip.)
+const CC_CURRENCY: Record<string, string> = {
+  US: 'USD', GB: 'GBP', AU: 'AUD', CA: 'CAD', JP: 'JPY', CN: 'CNY', SG: 'SGD', AE: 'AED',
+  DE: 'EUR', FR: 'EUR', IT: 'EUR', ES: 'EUR', NL: 'EUR', IE: 'EUR', BE: 'EUR', AT: 'EUR',
+  PT: 'EUR', GR: 'EUR', FI: 'EUR', CH: 'CHF', SE: 'SEK', NO: 'NOK', DK: 'DKK', NZ: 'NZD',
+  ZA: 'ZAR', HK: 'HKD', MY: 'MYR', TH: 'THB', BD: 'BDT', NP: 'NPR', LK: 'LKR', RU: 'RUB',
+  BR: 'BRL', KR: 'KRW', SA: 'SAR', QA: 'QAR', KW: 'KWD', IL: 'ILS',
+};
+
 export function InternationalVisitorChip({ destinationCity }: { destinationCity?: string }) {
   const [state, setState] = useState<State>({});
   const [visible, setVisible] = useState(false);
@@ -41,26 +60,22 @@ export function InternationalVisitorChip({ destinationCity }: { destinationCity?
     setVisible(true);
 
     (async () => {
-      // 1) Country flag + native currency
-      try {
-        const r = await fetch(`https://restcountries.com/v3.1/alpha/${cc}?fields=flag,name,currencies`);
-        if (r.ok) {
-          const d = await r.json();
-          const data = Array.isArray(d) ? d[0] : d;
-          const currency = data?.currencies ? Object.keys(data.currencies)[0] : null;
-          if (alive) setState((s) => ({ ...s, flag: data?.flag, countryName: data?.name?.common, userCurrency: currency || undefined }));
+      // 1) Flag + currency — derived locally, no network call (reliable).
+      const flag = flagEmoji(cc);
+      const currency = CC_CURRENCY[cc] || null;
+      if (alive) setState((s) => ({ ...s, flag, userCurrency: currency || undefined }));
 
-          // 2) Live currency rate (INR per 1 unit of user currency)
-          if (currency && currency !== 'INR') {
-            const fx = await fetch(`https://api.frankfurter.dev/v1/latest?amount=1&from=${currency}&to=INR`);
-            if (fx.ok) {
-              const j = await fx.json();
-              const rate = j?.rates?.INR;
-              if (alive && typeof rate === 'number') setState((s) => ({ ...s, rateInrPerUnit: rate }));
-            }
+      // 2) Live currency rate (INR per 1 unit of user currency) — Frankfurter (ECB).
+      if (currency && currency !== 'INR') {
+        try {
+          const fx = await fetch(`https://api.frankfurter.dev/v1/latest?amount=1&from=${currency}&to=INR`);
+          if (fx.ok) {
+            const j = await fx.json();
+            const rate = j?.rates?.INR;
+            if (alive && typeof rate === 'number') setState((s) => ({ ...s, rateInrPerUnit: rate }));
           }
-        }
-      } catch { /* ignore */ }
+        } catch { /* rate unavailable — chip still shows flag + local time */ }
+      }
 
       // 3) Time at the destination — derived from the user's locale + the Asia/Kolkata zone
       try {
