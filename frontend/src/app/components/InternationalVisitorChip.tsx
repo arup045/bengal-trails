@@ -52,7 +52,7 @@ export function InternationalVisitorChip({ destinationCity }: { destinationCity?
 
           // 2) Live currency rate (INR per 1 unit of user currency)
           if (currency && currency !== 'INR') {
-            const fx = await fetch(`https://api.frankfurter.app/latest?amount=1&from=${currency}&to=INR`);
+            const fx = await fetch(`https://api.frankfurter.dev/v1/latest?amount=1&from=${currency}&to=INR`);
             if (fx.ok) {
               const j = await fx.json();
               const rate = j?.rates?.INR;
