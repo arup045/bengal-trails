@@ -33,7 +33,7 @@ export function ConnectionBanner() {
   return (
     <div className="fixed top-0 inset-x-0 z-[60] bg-amber-500 text-white text-sm font-poppins px-4 py-2 flex items-center justify-center gap-2 shadow-md">
       <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-      <span>Reconnecting to the server… the free-tier backend can take a few seconds to wake up.</span>
+      <span>Waking up the server… the first visit can take up to a minute. Content loads automatically — no need to refresh.</span>
     </div>
   );
 }

@@ -112,7 +112,34 @@ export async function tryRefresh(): Promise<string | null> {
   return _refreshInFlight;
 }
 
-// ── authFetch — authenticated fetch with auto-retry on 401 ────────────────────
+// ── Cold-start resilience ─────────────────────────────────────────────────────
+// The API runs on Render's free tier, which SLEEPS after ~15 min idle. The first
+// request after sleep either hangs ~20-40s while the container boots, or the edge
+// returns 502/503/504 until the app is up. Without handling, that first call
+// throws and the page shows a blank/error state — the #1 reason the site "looks
+// broken" to a visitor who arrives when it's cold. So we transparently retry
+// transient failures (gateway errors + network drops + our own timeout) with
+// backoff until the server wakes, showing the calm ConnectionBanner meanwhile.
+const RETRYABLE_STATUS = new Set([502, 503, 504, 522, 523, 524, 408]);
+const MAX_ATTEMPTS = 5;
+const PER_ATTEMPT_TIMEOUT_MS = 30_000;   // aborts a hung request so we can retry a now-booting server
+const BACKOFF_MS = [1500, 3000, 5000, 8000];
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+// fetch with an abort-based timeout, unless the caller supplied its own signal.
+async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  if (init.signal) return fetch(url, init);
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), PER_ATTEMPT_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+// ── authFetch — authenticated fetch with cold-start retry + 401 refresh ───────
 export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const isAbsolute = /^https?:\/\//.test(path);
   const url = isAbsolute ? path : `${API_BASE}${path.startsWith('/') ? path : '/' + path}`;
@@ -123,21 +150,43 @@ export async function authFetch(path: string, init: RequestInit = {}): Promise<R
   };
   if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
 
-  let res: Response;
-  try {
-    res = await fetch(url, { ...init, headers, credentials: 'include' });
-    markApiUp(); // a response (even an error status) means the server is reachable
-  } catch (e) {
-    markApiDown(); // network failure → show the global "reconnecting" banner
-    throw e;
+  const reqInit: RequestInit = { ...init, headers, credentials: 'include' };
+
+  let res: Response | null = null;
+  let lastErr: unknown = null;
+
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    try {
+      res = await fetchWithTimeout(url, reqInit);
+    } catch (e) {
+      // Network failure or our timeout abort → server likely still cold.
+      lastErr = e;
+      res = null;
+      markApiDown();
+      if (attempt < MAX_ATTEMPTS - 1) { await sleep(BACKOFF_MS[Math.min(attempt, BACKOFF_MS.length - 1)]); continue; }
+      throw e;
+    }
+
+    // Gateway/boot errors → retry until the container wakes.
+    if (RETRYABLE_STATUS.has(res.status) && attempt < MAX_ATTEMPTS - 1) {
+      markApiDown();
+      await sleep(BACKOFF_MS[Math.min(attempt, BACKOFF_MS.length - 1)]);
+      continue;
+    }
+
+    // Got a real application response (2xx/4xx/5xx from our app).
+    if (!RETRYABLE_STATUS.has(res.status)) markApiUp();
+    break;
   }
 
-  // On 401 — silently try to refresh once, then retry
+  if (!res) throw lastErr ?? new Error('Network error');
+
+  // On 401 — silently try to refresh once, then retry the request.
   if (res.status === 401) {
     const newToken = await tryRefresh();
     if (newToken) {
       headers['Authorization'] = `Bearer ${newToken}`;
-      res = await fetch(url, { ...init, headers, credentials: 'include' });
+      res = await fetchWithTimeout(url, { ...reqInit, headers });
     }
   }
 

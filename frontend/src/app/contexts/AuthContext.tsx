@@ -99,11 +99,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── signIn ────────────────────────────────────────────────────────────────────
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await fetch(`${API_BASE}/auth/signin`, {
-        method:      'POST',
-        headers:     { 'Content-Type': 'application/json' },
-        credentials: 'include',   // ← receive the httpOnly refresh cookie
-        body:        JSON.stringify({ email, password }),
+      // authFetch adds Content-Type + credentials and, crucially, retries through
+      // a free-tier cold start (502/503/timeout) so login doesn't fail just
+      // because the server was asleep when the user tapped "Log in".
+      const res = await authFetch('/auth/signin', {
+        method: 'POST',
+        body:   JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error || 'Sign in failed' };
@@ -124,11 +125,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── signUp ────────────────────────────────────────────────────────────────────
   const signUp = async (email: string, password: string, name: string, consent?: any) => {
     try {
-      const res = await fetch(`${API_BASE}/auth/signup`, {
-        method:      'POST',
-        headers:     { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body:        JSON.stringify({ email, password, name, consent }),
+      const res = await authFetch('/auth/signup', {
+        method: 'POST',
+        body:   JSON.stringify({ email, password, name, consent }),
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error || 'Signup failed' };

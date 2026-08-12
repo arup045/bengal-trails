@@ -5,7 +5,7 @@
  * can import a hook instead of writing raw fetch() calls.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_BASE, authFetch } from '../utils/api';
+import { authFetch } from '../utils/api';
 import { QK } from './queryClient';
 
 // ── Destinations list ─────────────────────────────────────────────────────────
@@ -14,7 +14,7 @@ export function useDestinations(filters: Record<string, string | number> = {}) {
   return useQuery({
     queryKey: QK.destinations(filters),
     queryFn:  async () => {
-      const res = await fetch(`${API_BASE}/destinations?${params}`);
+      const res = await authFetch(`/destinations?${params}`);
       if (!res.ok) throw new Error('Failed to load destinations');
       return res.json();
     },
@@ -27,7 +27,7 @@ export function useDestination(slug: string) {
   return useQuery({
     queryKey: QK.destination(slug),
     queryFn:  async () => {
-      const res = await fetch(`${API_BASE}/destinations/${slug}`);
+      const res = await authFetch(`/destinations/${slug}`);
       if (!res.ok) throw new Error('Destination not found');
       return res.json();
     },
@@ -42,7 +42,7 @@ export function useSuggestions(query: string) {
     queryKey: QK.suggestions(query),
     queryFn:  async () => {
       if (!query || query.length < 2) return { suggestions: [] };
-      const res = await fetch(`${API_BASE}/suggestions?query=${encodeURIComponent(query)}`);
+      const res = await authFetch(`/search/suggestions?q=${encodeURIComponent(query)}`);
       if (!res.ok) return { suggestions: [] };
       return res.json();
     },
@@ -59,7 +59,7 @@ export function usePlaceImages(districtSlug: string) {
   return useQuery({
     queryKey: ['place-images', districtSlug],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE}/place-images/${districtSlug}`);
+      const res = await authFetch(`/place-images/${districtSlug}`);
       if (!res.ok) return { items: {}, images: {} };
       return res.json();
     },
@@ -73,7 +73,7 @@ export function useReviews(slug: string) {
   return useQuery({
     queryKey: QK.reviews(slug),
     queryFn:  async () => {
-      const res = await fetch(`${API_BASE}/reviews/${slug}`);
+      const res = await authFetch(`/reviews/${slug}`);
       if (!res.ok) throw new Error('Failed to load reviews');
       return res.json();
     },
